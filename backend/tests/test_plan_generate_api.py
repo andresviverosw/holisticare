@@ -673,3 +673,57 @@ def test_get_intake_404_when_missing(client: TestClient):
         app.dependency_overrides.pop(get_db, None)
 
     assert r.status_code == 404
+
+
+def test_get_intake_risk_flags_200_returns_flags(client: TestClient):
+    intake = IntakeProfile(
+        id=uuid.uuid4(),
+        patient_id=uuid.UUID(PATIENT_ID),
+        practitioner_id=None,
+        intake_json={
+            "profile_version": "generic_holistic_v0",
+            "chief_complaint": "Dolor lumbar intenso.",
+            "conditions": ["lumbalgia subaguda"],
+            "goals": ["Reducir dolor"],
+            "contraindications": ["anticoagulación activa"],
+        },
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = intake
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}/risk-flags")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["patient_id"] == PATIENT_ID
+    assert len(payload["risk_flags"]) >= 1
+    assert payload["risk_flags"][0]["severity"] in {"high", "medium"}
+
+
+def test_get_intake_risk_flags_404_when_intake_missing(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}/risk-flags")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 404

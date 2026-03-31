@@ -17,6 +17,7 @@ from app.services.plan_persistence import (
 from app.services.chunk_query import list_clinical_chunks
 from app.services.ingestion_service import IngestionService
 from app.services.intake_service import get_intake_profile, save_intake_profile
+from app.services.intake_risk_service import analyze_intake_risk_flags
 
 router = APIRouter()
 
@@ -125,6 +126,27 @@ async def get_intake(
         "patient_id": str(row.patient_id),
         "practitioner_id": str(row.practitioner_id) if row.practitioner_id else None,
         "intake_json": row.intake_json,
+    }
+
+
+@router.get("/intake/{patient_id}/risk-flags")
+async def get_intake_risk_flags(
+    patient_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    row = await get_intake_profile(db, patient_id=patient_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Intake not found")
+    try:
+        flags = analyze_intake_risk_flags(row.intake_json)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="No fue posible analizar riesgos en este momento. Continúe con revisión manual.",
+        ) from exc
+    return {
+        "patient_id": str(row.patient_id),
+        "risk_flags": flags,
     }
 
 
