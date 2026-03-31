@@ -768,3 +768,54 @@ def test_ingest_403_for_non_admin_role(client: TestClient):
     finally:
         app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
     assert r.status_code == 403
+
+
+def test_update_intake_200_admin_creates_audit(client: TestClient):
+    intake = IntakeProfile(
+        id=uuid.uuid4(),
+        patient_id=uuid.UUID(PATIENT_ID),
+        practitioner_id=None,
+        intake_json={
+            "profile_version": "generic_holistic_v0",
+            "chief_complaint": "Dolor lumbar mecánico.",
+            "conditions": ["lumbalgia subaguda"],
+            "goals": ["Reducir dolor"],
+        },
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = intake
+    db_session.execute.return_value = execute_result
+    captured: list[object] = []
+    db_session.add = MagicMock(side_effect=lambda o: captured.append(o))
+    db_session.commit = AsyncMock()
+    db_session.refresh = AsyncMock()
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-1", role="admin")
+    try:
+        body = _valid_intake_payload()
+        body["intake_json"]["chief_complaint"] = "Dolor lumbar con irradiación."
+        r = client.patch(f"/rag/intake/{PATIENT_ID}", json=body)
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+
+    assert r.status_code == 200
+    assert r.json()["intake_json"]["chief_complaint"] == "Dolor lumbar con irradiación."
+    assert len(captured) == 1
+    assert captured[0].__class__.__name__ == "IntakeProfileAudit"
+    assert captured[0].actor_sub == "admin-1"
+
+
+def test_update_intake_403_for_non_admin(client: TestClient):
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="clin-1", role="clinician")
+    try:
+        r = client.patch(f"/rag/intake/{PATIENT_ID}", json=_valid_intake_payload())
+    finally:
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+    assert r.status_code == 403

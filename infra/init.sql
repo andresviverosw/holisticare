@@ -64,3 +64,12 @@ CREATE TABLE IF NOT EXISTS intake_profiles (
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS intake_profile_audit (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id      UUID NOT NULL,
+    actor_sub       TEXT NOT NULL,
+    before_json     JSONB NOT NULL,
+    after_json      JSONB NOT NULL,
+    changed_at      TIMESTAMPTZ DEFAULT NOW()
+);

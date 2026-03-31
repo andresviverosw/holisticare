@@ -16,7 +16,11 @@ from app.services.plan_persistence import (
 )
 from app.services.chunk_query import list_clinical_chunks
 from app.services.ingestion_service import IngestionService
-from app.services.intake_service import get_intake_profile, save_intake_profile
+from app.services.intake_service import (
+    get_intake_profile,
+    save_intake_profile,
+    update_intake_profile_with_audit,
+)
 from app.services.intake_risk_service import analyze_intake_risk_flags
 
 router = APIRouter()
@@ -73,6 +77,11 @@ class IntakeSaveRequest(BaseModel):
     intake_json: GenericHolisticIntakeV0
 
 
+class IntakeUpdateRequest(BaseModel):
+    practitioner_id: Optional[UUID4] = None
+    intake_json: GenericHolisticIntakeV0
+
+
 # ─── Endpoints ────────────────────────────────────────────────
 
 @router.post("/ingest", response_model=IngestResponse)
@@ -122,6 +131,29 @@ async def get_intake(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     row = await get_intake_profile(db, patient_id=patient_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Intake not found")
+    return {
+        "patient_id": str(row.patient_id),
+        "practitioner_id": str(row.practitioner_id) if row.practitioner_id else None,
+        "intake_json": row.intake_json,
+    }
+
+
+@router.patch("/intake/{patient_id}")
+async def update_intake(
+    patient_id: UUID4,
+    request: IntakeUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthUser = Depends(require_roles("admin")),
+) -> dict[str, Any]:
+    row = await update_intake_profile_with_audit(
+        db,
+        patient_id=patient_id,
+        actor_sub=current_user.sub,
+        practitioner_id=request.practitioner_id,
+        intake_json=request.intake_json.model_dump(mode="json"),
+    )
     if row is None:
         raise HTTPException(status_code=404, detail="Intake not found")
     return {
