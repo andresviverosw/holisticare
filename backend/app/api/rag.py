@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_rag_pipeline
+from app.api.deps import get_ingestion_service, get_rag_pipeline
 from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
@@ -15,6 +15,7 @@ from app.services.plan_persistence import (
     persist_generated_plan,
 )
 from app.services.chunk_query import list_clinical_chunks
+from app.services.ingestion_service import IngestionService
 
 router = APIRouter()
 
@@ -70,13 +71,21 @@ class PlanApprovalRequest(BaseModel):
 async def trigger_ingestion(
     request: IngestRequest,
     db: AsyncSession = Depends(get_db),
+    ingestion_service: IngestionService = Depends(get_ingestion_service),
 ):
     """
     Admin endpoint — ingests PDFs from source_dir into pgvector.
     Idempotent: already-indexed chunks are skipped unless force_reindex=True.
     """
-    # TODO: wire to app.rag.ingestion.pipeline.run_ingestion()
-    raise HTTPException(status_code=501, detail="Ingestion pipeline not yet implemented")
+    _ = db
+    try:
+        result = ingestion_service.ingest(
+            source_dir=request.source_dir,
+            force_reindex=request.force_reindex,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return result
 
 
 @router.get("/chunks")

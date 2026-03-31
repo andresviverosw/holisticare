@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.main import app
 from app.models.treatment_plan import TreatmentPlan
 from app.rag.pipeline import RAGPipeline
+from app.api.deps import get_ingestion_service
 
 PATIENT_ID = str(uuid.uuid4())
 
@@ -530,3 +531,36 @@ def test_list_chunks_200_without_filters(client: TestClient):
 def test_list_chunks_422_when_limit_out_of_range(client: TestClient):
     r = client.get("/rag/chunks", params={"limit": 0})
     assert r.status_code == 422
+
+
+def test_ingest_200_returns_summary(client: TestClient):
+    fake_ingestion = MagicMock()
+    fake_ingestion.ingest.return_value = {
+        "files_processed": 2,
+        "chunks_created": 15,
+        "status": "success",
+    }
+    app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    try:
+        r = client.post("/rag/ingest", json={"source_dir": "data/mock", "force_reindex": False})
+    finally:
+        app.dependency_overrides.pop(get_ingestion_service, None)
+
+    assert r.status_code == 200
+    assert r.json()["files_processed"] == 2
+    assert r.json()["chunks_created"] == 15
+    assert r.json()["status"] == "success"
+    fake_ingestion.ingest.assert_called_once_with(source_dir="data/mock", force_reindex=False)
+
+
+def test_ingest_400_when_source_dir_missing(client: TestClient):
+    fake_ingestion = MagicMock()
+    fake_ingestion.ingest.side_effect = FileNotFoundError("Source directory not found: nope")
+    app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    try:
+        r = client.post("/rag/ingest", json={"source_dir": "nope"})
+    finally:
+        app.dependency_overrides.pop(get_ingestion_service, None)
+
+    assert r.status_code == 400
+    assert "Source directory not found" in r.json()["detail"]
