@@ -78,7 +78,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
 | US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Planned |
-| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Planned |
+| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Planned |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Planned |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Planned |
@@ -210,6 +210,23 @@ Implementation evidence (backend):
 - `POST /rag/diary` and `GET /rag/diary/patient/{patient_id}` with optional `date_from` / `date_to` query filters; list ordered by `entry_date` descending.
 - JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
 - Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
+
+### US-ANLY-001 - Outcome trends (baseline analytics)
+
+- Given diary check-ins in a date range, when a clinician requests analytics, then the API returns an ordered time series suitable for trend charts (pain, sleep, mood, function).
+- Given an invalid window (`date_from` after `date_to`, or span over 731 days), then the API returns `422` with a clear message.
+- Given role `patient`, when outcomes trend is requested, then access is denied (`403`); `clinician` and `admin` may query any patient in this slice.
+
+Test intent:
+- Unit: date window resolution and validation.
+- Integration: `GET /rag/analytics/patient/{patient_id}/outcomes-trend`.
+- E2E: deferred (dashboard charts).
+
+Implementation evidence (backend):
+- `GET /rag/analytics/patient/{patient_id}/outcomes-trend` with optional `date_from` / `date_to` (defaults: end = today, start = end − 90 days).
+- Series built from `patient_diary_entries`, ascending by `entry_date`, source tag `patient_diary_v0`.
+- Service: `backend/app/services/analytics_service.py`; diary range query: `list_diary_entries_in_date_range` in `diary_service.py`.
+- Tests: `backend/tests/test_analytics_api.py`, `backend/tests/test_analytics_service.py`.
 
 ### US-ANLY-002 - Plateau detection
 

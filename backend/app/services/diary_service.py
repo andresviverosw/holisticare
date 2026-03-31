@@ -57,3 +57,23 @@ async def list_diary_entries_for_patient(
     )
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def list_diary_entries_in_date_range(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+    date_from: date,
+    date_to: date,
+) -> list[PatientDiaryEntry]:
+    stmt = (
+        select(PatientDiaryEntry)
+        .where(
+            PatientDiaryEntry.patient_id == patient_id,
+            PatientDiaryEntry.entry_date >= date_from,
+            PatientDiaryEntry.entry_date <= date_to,
+        )
+        .order_by(PatientDiaryEntry.entry_date.asc())
+    )
+    result = await db.execute(stmt)
+    return list(result.scalars().all())

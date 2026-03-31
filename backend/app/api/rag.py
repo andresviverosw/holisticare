@@ -32,6 +32,7 @@ from app.services.intake_service import (
     update_intake_profile_with_audit,
 )
 from app.services.intake_risk_service import analyze_intake_risk_flags
+from app.services.analytics_service import get_patient_outcomes_trend_payload
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
 
@@ -330,6 +331,26 @@ async def list_patient_diary(
         "limit": limit,
         "offset": offset,
     }
+
+
+@router.get("/analytics/patient/{patient_id}/outcomes-trend")
+async def get_outcomes_trend(
+    patient_id: UUID4,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """Tendencias de dolor, sueño, ánimo y función desde el diario (eje temporal para gráficas)."""
+    try:
+        return await get_patient_outcomes_trend_payload(
+            db,
+            patient_id=patient_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.get("/chunks")
