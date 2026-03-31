@@ -70,7 +70,7 @@ Translate requirements into implementable product specifications, user stories, 
 |----------|------|------|--------|---------|----------|----------|--------|
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
-| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Planned |
+| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
@@ -116,6 +116,22 @@ Implementation evidence (backend):
 - `GET /rag/intake/{patient_id}/risk-flags` implemented with deterministic rule-based risk analysis.
 - Returns `404` when intake is missing and `503` fallback message if risk analysis fails unexpectedly.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for success and not-found contracts.
+
+### US-INT-003 - Intake edit with audit trail
+
+- Given an existing intake, when an admin updates it, then the latest intake state is persisted.
+- Given an intake update, when persistence completes, then an audit record stores before/after payload and actor identity.
+- Given non-admin user, when update is attempted, then operation is blocked with authorization error.
+
+Test intent:
+- Unit: audit payload composition and actor attribution.
+- Integration: admin-only update endpoint + audit persistence.
+- E2E: deferred.
+
+Implementation evidence (backend):
+- `PATCH /rag/intake/{patient_id}` implemented as admin-only.
+- `intake_profile_audit` persistence added (`before_json`, `after_json`, `actor_sub`, `changed_at`).
+- Regression tests in `backend/tests/test_plan_generate_api.py` for admin success and non-admin forbidden.
 
 ### US-PLAN-001 - Draft treatment plan generation
 

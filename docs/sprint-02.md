@@ -1,11 +1,11 @@
-# Sprint 2 — Backend: US-INT-001 / US-INT-002 (intake persistence and risk flags)
+# Sprint 2 — Backend: US-INT-001 / US-INT-002 / US-INT-003 (intake persistence, risk flags, and audit trail)
 
 ## Sprint parameters
 
 | Field | Value |
 |-------|--------|
 | Length | 1 week |
-| Primary story | US-INT-001, US-INT-002 |
+| Primary story | US-INT-001, US-INT-002, US-INT-003 |
 | Scope | Backend API + persistence + pytest |
 | E2E | Deferred |
 
@@ -25,6 +25,7 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
   - `POST /rag/plan/generate` (`clinician` or `admin`)
   - `PATCH /rag/plan/{plan_id}/approve` (`clinician` or `admin`)
   - `POST /rag/ingest` (`admin`)
+- `PATCH /rag/intake/{patient_id}` admin-only update with persisted `intake_profile_audit` records.
 
 ## Test evidence
 
@@ -36,10 +37,11 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
   - `test_get_intake_risk_flags_404_when_intake_missing`
   - `test_generate_plan_401_when_not_authenticated`
   - `test_ingest_403_for_non_admin_role`
-- Full backend suite after this slice: `50 passed`.
+  - `test_update_intake_200_admin_creates_audit`
+  - `test_update_intake_403_for_non_admin`
+- Full backend suite after this slice: `52 passed`.
 
 ## Risks / follow-ups
 
-- No field-level audit trail for intake edits yet.
 - UI and E2E flow still pending.
 - Risk flags are deterministic heuristics for now (LLM-assisted interpretation deferred).
