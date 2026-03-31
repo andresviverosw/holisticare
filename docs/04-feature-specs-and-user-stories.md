@@ -69,7 +69,7 @@ Translate requirements into implementable product specifications, user stories, 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
-| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Planned |
+| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Planned |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
@@ -111,6 +111,11 @@ Test intent:
 - Unit: risk output parser and severity mapping.
 - Integration: LLM call contract, timeout, and fallback path.
 - E2E: generate and acknowledge risk flags.
+
+Implementation evidence (backend):
+- `GET /rag/intake/{patient_id}/risk-flags` implemented with deterministic rule-based risk analysis.
+- Returns `404` when intake is missing and `503` fallback message if risk analysis fails unexpectedly.
+- Regression tests in `backend/tests/test_plan_generate_api.py` for success and not-found contracts.
 
 ### US-PLAN-001 - Draft treatment plan generation
 
