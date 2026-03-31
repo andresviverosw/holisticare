@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import bindparam, select, text
@@ -91,4 +92,41 @@ async def get_plan_sources_payload(
         "plan_id": str(plan_row.id),
         "citations_used": citations,
         "sources": sources,
+    }
+
+
+async def apply_plan_approval_action(
+    db: AsyncSession,
+    *,
+    plan_id: uuid.UUID,
+    action: str,
+    practitioner_notes: str | None = None,
+    edited_plan_json: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    plan_row = await get_persisted_plan(db, plan_id=plan_id)
+    if plan_row is None:
+        return None
+
+    new_status = "approved" if action == "approve" else "rejected"
+    updated_json = dict(plan_row.plan_json)
+    if edited_plan_json:
+        updated_json.update(edited_plan_json)
+    updated_json["status"] = new_status
+    if practitioner_notes:
+        updated_json["practitioner_notes"] = practitioner_notes
+
+    plan_row.status = new_status
+    plan_row.plan_json = updated_json
+    if practitioner_notes:
+        plan_row.approved_at = datetime.now(timezone.utc)
+    if plan_row.practitioner_id:
+        plan_row.approved_by = plan_row.practitioner_id
+
+    await db.commit()
+    await db.refresh(plan_row)
+    return {
+        "plan_id": str(plan_row.id),
+        "status": plan_row.status,
+        "practitioner_notes": practitioner_notes,
+        "plan_json": plan_row.plan_json,
     }

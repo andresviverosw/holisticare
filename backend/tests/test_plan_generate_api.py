@@ -352,3 +352,109 @@ def test_get_plan_sources_200_empty_when_no_citations(client: TestClient):
 
     assert r.status_code == 200
     assert r.json()["sources"] == []
+
+
+def test_approve_plan_200_updates_status_and_notes(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=uuid.uuid4(),
+        status="pending_review",
+        plan_json={"plan_id": str(plan_id), "status": "pending_review"},
+        citations_used=[],
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = persisted
+    db_session.execute.return_value = execute_result
+    db_session.commit = AsyncMock()
+    db_session.refresh = AsyncMock()
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.patch(
+            f"/rag/plan/{plan_id}/approve",
+            json={
+                "action": "approve",
+                "practitioner_notes": "Aprobado con ajustes de intensidad.",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["plan_id"] == str(plan_id)
+    assert payload["status"] == "approved"
+    assert payload["practitioner_notes"] == "Aprobado con ajustes de intensidad."
+    assert payload["plan_json"]["status"] == "approved"
+    assert payload["plan_json"]["practitioner_notes"] == "Aprobado con ajustes de intensidad."
+    db_session.commit.assert_awaited_once()
+    db_session.refresh.assert_awaited_once()
+
+
+def test_approve_plan_200_reject_updates_status(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=uuid.uuid4(),
+        status="pending_review",
+        plan_json={"plan_id": str(plan_id), "status": "pending_review"},
+        citations_used=[],
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = persisted
+    db_session.execute.return_value = execute_result
+    db_session.commit = AsyncMock()
+    db_session.refresh = AsyncMock()
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.patch(
+            f"/rag/plan/{plan_id}/approve",
+            json={"action": "reject", "practitioner_notes": "No alineado con evolución clínica."},
+        )
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["status"] == "rejected"
+    assert payload["plan_json"]["status"] == "rejected"
+
+
+def test_approve_plan_404_when_not_found(client: TestClient):
+    plan_id = uuid.uuid4()
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.patch(f"/rag/plan/{plan_id}/approve", json={"action": "approve"})
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 404
+
+
+def test_approve_plan_422_when_action_invalid(client: TestClient):
+    plan_id = uuid.uuid4()
+    r = client.patch(f"/rag/plan/{plan_id}/approve", json={"action": "other"})
+    assert r.status_code == 422

@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
 from app.services.plan_persistence import (
+    apply_plan_approval_action,
     get_persisted_plan,
     get_plan_sources_payload,
     persist_generated_plan,
@@ -52,6 +53,14 @@ class PlanApprovalRequest(BaseModel):
     action: str  # "approve" | "reject"
     practitioner_notes: Optional[str] = None
     edited_plan_json: Optional[dict] = None  # if practitioner edits before approving
+
+    @field_validator("action")
+    @classmethod
+    def validate_action(cls, v: str) -> str:
+        value = v.strip().lower()
+        if value not in {"approve", "reject"}:
+            raise ValueError("La accion debe ser 'approve' o 'reject'.")
+        return value
 
 
 # ─── Endpoints ────────────────────────────────────────────────
@@ -122,8 +131,16 @@ async def approve_plan(
     Practitioner approval gate. Plans must be approved before
     being linked to patient's active record. Required for NOM-024 compliance.
     """
-    # TODO: update treatment_plans.status, log approval, link to patient record
-    raise HTTPException(status_code=501, detail="Not yet implemented")
+    payload = await apply_plan_approval_action(
+        db,
+        plan_id=plan_id,
+        action=request.action,
+        practitioner_notes=request.practitioner_notes,
+        edited_plan_json=request.edited_plan_json,
+    )
+    if payload is None:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return payload
 
 
 @router.get("/plan/{plan_id}")
