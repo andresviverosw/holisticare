@@ -1,13 +1,21 @@
+from datetime import date
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import AuthUser, get_ingestion_service, get_rag_pipeline, require_roles
+from app.api.deps import (
+    AuthUser,
+    ensure_diary_subject_access,
+    get_ingestion_service,
+    get_rag_pipeline,
+    require_roles,
+)
 from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
+from app.schemas.diary_v0 import PatientDiaryCheckinV0
 from app.schemas.session_v0 import ClinicalSessionLogV0
 from app.services.plan_persistence import (
     apply_plan_approval_action,
@@ -24,6 +32,7 @@ from app.services.intake_service import (
     update_intake_profile_with_audit,
 )
 from app.services.intake_risk_service import analyze_intake_risk_flags
+from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
 
 router = APIRouter()
@@ -89,6 +98,11 @@ class SessionCreateRequest(BaseModel):
     patient_id: UUID4
     practitioner_id: Optional[UUID4] = None
     session_log: ClinicalSessionLogV0
+
+
+class DiarySaveRequest(BaseModel):
+    patient_id: UUID4
+    checkin: PatientDiaryCheckinV0
 
 
 # ─── Endpoints ────────────────────────────────────────────────
@@ -254,6 +268,62 @@ async def list_patient_sessions(
                 "practitioner_id": str(r.practitioner_id) if r.practitioner_id else None,
                 "occurred_at": r.occurred_at.isoformat(),
                 "session_log": r.session_json,
+            }
+            for r in rows
+        ],
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@router.post("/diary")
+async def save_diary_checkin(
+    request: DiarySaveRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthUser = Depends(require_roles("patient", "clinician", "admin")),
+) -> dict[str, Any]:
+    """Registro diario de dolor, sueño, ánimo y función (un registro por día y paciente)."""
+    ensure_diary_subject_access(current_user, request.patient_id)
+    row = await upsert_diary_entry(
+        db,
+        patient_id=request.patient_id,
+        checkin=request.checkin,
+    )
+    return {
+        "entry_id": str(row.id),
+        "patient_id": str(row.patient_id),
+        "entry_date": row.entry_date.isoformat(),
+        "checkin": row.diary_json,
+    }
+
+
+@router.get("/diary/patient/{patient_id}")
+async def list_patient_diary(
+    patient_id: UUID4,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthUser = Depends(require_roles("patient", "clinician", "admin")),
+) -> dict[str, Any]:
+    ensure_diary_subject_access(current_user, patient_id)
+    rows = await list_diary_entries_for_patient(
+        db,
+        patient_id=patient_id,
+        date_from=date_from,
+        date_to=date_to,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "patient_id": str(patient_id),
+        "items": [
+            {
+                "entry_id": str(r.id),
+                "patient_id": str(r.patient_id),
+                "entry_date": r.entry_date.isoformat(),
+                "checkin": r.diary_json,
             }
             for r in rows
         ],

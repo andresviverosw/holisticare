@@ -76,7 +76,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
-| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Planned |
+| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
 | US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Planned |
 | US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Planned |
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Planned |
@@ -203,6 +203,13 @@ Test intent:
 - Unit: diary validation and score normalization.
 - Integration: diary API + storage.
 - E2E: patient submit -> clinician visibility.
+
+Implementation evidence (backend):
+- `patient_diary_v0` schema (`pain_nrs_0_10`, `sleep_quality_0_10`, `mood_0_10`, `function_0_10`, `checkin_date`) in `backend/app/schemas/diary_v0.py`.
+- `patient_diary_entries` table with unique `(patient_id, entry_date)`; ORM `PatientDiaryEntry`; upsert in `backend/app/services/diary_service.py`.
+- `POST /rag/diary` and `GET /rag/diary/patient/{patient_id}` with optional `date_from` / `date_to` query filters; list ordered by `entry_date` descending.
+- JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
+- Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
 
 ### US-ANLY-002 - Plateau detection
 

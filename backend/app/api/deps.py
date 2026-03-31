@@ -1,5 +1,9 @@
 """FastAPI dependencies — override in tests via app.dependency_overrides for CI-safe runs."""
 
+from __future__ import annotations
+
+import uuid
+
 from pydantic import BaseModel
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -50,3 +54,15 @@ def require_roles(*allowed_roles: str):
         return user
 
     return _checker
+
+
+def ensure_diary_subject_access(user: AuthUser, patient_id: uuid.UUID) -> None:
+    """Patients may only read/write diary data for their own patient_id (sub must be that UUID)."""
+    if user.role != "patient":
+        return
+    try:
+        sub_id = uuid.UUID(user.sub)
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail="Forbidden") from exc
+    if sub_id != patient_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
