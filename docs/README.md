@@ -30,6 +30,7 @@ This directory contains the six core documentation phases for the AI4devs master
 
 - `sprint-01.md` - Sprint 1 (backend, US-PLAN-001, generic holistic intake v0)
 - `sprint-02.md` - Sprint 2 (backend, US-INT-001 intake persistence/retrieval API slice)
+- `sprint-03.md` - Sprint 3 (backend, US-SESS-001 structured session logging)
 
 ## Suggested cadence
 

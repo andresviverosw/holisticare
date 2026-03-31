@@ -8,6 +8,7 @@ from app.api.deps import AuthUser, get_ingestion_service, get_rag_pipeline, requ
 from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
+from app.schemas.session_v0 import ClinicalSessionLogV0
 from app.services.plan_persistence import (
     apply_plan_approval_action,
     get_persisted_plan,
@@ -23,6 +24,7 @@ from app.services.intake_service import (
     update_intake_profile_with_audit,
 )
 from app.services.intake_risk_service import analyze_intake_risk_flags
+from app.services.session_service import create_care_session, list_care_sessions_for_patient
 
 router = APIRouter()
 
@@ -81,6 +83,12 @@ class IntakeSaveRequest(BaseModel):
 class IntakeUpdateRequest(BaseModel):
     practitioner_id: Optional[UUID4] = None
     intake_json: GenericHolisticIntakeV0
+
+
+class SessionCreateRequest(BaseModel):
+    patient_id: UUID4
+    practitioner_id: Optional[UUID4] = None
+    session_log: ClinicalSessionLogV0
 
 
 # ─── Endpoints ────────────────────────────────────────────────
@@ -198,6 +206,59 @@ async def get_intake_audit(
     return {
         "patient_id": str(patient_id),
         "audit": audit,
+    }
+
+
+@router.post("/sessions")
+async def create_session(
+    request: SessionCreateRequest,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """Registro estructurado de sesión clínica (intervenciones y observaciones)."""
+    row = await create_care_session(
+        db,
+        patient_id=request.patient_id,
+        practitioner_id=request.practitioner_id,
+        session_log=request.session_log,
+    )
+    return {
+        "session_id": str(row.id),
+        "patient_id": str(row.patient_id),
+        "practitioner_id": str(row.practitioner_id) if row.practitioner_id else None,
+        "occurred_at": row.occurred_at.isoformat(),
+        "session_log": row.session_json,
+    }
+
+
+@router.get("/sessions/patient/{patient_id}")
+async def list_patient_sessions(
+    patient_id: UUID4,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    rows = await list_care_sessions_for_patient(
+        db,
+        patient_id=patient_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "patient_id": str(patient_id),
+        "items": [
+            {
+                "session_id": str(r.id),
+                "patient_id": str(r.patient_id),
+                "practitioner_id": str(r.practitioner_id) if r.practitioner_id else None,
+                "occurred_at": r.occurred_at.isoformat(),
+                "session_log": r.session_json,
+            }
+            for r in rows
+        ],
+        "limit": limit,
+        "offset": offset,
     }
 
 

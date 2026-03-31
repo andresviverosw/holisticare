@@ -74,7 +74,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
-| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Planned |
+| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Planned |
 | US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Planned |
@@ -133,6 +133,23 @@ Implementation evidence (backend):
 - `intake_profile_audit` persistence added (`before_json`, `after_json`, `actor_sub`, `changed_at`).
 - `GET /rag/intake/{patient_id}/audit` implemented as admin-only, returning newest-first audit entries.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for update success, audit retrieval (`200/404`), and non-admin forbidden (`403`).
+
+### US-SESS-001 - Structured session logging
+
+- Given a clinical encounter, when the clinician submits a session log, then interventions and observations are stored in a structured, validated payload.
+- Given prior sessions for a patient, when the clinician lists session history, then entries are returned in reverse chronological order by session time.
+- Given an unauthenticated caller, when create or list is attempted, then the API returns `401`.
+
+Test intent:
+- Unit: `clinical_session_v0` validation (required interventions, observations).
+- Integration: `POST /rag/sessions` and `GET /rag/sessions/patient/{patient_id}` with persistence.
+- E2E: deferred (UI session form).
+
+Implementation evidence (backend):
+- `clinical_session_v0` schema in `backend/app/schemas/session_v0.py`.
+- `care_sessions` table and model; service layer `backend/app/services/session_service.py`.
+- `POST /rag/sessions` and `GET /rag/sessions/patient/{patient_id}` (JWT roles `clinician` or `admin`).
+- Contract tests in `backend/tests/test_session_api.py`.
 
 ### US-PLAN-001 - Draft treatment plan generation
 

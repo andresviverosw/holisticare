@@ -73,3 +73,17 @@ CREATE TABLE IF NOT EXISTS intake_profile_audit (
     after_json      JSONB NOT NULL,
     changed_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ─── Care sessions (clinical visit log) ───────────────────────
+CREATE TABLE IF NOT EXISTS care_sessions (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id      UUID NOT NULL,
+    practitioner_id UUID,
+    occurred_at     TIMESTAMPTZ NOT NULL,
+    session_json    JSONB NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS care_sessions_patient_occurred_idx
+    ON care_sessions (patient_id, occurred_at DESC);
