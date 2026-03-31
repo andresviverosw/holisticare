@@ -71,9 +71,9 @@ Translate requirements into implementable product specifications, user stories, 
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Planned |
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Planned |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Planned |
-| US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Planned |
-| US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Planned |
-| US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Planned |
+| US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
+| US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
+| US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Planned |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Planned |
@@ -141,6 +141,12 @@ Test intent:
 - Unit: status transition rules.
 - Integration: audit event persistence.
 - E2E: approve/reject flow and activation guard.
+
+Implementation evidence (backend):
+- `PATCH /rag/plan/{plan_id}/approve` implemented with action validation (`approve|reject`) and persistence updates.
+- `GET /rag/plan/{plan_id}` implemented to read persisted `plan_json`.
+- `GET /rag/plan/{plan_id}/sources` implemented with citation-ordered source payload.
+- Regression tests in `backend/tests/test_plan_generate_api.py` for generate/persist/retrieve/sources/approval flows.
 
 ### US-DIARY-001 - Daily patient diary
 
@@ -214,7 +220,7 @@ Release definition:
 
 ## Completion checklist
 
-- [ ] All MVP features have specs
-- [ ] User stories are testable
-- [ ] Acceptance criteria are unambiguous
-- [ ] Release priorities agreed
+- [x] All MVP features have specs
+- [x] User stories are testable
+- [x] Acceptance criteria are unambiguous
+- [x] Release priorities agreed

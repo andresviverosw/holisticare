@@ -27,7 +27,10 @@ Deliver a working `POST /rag/plan/generate` that:
 3. Returns an explicit **insufficiency** state when retrieval/context is inadequate (no silent hallucination).
 4. Marks draft plans as requiring practitioner review (align with existing generator validation tests).
 
-Out of scope for this sprint: persistence of plans to DB, approval endpoints, frontend, full US-INT-001 intake CRUD.
+Stretch scope completed during Sprint 1 backend execution:
+- Persist generated drafts to `treatment_plans`.
+- Retrieve persisted plans and cited sources.
+- Practitioner approval/rejection endpoint.
 
 ## API contract (v0)
 
@@ -82,6 +85,10 @@ Future extension (not Sprint 1): `intake_json.profile_version: nmg_v1` with addi
 - [x] Rama explícita sin chunks tras rerank: `insufficient_evidence: true` + `confidence_note` en español (`app/rag/pipeline.py`).
 - [x] `pytest`: `test_intake_v0.py`, `test_plan_generate_api.py`, `test_pipeline_insufficient.py`, `test_rag.py`.
 - [x] CI discipline: GitHub Actions pytest (`.github/workflows/ci.yml`), `dependency_overrides` + `conftest.py` env defaults (sin PostgreSQL ni API keys para la suite por defecto).
+- [x] Persistencia de planes draft en `treatment_plans` (incluye `insufficient_evidence=true` cuando aplica).
+- [x] `GET /rag/plan/{plan_id}` implementado.
+- [x] `GET /rag/plan/{plan_id}/sources` implementado con orden determinístico según `citations_used`.
+- [x] `PATCH /rag/plan/{plan_id}/approve` implementado (`approve|reject`) con actualización de estado en DB.
 - [ ] No secrets logged (revisión continua); compose: usar `scripts/compose-config-safe.ps1`.
 
 ## Test outline (pytest)
@@ -90,8 +97,14 @@ Future extension (not Sprint 1): `intake_json.profile_version: nmg_v1` with addi
 |-------|--------|
 | Unit | `intake_json` validation — missing required fields, wrong types, empty `conditions`/`goals`. |
 | Unit | Plan output schema / citation rules (extend existing `test_rag.py` patterns). |
-| Integration | `POST /rag/plan/generate` with fixture body — 200 + shape; optional mock LLM/retrieve if needed for CI. |
-| Deferred | E2E UI, DB persistence for `treatment_plans`. |
+| Integration | `POST /rag/plan/generate` with fixture body — 200 + shape; persistence path mocked for CI. |
+| Integration | `GET /rag/plan/{plan_id}`, `GET /rag/plan/{plan_id}/sources`, `PATCH /rag/plan/{plan_id}/approve` contracts. |
+| Deferred | E2E UI flows and real DB integration tests in containerized environment. |
+
+## Test evidence snapshot
+
+- Backend suite status after latest slice: `35 passed`.
+- Key files: `backend/tests/test_plan_generate_api.py`, `backend/tests/test_plan_persistence.py`, `backend/tests/test_pipeline_insufficient.py`.
 
 ## Handoff template (end of sprint)
 
