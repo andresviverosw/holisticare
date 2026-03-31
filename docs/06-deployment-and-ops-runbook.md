@@ -1,0 +1,114 @@
+# Phase 6 - Deployment and Ops Runbook
+
+## Document control
+
+- Owner:
+- Contributors:
+- Version:
+- Last updated:
+- Status: `[ ]` Draft `[~]` In progress `[x]` Complete
+
+## 1. Objective
+
+Define repeatable deployment, monitoring, incident response, backup, and maintenance procedures for HolistiCare.
+
+## 2. Environments and infrastructure
+
+| Environment | Purpose | Region | Stack | Access model |
+|-------------|---------|--------|-------|--------------|
+| Dev |  |  |  |  |
+| Staging |  |  |  |  |
+| Prod |  |  |  |  |
+
+## 3. Release process
+
+1. Build artifacts
+2. Run quality gates
+3. Deploy to staging
+4. Validate smoke tests
+5. Approve production deployment
+6. Post-deploy verification
+
+## 4. Deployment checklist
+
+- [ ] Configuration and secrets validated
+- [ ] Database migrations reviewed
+- [ ] Backward compatibility check complete
+- [ ] Rollback plan confirmed
+- [ ] Monitoring dashboards ready
+
+## 5. Runtime operations
+
+### 5.1 Service health
+
+- API health endpoints:
+- Worker health:
+- Queue health:
+- DB and vector index health:
+
+### 5.2 Observability
+
+- Logs:
+- Metrics:
+- Traces:
+- Alert thresholds:
+
+## 6. Incident response
+
+### Severity model
+
+- Sev-1:
+- Sev-2:
+- Sev-3:
+
+### Incident workflow
+
+1. Detect and classify
+2. Contain impact
+3. Diagnose root cause
+4. Recover services
+5. Document postmortem
+
+## 7. Backup, restore, and disaster recovery
+
+- Backup frequency:
+- Retention:
+- Restore procedure:
+- Recovery time objective (RTO):
+- Recovery point objective (RPO):
+
+## 8. Security operations
+
+- Secrets management:
+- Key rotation:
+- Vulnerability scanning:
+- Access review cadence:
+
+## 9. Data governance operations
+
+- Retention enforcement:
+- Deletion workflows:
+- Consent revocation handling:
+- Audit evidence collection:
+
+## 10. Cost and capacity management
+
+- Capacity baseline:
+- Scaling policy:
+- Monthly cost tracking:
+- Optimization actions:
+
+## 11. Maintenance calendar
+
+- Dependency updates:
+- Model and prompt reviews:
+- Compliance audits:
+- Runbook drills:
+
+## Completion checklist
+
+- [ ] Deployment process tested end-to-end
+- [ ] Rollback and restore drills completed
+- [ ] Monitoring and alerts operational
+- [ ] Incident workflow validated
+- [ ] Security and governance tasks scheduled

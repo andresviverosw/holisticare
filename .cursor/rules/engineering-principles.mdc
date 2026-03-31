@@ -1,0 +1,34 @@
+---
+description: Enforce TDD with SOLID and DRY
+alwaysApply: true
+---
+
+# Engineering Principles
+
+## TDD is mandatory
+
+- Red -> Green -> Refactor for every feature and bugfix.
+- Start by writing or updating a failing test that proves behavior.
+- Implement only the minimum code to pass tests.
+- Refactor only after tests are green.
+- Do not merge code without relevant automated tests.
+
+## SOLID expectations
+
+- **S**: one reason to change per class/module.
+- **O**: extend behavior via composition/abstractions, avoid risky modifications.
+- **L**: derived types must preserve parent contracts.
+- **I**: prefer focused interfaces over broad ones.
+- **D**: depend on abstractions, inject concrete dependencies.
+
+## DRY expectations
+
+- Eliminate repeated business rules, validation logic, and mapping code.
+- Extract reusable helpers only after duplication appears in at least two places.
+- Keep one canonical source for each domain rule and constant.
+
+## Definition of done
+
+- Tests added/updated first and passing.
+- No unnecessary duplication introduced.
+- Design choices documented when trade-offs affect SOLID.

@@ -1,0 +1,230 @@
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ragApi } from "../services/api";
+
+const EVIDENCE_COLORS = { A: "badge-green", B: "badge-yellow", C: "badge-gray" };
+
+function TherapyCard({ therapy }) {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-sm capitalize text-neutral-800">{therapy.type}</span>
+        <span className="badge-gray badge">{therapy.frequency}</span>
+        {therapy.duration_minutes && (
+          <span className="badge-gray badge">{therapy.duration_minutes} min</span>
+        )}
+      </div>
+      <p className="text-sm text-neutral-600">{therapy.rationale}</p>
+      {therapy.citations?.length > 0 && (
+        <div className="flex flex-wrap gap-1 pt-1">
+          {therapy.citations.map((ref) => (
+            <span key={ref} className="badge badge-green text-xs font-mono">{ref}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WeekPanel({ week }) {
+  return (
+    <div className="card space-y-4">
+      <h3 className="font-semibold text-neutral-800">Semana {week.week}</h3>
+
+      {/* Goals */}
+      <div>
+        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Objetivos</p>
+        <ul className="list-disc list-inside space-y-1">
+          {week.goals?.map((g, i) => (
+            <li key={i} className="text-sm text-neutral-700">{g}</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Therapies */}
+      <div>
+        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Terapias</p>
+        <div className="space-y-2">
+          {week.therapies?.map((t, i) => <TherapyCard key={i} therapy={t} />)}
+        </div>
+      </div>
+
+      {/* Contraindications */}
+      {week.contraindications_flagged?.length > 0 && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+          <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">
+            ⚠️ Contraindicaciones detectadas
+          </p>
+          <ul className="list-disc list-inside space-y-1">
+            {week.contraindications_flagged.map((c, i) => (
+              <li key={i} className="text-sm text-red-700">{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Outcome checkpoints */}
+      <div>
+        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">
+          Puntos de evaluación
+        </p>
+        <ul className="list-disc list-inside space-y-1">
+          {week.outcome_checkpoints?.map((o, i) => (
+            <li key={i} className="text-sm text-neutral-600">{o}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default function PlanReview() {
+  const { planId } = useParams();
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [approving, setApproving] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [actionDone, setActionDone] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    ragApi.getPlan(planId)
+      .then((res) => setPlan(res.data))
+      .catch(() => setError("No se pudo cargar el plan."))
+      .finally(() => setLoading(false));
+  }, [planId]);
+
+  async function handleDecision(action) {
+    setApproving(true);
+    setError(null);
+    try {
+      await ragApi.approvePlan(planId, action, notes || null);
+      setActionDone(action);
+      setPlan((p) => ({ ...p, status: action === "approve" ? "approved" : "rejected" }));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Error al procesar la decisión.");
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  if (loading) return <div className="p-8 text-neutral-500">Cargando plan…</div>;
+  if (error && !plan) return <div className="p-8 text-red-600">{error}</div>;
+
+  const statusColors = {
+    pending_review: "badge-yellow",
+    approved: "badge-green",
+    rejected: "badge-red",
+    active: "badge-green",
+  };
+
+  return (
+    <div className="p-8 max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <Link to="/dashboard" className="text-sm text-brand-600 hover:underline">
+            ← Volver
+          </Link>
+          <h1 className="text-2xl font-bold text-neutral-900 mt-2">Revisión del plan</h1>
+          <p className="text-xs text-neutral-400 font-mono mt-1">{planId}</p>
+        </div>
+        <span className={`badge text-sm ${statusColors[plan?.status] || "badge-gray"}`}>
+          {plan?.status?.replace("_", " ")}
+        </span>
+      </div>
+
+      {/* Confidence note */}
+      {plan?.confidence_note && (
+        <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
+          <span className="font-semibold">Nota del modelo: </span>{plan.confidence_note}
+        </div>
+      )}
+
+      {/* Retrieval metadata */}
+      {plan?.retrieval_metadata && (
+        <div className="card text-xs text-neutral-500 space-y-1">
+          <p className="font-semibold text-neutral-700 text-sm mb-2">Metadatos de recuperación</p>
+          <p>Consultas generadas: {plan.retrieval_metadata.queries_used?.length}</p>
+          <p>Candidatos recuperados: {plan.retrieval_metadata.candidates_retrieved}</p>
+          <p>Chunks enviados al LLM: {plan.retrieval_metadata.chunks_passed_to_llm}</p>
+          <p>Reranker: {plan.retrieval_metadata.reranker_backend}</p>
+        </div>
+      )}
+
+      {/* Weekly plan */}
+      <div className="space-y-4">
+        {plan?.weeks?.map((week) => <WeekPanel key={week.week} week={week} />)}
+      </div>
+
+      {/* Citations */}
+      {plan?.citations_used?.length > 0 && (
+        <div className="card">
+          <p className="text-sm font-semibold text-neutral-700 mb-2">Fuentes utilizadas</p>
+          <div className="flex flex-wrap gap-2">
+            {plan.citations_used.map((ref) => (
+              <span key={ref} className="badge badge-green font-mono">{ref}</span>
+            ))}
+          </div>
+          <Link
+            to={`/plan/${planId}/sources`}
+            className="text-xs text-brand-600 hover:underline mt-3 block"
+          >
+            Ver contenido completo de las fuentes →
+          </Link>
+        </div>
+      )}
+
+      {/* Approval gate — only shown when pending */}
+      {plan?.status === "pending_review" && !actionDone && (
+        <div className="card border-yellow-200 bg-yellow-50 space-y-4">
+          <p className="text-sm font-semibold text-yellow-800">
+            ⚠️ Este plan requiere revisión y aprobación antes de activarse (NOM-024-SSA3-2012)
+          </p>
+          <div>
+            <label className="label">Notas del practicante (opcional)</label>
+            <textarea
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="input"
+              placeholder="Ajustes realizados, observaciones clínicas…"
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-red-600">{error}</p>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleDecision("approve")}
+              disabled={approving}
+              className="btn-primary"
+            >
+              {approving ? "Procesando…" : "✓ Aprobar plan"}
+            </button>
+            <button
+              onClick={() => handleDecision("reject")}
+              disabled={approving}
+              className="btn-danger"
+            >
+              ✕ Rechazar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Action confirmation */}
+      {actionDone && (
+        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
+          actionDone === "approve"
+            ? "bg-brand-50 border border-brand-200 text-brand-700"
+            : "bg-red-50 border border-red-200 text-red-700"
+        }`}>
+          {actionDone === "approve"
+            ? "✓ Plan aprobado y vinculado al expediente del paciente."
+            : "✕ Plan rechazado. No será activado."}
+        </div>
+      )}
+    </div>
+  );
+}

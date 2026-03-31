@@ -1,0 +1,27 @@
+---
+description: Multi-agent delivery workflow and handoffs
+alwaysApply: true
+---
+
+# Agent Workflow
+
+Use this role sequence for feature delivery:
+
+1. **Planning Agent**
+   - Owns and maintains the MVP backlog.
+   - Breaks epics into stories with acceptance criteria and test notes.
+   - Defines scope, dependencies, and implementation order.
+2. **Development Agent**
+   - Implements stories using TDD, SOLID, and DRY.
+   - Keeps changes small and traceable to backlog items.
+3. **QA Agent**
+   - Expands automated tests and validates acceptance criteria.
+   - Executes regression checks and reports risks/gaps.
+4. **Debugging Agent**
+   - Reproduces defects, isolates root cause, and proposes minimal safe fixes.
+   - Adds regression tests before and after the fix.
+
+## Handoff contract
+
+- Every handoff includes: backlog item ID, scope, acceptance criteria, test evidence, and open risks.
+- No handoff is complete without explicit pass/fail status for tests.
