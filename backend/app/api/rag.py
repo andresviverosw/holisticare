@@ -8,7 +8,11 @@ from app.api.deps import get_rag_pipeline
 from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
-from app.services.plan_persistence import persist_generated_plan
+from app.services.plan_persistence import (
+    get_persisted_plan,
+    get_plan_sources_payload,
+    persist_generated_plan,
+)
 
 router = APIRouter()
 
@@ -128,8 +132,10 @@ async def get_plan(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a treatment plan including its citations."""
-    # TODO: fetch from treatment_plans table
-    raise HTTPException(status_code=501, detail="Not yet implemented")
+    plan_row = await get_persisted_plan(db, plan_id=plan_id)
+    if plan_row is None:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return plan_row.plan_json
 
 
 @router.get("/plan/{plan_id}/sources")
@@ -141,5 +147,7 @@ async def get_plan_sources(
     Retrieve the source clinical chunks that were used to generate a plan.
     Supports practitioner transparency and audit trail.
     """
-    # TODO: join treatment_plans.citations_used → clinical_chunks
-    raise HTTPException(status_code=501, detail="Not yet implemented")
+    payload = await get_plan_sources_payload(db, plan_id=plan_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return payload

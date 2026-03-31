@@ -186,3 +186,169 @@ def test_plan_generate_insufficient_evidence_still_persisted(client: TestClient)
     assert isinstance(row, TreatmentPlan)
     assert row.plan_json["insufficient_evidence"] is True
     db_session.commit.assert_awaited_once()
+
+
+def test_get_plan_200_returns_persisted_json(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=None,
+        status="pending_review",
+        plan_json={
+            "plan_id": str(plan_id),
+            "status": "pending_review",
+            "weeks": [],
+            "citations_used": [],
+        },
+        citations_used=[],
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = persisted
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.json()["plan_id"] == str(plan_id)
+    assert r.json()["status"] == "pending_review"
+    db_session.execute.assert_awaited_once()
+
+
+def test_get_plan_404_when_not_found(client: TestClient):
+    plan_id = uuid.uuid4()
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 404
+
+
+def test_get_plan_sources_200_returns_chunk_metadata(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=None,
+        status="pending_review",
+        plan_json={"plan_id": str(plan_id), "citations_used": ["REF-A", "REF-B"]},
+        citations_used=["REF-A", "REF-B"],
+    )
+
+    plan_result = MagicMock()
+    plan_result.scalar_one_or_none.return_value = persisted
+
+    chunks_result = MagicMock()
+    chunks_result.mappings.return_value.all.return_value = [
+        {
+            "ref_id": "REF-B",
+            "content": "Chunk B",
+            "source_file": "guide-b.pdf",
+            "page_number": 5,
+            "section": "dosificacion",
+            "language": "es",
+            "evidence_level": "A",
+            "has_contraindication": True,
+        },
+        {
+            "ref_id": "REF-A",
+            "content": "Chunk A",
+            "source_file": "guide-a.pdf",
+            "page_number": 2,
+            "section": "contraindicaciones",
+            "language": "es",
+            "evidence_level": "B",
+            "has_contraindication": False,
+        },
+    ]
+
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock(side_effect=[plan_result, chunks_result])
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}/sources")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["plan_id"] == str(plan_id)
+    assert payload["citations_used"] == ["REF-A", "REF-B"]
+    assert len(payload["sources"]) == 2
+    # Response order must follow citations_used order.
+    assert payload["sources"][0]["ref_id"] == "REF-A"
+    assert payload["sources"][1]["ref_id"] == "REF-B"
+    assert payload["sources"][1]["has_contraindication"] is True
+
+
+def test_get_plan_sources_404_when_plan_missing(client: TestClient):
+    plan_id = uuid.uuid4()
+    plan_result = MagicMock()
+    plan_result.scalar_one_or_none.return_value = None
+
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock(return_value=plan_result)
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}/sources")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 404
+
+
+def test_get_plan_sources_200_empty_when_no_citations(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=None,
+        status="pending_review",
+        plan_json={"plan_id": str(plan_id), "citations_used": []},
+        citations_used=[],
+    )
+    plan_result = MagicMock()
+    plan_result.scalar_one_or_none.return_value = persisted
+
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock(return_value=plan_result)
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}/sources")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.json()["sources"] == []
