@@ -5,8 +5,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
+from jose import jwt
 
-from app.api.deps import get_rag_pipeline
+from app.api.deps import AuthUser, get_current_user, get_rag_pipeline
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.main import app
 from app.models.intake_profile import IntakeProfile
@@ -41,6 +43,11 @@ def _valid_intake_payload():
             "goals": ["Reducir dolor"],
         },
     }
+
+
+def _auth_header(role: str, sub: str = "user-1") -> dict[str, str]:
+    token = jwt.encode({"sub": sub, "role": role}, get_settings().secret_key, algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
 
 
 def test_plan_generate_422_when_available_therapies_empty(client: TestClient):
@@ -554,10 +561,15 @@ def test_ingest_200_returns_summary(client: TestClient):
         "status": "success",
     }
     app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-user", role="admin")
     try:
-        r = client.post("/rag/ingest", json={"source_dir": "data/mock", "force_reindex": False})
+        r = client.post(
+            "/rag/ingest",
+            json={"source_dir": "data/mock", "force_reindex": False},
+        )
     finally:
         app.dependency_overrides.pop(get_ingestion_service, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
 
     assert r.status_code == 200
     assert r.json()["files_processed"] == 2
@@ -570,10 +582,12 @@ def test_ingest_400_when_source_dir_missing(client: TestClient):
     fake_ingestion = MagicMock()
     fake_ingestion.ingest.side_effect = FileNotFoundError("Source directory not found: nope")
     app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-user", role="admin")
     try:
         r = client.post("/rag/ingest", json={"source_dir": "nope"})
     finally:
         app.dependency_overrides.pop(get_ingestion_service, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
 
     assert r.status_code == 400
     assert "Source directory not found" in r.json()["detail"]
@@ -587,10 +601,15 @@ def test_ingest_200_forwards_force_reindex(client: TestClient):
         "status": "success",
     }
     app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-user", role="admin")
     try:
-        r = client.post("/rag/ingest", json={"source_dir": "data/mock", "force_reindex": True})
+        r = client.post(
+            "/rag/ingest",
+            json={"source_dir": "data/mock", "force_reindex": True},
+        )
     finally:
         app.dependency_overrides.pop(get_ingestion_service, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
 
     assert r.status_code == 200
     fake_ingestion.ingest.assert_called_once_with(source_dir="data/mock", force_reindex=True)
@@ -727,3 +746,25 @@ def test_get_intake_risk_flags_404_when_intake_missing(client: TestClient):
         app.dependency_overrides.pop(get_db, None)
 
     assert r.status_code == 404
+
+
+def test_generate_plan_401_when_not_authenticated(client: TestClient):
+    app.dependency_overrides.pop(get_current_user, None)
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+    assert r.status_code == 401
+
+
+def test_ingest_403_for_non_admin_role(client: TestClient):
+    app.dependency_overrides.pop(get_current_user, None)
+    try:
+        r = client.post(
+            "/rag/ingest",
+            json={"source_dir": "data/mock", "force_reindex": False},
+            headers=_auth_header("clinician"),
+        )
+    finally:
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+    assert r.status_code == 403

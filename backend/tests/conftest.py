@@ -32,6 +32,7 @@ from unittest.mock import AsyncMock, MagicMock  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.main import app  # noqa: E402
+from app.api.deps import get_current_user, AuthUser  # noqa: E402
 from app.core.database import get_db  # noqa: E402
 
 
@@ -51,6 +52,7 @@ async def _mock_get_db():
 def client() -> TestClient:
     """HTTP client with DB session stubbed — no PostgreSQL required."""
     app.dependency_overrides[get_db] = _mock_get_db
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

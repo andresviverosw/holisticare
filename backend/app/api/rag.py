@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_ingestion_service, get_rag_pipeline
+from app.api.deps import AuthUser, get_ingestion_service, get_rag_pipeline, require_roles
 from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
@@ -80,6 +80,7 @@ async def trigger_ingestion(
     request: IngestRequest,
     db: AsyncSession = Depends(get_db),
     ingestion_service: IngestionService = Depends(get_ingestion_service),
+    _current_user: AuthUser = Depends(require_roles("admin")),
 ):
     """
     Admin endpoint — ingests PDFs from source_dir into pgvector.
@@ -100,6 +101,7 @@ async def trigger_ingestion(
 async def save_intake(
     request: IntakeSaveRequest,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ) -> dict[str, Any]:
     row = await save_intake_profile(
         db,
@@ -175,6 +177,7 @@ async def generate_plan(
     request: PlanGenerateRequest,
     db: AsyncSession = Depends(get_db),
     pipeline: RAGPipeline = Depends(get_rag_pipeline),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ) -> dict[str, Any]:
     """
     Core endpoint — runs the full RAG pipeline:
@@ -204,6 +207,7 @@ async def approve_plan(
     plan_id: UUID4,
     request: PlanApprovalRequest,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ):
     """
     Practitioner approval gate. Plans must be approved before
