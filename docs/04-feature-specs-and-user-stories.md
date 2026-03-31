@@ -157,6 +157,7 @@ Implementation evidence (backend):
 - `GET /rag/plan/{plan_id}` implemented to read persisted `plan_json`.
 - `GET /rag/plan/{plan_id}/sources` implemented with citation-ordered source payload.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for generate/persist/retrieve/sources/approval flows.
+- Write endpoints are role-guarded via JWT roles (`clinician`/`admin`) with `401/403` contract tests.
 
 ### US-DIARY-001 - Daily patient diary
 

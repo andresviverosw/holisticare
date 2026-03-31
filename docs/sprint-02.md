@@ -20,6 +20,11 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
 - `intake_profiles` table and SQLAlchemy model (`JSONB` intake payload).
 - Upsert-like behavior in service layer (save new row or update existing patient row).
 - `GET /rag/intake/{patient_id}/risk-flags` endpoint with rule-based risk detection.
+- Role-based auth guards on write endpoints:
+  - `POST /rag/intake` (`clinician` or `admin`)
+  - `POST /rag/plan/generate` (`clinician` or `admin`)
+  - `PATCH /rag/plan/{plan_id}/approve` (`clinician` or `admin`)
+  - `POST /rag/ingest` (`admin`)
 
 ## Test evidence
 
@@ -29,11 +34,12 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
   - `test_get_intake_404_when_missing`
   - `test_get_intake_risk_flags_200_returns_flags`
   - `test_get_intake_risk_flags_404_when_intake_missing`
-- Full backend suite after this slice: `48 passed`.
+  - `test_generate_plan_401_when_not_authenticated`
+  - `test_ingest_403_for_non_admin_role`
+- Full backend suite after this slice: `50 passed`.
 
 ## Risks / follow-ups
 
-- No auth/role checks yet on intake endpoints.
 - No field-level audit trail for intake edits yet.
 - UI and E2E flow still pending.
 - Risk flags are deterministic heuristics for now (LLM-assisted interpretation deferred).
