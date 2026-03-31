@@ -16,6 +16,7 @@ from app.services.plan_persistence import (
 )
 from app.services.chunk_query import list_clinical_chunks
 from app.services.ingestion_service import IngestionService
+from app.services.intake_service import get_intake_profile, save_intake_profile
 
 router = APIRouter()
 
@@ -65,6 +66,12 @@ class PlanApprovalRequest(BaseModel):
         return value
 
 
+class IntakeSaveRequest(BaseModel):
+    patient_id: UUID4
+    practitioner_id: Optional[UUID4] = None
+    intake_json: GenericHolisticIntakeV0
+
+
 # ─── Endpoints ────────────────────────────────────────────────
 
 @router.post("/ingest", response_model=IngestResponse)
@@ -86,6 +93,39 @@ async def trigger_ingestion(
     except FileNotFoundError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return result
+
+
+@router.post("/intake")
+async def save_intake(
+    request: IntakeSaveRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    row = await save_intake_profile(
+        db,
+        patient_id=request.patient_id,
+        practitioner_id=request.practitioner_id,
+        intake_json=request.intake_json.model_dump(mode="json"),
+    )
+    return {
+        "patient_id": str(row.patient_id),
+        "practitioner_id": str(row.practitioner_id) if row.practitioner_id else None,
+        "intake_json": row.intake_json,
+    }
+
+
+@router.get("/intake/{patient_id}")
+async def get_intake(
+    patient_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    row = await get_intake_profile(db, patient_id=patient_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Intake not found")
+    return {
+        "patient_id": str(row.patient_id),
+        "practitioner_id": str(row.practitioner_id) if row.practitioner_id else None,
+        "intake_json": row.intake_json,
+    }
 
 
 @router.get("/chunks")

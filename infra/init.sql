@@ -54,3 +54,13 @@ CREATE TABLE IF NOT EXISTS treatment_plans (
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ─── Intake profiles ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS intake_profiles (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id      UUID NOT NULL UNIQUE,
+    practitioner_id UUID,
+    intake_json     JSONB NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);

@@ -29,6 +29,7 @@ This directory contains the six core documentation phases for the AI4devs master
 ## Active sprint
 
 - `sprint-01.md` - Sprint 1 (backend, US-PLAN-001, generic holistic intake v0)
+- `sprint-02.md` - Sprint 2 (backend, US-INT-001 intake persistence/retrieval API slice)
 
 ## Suggested cadence
 

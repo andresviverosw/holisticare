@@ -68,7 +68,7 @@ Translate requirements into implementable product specifications, user stories, 
 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
-| US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Planned |
+| US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Planned |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Planned |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
@@ -95,6 +95,11 @@ Test intent:
 - Unit: validation rules by field.
 - Integration: API persistence and schema checks.
 - E2E: clinician completes intake and sees saved profile.
+
+Implementation evidence (backend):
+- `POST /rag/intake` implemented with `generic_holistic_v0` validation and persistence (`intake_profiles`).
+- `GET /rag/intake/{patient_id}` implemented for retrieval.
+- Regression tests in `backend/tests/test_plan_generate_api.py` cover save/retrieve/not-found contracts.
 
 ### US-INT-002 - Intake risk flagging
 

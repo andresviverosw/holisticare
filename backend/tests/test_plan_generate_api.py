@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from app.api.deps import get_rag_pipeline
 from app.core.database import get_db
 from app.main import app
+from app.models.intake_profile import IntakeProfile
 from app.models.treatment_plan import TreatmentPlan
 from app.rag.pipeline import RAGPipeline
 from app.api.deps import get_ingestion_service
@@ -27,6 +28,18 @@ def _valid_body():
         },
         "available_therapies": ["fisioterapia", "acupuntura"],
         "preferred_language": "es",
+    }
+
+
+def _valid_intake_payload():
+    return {
+        "patient_id": PATIENT_ID,
+        "intake_json": {
+            "profile_version": "generic_holistic_v0",
+            "chief_complaint": "Dolor lumbar mecánico.",
+            "conditions": ["lumbalgia subaguda"],
+            "goals": ["Reducir dolor"],
+        },
     }
 
 
@@ -581,3 +594,82 @@ def test_ingest_200_forwards_force_reindex(client: TestClient):
 
     assert r.status_code == 200
     fake_ingestion.ingest.assert_called_once_with(source_dir="data/mock", force_reindex=True)
+
+
+def test_save_intake_200_persists_payload(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = execute_result
+    captured: list[object] = []
+    db_session.add = MagicMock(side_effect=lambda o: captured.append(o))
+    db_session.commit = AsyncMock()
+    db_session.refresh = AsyncMock()
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.post("/rag/intake", json=_valid_intake_payload())
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.json()["patient_id"] == PATIENT_ID
+    assert r.json()["intake_json"]["profile_version"] == "generic_holistic_v0"
+    assert len(captured) == 1
+    assert isinstance(captured[0], IntakeProfile)
+    db_session.commit.assert_awaited_once()
+
+
+def test_get_intake_200_returns_saved_payload(client: TestClient):
+    intake = IntakeProfile(
+        id=uuid.uuid4(),
+        patient_id=uuid.UUID(PATIENT_ID),
+        practitioner_id=None,
+        intake_json={
+            "profile_version": "generic_holistic_v0",
+            "chief_complaint": "Dolor lumbar mecánico.",
+            "conditions": ["lumbalgia subaguda"],
+            "goals": ["Reducir dolor"],
+        },
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = intake
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.json()["patient_id"] == PATIENT_ID
+    assert r.json()["intake_json"]["goals"] == ["Reducir dolor"]
+
+
+def test_get_intake_404_when_missing(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 404
