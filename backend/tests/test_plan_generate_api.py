@@ -458,3 +458,75 @@ def test_approve_plan_422_when_action_invalid(client: TestClient):
     plan_id = uuid.uuid4()
     r = client.patch(f"/rag/plan/{plan_id}/approve", json={"action": "other"})
     assert r.status_code == 422
+
+
+def test_list_chunks_200_with_filters_and_pagination(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.mappings.return_value.all.return_value = [
+        {
+            "ref_id": "REF-10",
+            "content": "Movilidad lumbar con progresion suave.",
+            "therapy_type": ["fisioterapia"],
+            "condition": ["lumbalgia"],
+            "evidence_level": "B",
+            "language": "es",
+            "section": "protocolo",
+            "has_contraindication": False,
+            "source_file": "guia.pdf",
+            "page_number": 4,
+        }
+    ]
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(
+            "/rag/chunks",
+            params={
+                "therapy_type": "fisioterapia",
+                "language": "es",
+                "has_contraindication": "false",
+                "limit": 10,
+                "offset": 5,
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["limit"] == 10
+    assert payload["offset"] == 5
+    assert len(payload["items"]) == 1
+    assert payload["items"][0]["ref_id"] == "REF-10"
+    db_session.execute.assert_awaited_once()
+
+
+def test_list_chunks_200_without_filters(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.mappings.return_value.all.return_value = []
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get("/rag/chunks")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.json()["items"] == []
+
+
+def test_list_chunks_422_when_limit_out_of_range(client: TestClient):
+    r = client.get("/rag/chunks", params={"limit": 0})
+    assert r.status_code == 422

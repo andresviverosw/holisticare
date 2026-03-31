@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +14,7 @@ from app.services.plan_persistence import (
     get_plan_sources_payload,
     persist_generated_plan,
 )
+from app.services.chunk_query import list_clinical_chunks
 
 router = APIRouter()
 
@@ -83,13 +84,19 @@ async def list_chunks(
     therapy_type: Optional[str] = None,
     language: Optional[str] = None,
     has_contraindication: Optional[bool] = None,
-    limit: int = 50,
-    offset: int = 0,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     """Browse indexed clinical chunks with optional metadata filters."""
-    # TODO: wire to db query on clinical_chunks table
-    raise HTTPException(status_code=501, detail="Not yet implemented")
+    return await list_clinical_chunks(
+        db,
+        therapy_type=therapy_type,
+        language=language,
+        has_contraindication=has_contraindication,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.post("/plan/generate")
