@@ -31,6 +31,7 @@ Stretch scope completed during Sprint 1 backend execution:
 - Persist generated drafts to `treatment_plans`.
 - Retrieve persisted plans and cited sources.
 - Practitioner approval/rejection endpoint.
+- Ingestion endpoint (`POST /rag/ingest`) with CI-safe dependency override tests.
 
 ## API contract (v0)
 
@@ -89,6 +90,7 @@ Future extension (not Sprint 1): `intake_json.profile_version: nmg_v1` with addi
 - [x] `GET /rag/plan/{plan_id}` implementado.
 - [x] `GET /rag/plan/{plan_id}/sources` implementado con orden determinístico según `citations_used`.
 - [x] `PATCH /rag/plan/{plan_id}/approve` implementado (`approve|reject`) con actualización de estado en DB.
+- [x] `POST /rag/ingest` implementado con hardening para `force_reindex` (elimina chunks existentes por archivo antes de reindexar).
 - [ ] No secrets logged (revisión continua); compose: usar `scripts/compose-config-safe.ps1`.
 
 ## Test outline (pytest)
@@ -99,12 +101,13 @@ Future extension (not Sprint 1): `intake_json.profile_version: nmg_v1` with addi
 | Unit | Plan output schema / citation rules (extend existing `test_rag.py` patterns). |
 | Integration | `POST /rag/plan/generate` with fixture body — 200 + shape; persistence path mocked for CI. |
 | Integration | `GET /rag/plan/{plan_id}`, `GET /rag/plan/{plan_id}/sources`, `PATCH /rag/plan/{plan_id}/approve` contracts. |
+| Integration | `POST /rag/ingest` contract (success, missing source dir, and `force_reindex` forwarding). |
 | Deferred | E2E UI flows and real DB integration tests in containerized environment. |
 
 ## Test evidence snapshot
 
-- Backend suite status after latest slice: `35 passed`.
-- Key files: `backend/tests/test_plan_generate_api.py`, `backend/tests/test_plan_persistence.py`, `backend/tests/test_pipeline_insufficient.py`.
+- Backend suite status after hardening slice: `43 passed`.
+- Key files: `backend/tests/test_plan_generate_api.py`, `backend/tests/test_plan_persistence.py`, `backend/tests/test_pipeline_insufficient.py`, `backend/tests/test_ingestion_service.py`.
 
 ## Handoff template (end of sprint)
 

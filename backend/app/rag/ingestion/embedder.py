@@ -100,6 +100,18 @@ class Embedder:
         finally:
             conn.close()
 
+    def remove_existing_for_source(self, source_file: str) -> int:
+        """Delete previously indexed chunks for one source file."""
+        conn = psycopg2.connect(settings.database_url_sync)
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM clinical_chunks WHERE source_file = %s", (source_file,))
+                deleted = cur.rowcount
+            conn.commit()
+            return deleted
+        finally:
+            conn.close()
+
     def log_ingestion(self, source_file: str, chunk_count: int, status: str, error: str | None = None):
         conn = psycopg2.connect(settings.database_url_sync)
         try:

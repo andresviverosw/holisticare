@@ -564,3 +564,20 @@ def test_ingest_400_when_source_dir_missing(client: TestClient):
 
     assert r.status_code == 400
     assert "Source directory not found" in r.json()["detail"]
+
+
+def test_ingest_200_forwards_force_reindex(client: TestClient):
+    fake_ingestion = MagicMock()
+    fake_ingestion.ingest.return_value = {
+        "files_processed": 1,
+        "chunks_created": 4,
+        "status": "success",
+    }
+    app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    try:
+        r = client.post("/rag/ingest", json={"source_dir": "data/mock", "force_reindex": True})
+    finally:
+        app.dependency_overrides.pop(get_ingestion_service, None)
+
+    assert r.status_code == 200
+    fake_ingestion.ingest.assert_called_once_with(source_dir="data/mock", force_reindex=True)

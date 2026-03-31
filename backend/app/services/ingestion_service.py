@@ -16,7 +16,6 @@ class IngestionService:
         self.embedder = Embedder()
 
     def ingest(self, source_dir: str, force_reindex: bool = False) -> dict[str, Any]:
-        _ = force_reindex  # reserved for future reindex strategy
         source_path = Path(source_dir)
         if not source_path.exists() or not source_path.is_dir():
             raise FileNotFoundError(f"Source directory not found: {source_dir}")
@@ -29,6 +28,8 @@ class IngestionService:
         for doc in documents:
             source_file = doc.metadata.get("file_name", "unknown")
             try:
+                if force_reindex:
+                    self.embedder.remove_existing_for_source(source_file)
                 pairs = self.chunker.process([doc])
                 stored = self.embedder.embed_and_store(pairs, source_file)
                 self.embedder.log_ingestion(source_file, stored, "success")

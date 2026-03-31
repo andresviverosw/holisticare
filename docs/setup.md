@@ -63,6 +63,20 @@ Invoke-WebRequest -Uri "http://localhost:5173" -UseBasicParsing | Select-Object 
 
 Both should return `200`.
 
+## 4.1) Ingestion smoke command
+
+Basic ingestion (idempotent: skips already indexed chunks):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/mock","force_reindex":false}'
+```
+
+Force reindex for the same files (removes previous chunks by `source_file` and reindexes):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/mock","force_reindex":true}'
+```
+
 ## 5) Local test commands
 
 Backend tests (no PostgreSQL or API keys required — `conftest.py` sets CI-safe defaults and stubs DB for HTTP tests):

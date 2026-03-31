@@ -24,6 +24,7 @@ This directory contains the six core documentation phases for the AI4devs master
 ## Operational docs
 
 - `setup.md` - local environment setup, Docker startup, and health verification
+- `demo-smoke-checklist.md` - demo-day command checklist with expected outputs
 
 ## Active sprint
 
