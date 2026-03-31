@@ -819,3 +819,81 @@ def test_update_intake_403_for_non_admin(client: TestClient):
     finally:
         app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
     assert r.status_code == 403
+
+
+def test_get_intake_audit_200_admin_returns_newest_first(client: TestClient):
+    intake = IntakeProfile(
+        id=uuid.uuid4(),
+        patient_id=uuid.UUID(PATIENT_ID),
+        practitioner_id=None,
+        intake_json={
+            "profile_version": "generic_holistic_v0",
+            "chief_complaint": "Actual",
+            "conditions": ["lumbalgia subaguda"],
+            "goals": ["Reducir dolor"],
+        },
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    intake_result = MagicMock()
+    intake_result.scalar_one_or_none.return_value = intake
+    audit_result = MagicMock()
+    audit_result.mappings.return_value.all.return_value = [
+        {
+            "actor_sub": "admin-2",
+            "before_json": {"chief_complaint": "Previo 1"},
+            "after_json": {"chief_complaint": "Actual"},
+            "changed_at": "2026-03-31T12:00:00+00:00",
+        },
+        {
+            "actor_sub": "admin-1",
+            "before_json": {"chief_complaint": "Inicial"},
+            "after_json": {"chief_complaint": "Previo 1"},
+            "changed_at": "2026-03-30T12:00:00+00:00",
+        },
+    ]
+    db_session.execute.side_effect = [intake_result, audit_result]
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-1", role="admin")
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}/audit")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["patient_id"] == PATIENT_ID
+    assert len(payload["audit"]) == 2
+    assert payload["audit"][0]["actor_sub"] == "admin-2"
+    assert payload["audit"][1]["actor_sub"] == "admin-1"
+
+
+def test_get_intake_audit_404_when_intake_missing(client: TestClient):
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    intake_result = MagicMock()
+    intake_result.scalar_one_or_none.return_value = None
+    db_session.execute.return_value = intake_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-1", role="admin")
+    try:
+        r = client.get(f"/rag/intake/{PATIENT_ID}/audit")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+
+    assert r.status_code == 404
+
+
+def test_get_intake_audit_403_for_non_admin(client: TestClient):
+    r = client.get(f"/rag/intake/{PATIENT_ID}/audit")
+    assert r.status_code == 403

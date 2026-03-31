@@ -74,3 +74,23 @@ async def update_intake_profile_with_audit(
     await db.commit()
     await db.refresh(row)
     return row
+
+
+async def list_intake_audit_entries(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+) -> list[dict[str, Any]]:
+    stmt = (
+        select(
+            IntakeProfileAudit.actor_sub,
+            IntakeProfileAudit.before_json,
+            IntakeProfileAudit.after_json,
+            IntakeProfileAudit.changed_at,
+        )
+        .where(IntakeProfileAudit.patient_id == patient_id)
+        .order_by(IntakeProfileAudit.changed_at.desc())
+    )
+    result = await db.execute(stmt)
+    rows = result.mappings().all()
+    return [dict(r) for r in rows]

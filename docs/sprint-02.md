@@ -26,6 +26,7 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
   - `PATCH /rag/plan/{plan_id}/approve` (`clinician` or `admin`)
   - `POST /rag/ingest` (`admin`)
 - `PATCH /rag/intake/{patient_id}` admin-only update with persisted `intake_profile_audit` records.
+- `GET /rag/intake/{patient_id}/audit` admin-only retrieval for intake audit history (newest-first).
 
 ## Test evidence
 
@@ -39,7 +40,10 @@ Deliver an initial intake persistence flow that allows clinicians to save and re
   - `test_ingest_403_for_non_admin_role`
   - `test_update_intake_200_admin_creates_audit`
   - `test_update_intake_403_for_non_admin`
-- Full backend suite after this slice: `52 passed`.
+  - `test_get_intake_audit_200_admin_returns_newest_first`
+  - `test_get_intake_audit_404_when_intake_missing`
+  - `test_get_intake_audit_403_for_non_admin`
+- Full backend suite after this slice: `55 passed`.
 
 ## Risks / follow-ups
 

@@ -18,6 +18,7 @@ from app.services.chunk_query import list_clinical_chunks
 from app.services.ingestion_service import IngestionService
 from app.services.intake_service import (
     get_intake_profile,
+    list_intake_audit_entries,
     save_intake_profile,
     update_intake_profile_with_audit,
 )
@@ -181,6 +182,22 @@ async def get_intake_risk_flags(
     return {
         "patient_id": str(row.patient_id),
         "risk_flags": flags,
+    }
+
+
+@router.get("/intake/{patient_id}/audit")
+async def get_intake_audit(
+    patient_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("admin")),
+) -> dict[str, Any]:
+    row = await get_intake_profile(db, patient_id=patient_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Intake not found")
+    audit = await list_intake_audit_entries(db, patient_id=patient_id)
+    return {
+        "patient_id": str(patient_id),
+        "audit": audit,
     }
 
 

@@ -131,7 +131,8 @@ Test intent:
 Implementation evidence (backend):
 - `PATCH /rag/intake/{patient_id}` implemented as admin-only.
 - `intake_profile_audit` persistence added (`before_json`, `after_json`, `actor_sub`, `changed_at`).
-- Regression tests in `backend/tests/test_plan_generate_api.py` for admin success and non-admin forbidden.
+- `GET /rag/intake/{patient_id}/audit` implemented as admin-only, returning newest-first audit entries.
+- Regression tests in `backend/tests/test_plan_generate_api.py` for update success, audit retrieval (`200/404`), and non-admin forbidden (`403`).
 
 ### US-PLAN-001 - Draft treatment plan generation
 
