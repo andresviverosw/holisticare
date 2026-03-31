@@ -33,6 +33,7 @@ This directory contains the six core documentation phases for the AI4devs master
 - `sprint-03.md` - Sprint 3 (backend, US-SESS-001 structured session logging)
 - `sprint-04.md` - Sprint 4 (backend, US-DIARY-001 patient diary check-ins)
 - `sprint-05.md` - Sprint 5 (backend, US-ANLY-001 outcome trends from diary)
+- `sprint-06.md` - Sprint 6 (backend, US-ANLY-002 plateau / worsening flags)
 
 ## Suggested cadence
 

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.patient_diary_entry import PatientDiaryEntry
 from app.services.diary_service import list_diary_entries_in_date_range
+from app.services.plateau_service import analyze_diary_plateau
 
 MAX_RANGE_DAYS = 731
 DEFAULT_DAYS = 90
@@ -64,4 +65,31 @@ async def get_patient_outcomes_trend_payload(
         "date_from": d0.isoformat(),
         "date_to": d1.isoformat(),
         "series": diary_entries_to_outcome_series(rows),
+    }
+
+
+async def get_patient_plateau_flags_payload(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+    date_from: date | None,
+    date_to: date | None,
+) -> dict[str, Any]:
+    d0, d1 = resolve_analytics_date_window(date_from, date_to)
+    rows = await list_diary_entries_in_date_range(
+        db,
+        patient_id=patient_id,
+        date_from=d0,
+        date_to=d1,
+    )
+    series = diary_entries_to_outcome_series(rows)
+    status, flags = analyze_diary_plateau(series, data_point_count=len(rows))
+    return {
+        "patient_id": str(patient_id),
+        "source": "patient_diary_v0",
+        "date_from": d0.isoformat(),
+        "date_to": d1.isoformat(),
+        "analysis_status": status,
+        "data_points_used": len(rows),
+        "flags": flags,
     }

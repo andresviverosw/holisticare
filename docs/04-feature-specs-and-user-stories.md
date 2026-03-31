@@ -79,7 +79,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
 | US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Planned |
 | US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
-| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Planned |
+| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Planned |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Planned |
 
@@ -238,6 +238,12 @@ Test intent:
 - Unit: plateau rule calculations.
 - Integration: scheduled analytics job.
 - E2E: flagged patient appears in dashboard.
+
+Implementation evidence (backend):
+- Heuristic rules on diary outcome series (first vs second chronological half): `PAIN_WORSENING`, `HIGH_PAIN_PLATEAU`, `FUNCTION_WORSENING` in `backend/app/services/plateau_service.py` (minimum 7 días de diario; ≥3 valores por métrica y mitad).
+- `GET /rag/analytics/patient/{patient_id}/plateau-flags` with same ventana de fechas y autenticación que US-ANLY-001 (`clinician`/`admin`). Respuesta: `analysis_status` (`ok` | `insufficient_data`), `flags` con `code`, `severity`, `metric`, `message`, `detail` (español).
+- Orquestación en `get_patient_plateau_flags_payload` (`analytics_service.py`).
+- Tests: `backend/tests/test_plateau_service.py`, `backend/tests/test_plateau_api.py`.
 
 ## 6. Non-functional acceptance criteria
 
