@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ragApi } from "../services/api";
+import { formatApiError } from "../utils/apiErrors";
 
 export default function PlanSources() {
   const { planId } = useParams();
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    setError(null);
     ragApi.getPlanSources(planId)
       .then((res) => setSources(res.data?.sources || []))
+      .catch((err) =>
+        setError(formatApiError(err, { fallback: "No se pudieron cargar las fuentes del plan." })),
+      )
       .finally(() => setLoading(false));
   }, [planId]);
 
@@ -27,7 +33,13 @@ export default function PlanSources() {
 
       {loading && <p className="text-neutral-500">Cargando fuentes…</p>}
 
-      {!loading && sources.length === 0 && (
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && sources.length === 0 && (
         <p className="text-neutral-400 text-sm">No se encontraron fuentes para este plan.</p>
       )}
 

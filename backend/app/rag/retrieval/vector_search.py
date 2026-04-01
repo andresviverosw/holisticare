@@ -8,17 +8,35 @@ Responsibilities:
 - Return ranked candidates for reranker
 """
 
-from llama_index.vector_stores.postgres import PGVectorStore
-from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.core.schema import MetadataMode
 from llama_index.core.vector_stores import MetadataFilters, MetadataFilter, FilterOperator
-from llama_index.core.schema import TextNode
-
+from llama_index.core.vector_stores.types import VectorStoreQuery
 from app.core.config import get_settings
 from app.rag.ingestion.embedder import get_embed_model, get_vector_store
 
 settings = get_settings()
 
 EVIDENCE_LEVEL_ORDER = {"A": 0, "B": 1, "C": 2, "expert_opinion": 3}
+
+
+def _node_plain_text(node) -> str:
+    """PGVectorStore returns BaseNode; prefer get_content for compatibility across node types."""
+    try:
+        return node.get_content(metadata_mode=MetadataMode.NONE)
+    except Exception:
+        return getattr(node, "text", "") or ""
+
+
+def _node_metadata_dict(node) -> dict:
+    raw = getattr(node, "metadata", None)
+    if raw is None:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    try:
+        return dict(raw)
+    except Exception:
+        return {}
 
 
 class RetrievalConfig:
@@ -55,16 +73,27 @@ class VectorRetriever:
         seen_refs: set[str] = set()
         candidates: list[dict] = []
 
+        if not queries:
+            return []
+
+        per_query_k = max(1, top_k // len(queries))
+
         for query in queries:
             embedding = self.embed_model.get_text_embedding(query)
-            results = self.vector_store.query(
+            vs_query = VectorStoreQuery(
                 query_embedding=embedding,
-                similarity_top_k=top_k // len(queries),
+                similarity_top_k=per_query_k,
                 filters=self._build_filters(config),
             )
+            results = self.vector_store.query(vs_query)
+            nodes = results.nodes or []
+            similarities = results.similarities or []
 
-            for node_with_score in results.nodes:
-                ref_id = node_with_score.metadata.get("ref_id", "")
+            for i, node in enumerate(nodes):
+                # PGVectorStore returns BaseNode + parallel similarities list (not .score on node)
+                sim = float(similarities[i]) if i < len(similarities) else 0.0
+                meta = _node_metadata_dict(node)
+                ref_id = meta.get("ref_id", "")
                 if ref_id in seen_refs:
                     continue
                 seen_refs.add(ref_id)
@@ -72,16 +101,16 @@ class VectorRetriever:
                 # Always include contraindication chunks regardless of score
                 if (
                     config.always_include_contraindications
-                    and node_with_score.metadata.get("has_contraindication")
+                    and meta.get("has_contraindication")
                     and ref_id not in seen_refs
                 ):
                     pass  # Already added above
 
                 candidates.append({
                     "ref_id": ref_id,
-                    "text": node_with_score.text,
-                    "score": node_with_score.score or 0.0,
-                    "metadata": node_with_score.metadata,
+                    "text": _node_plain_text(node),
+                    "score": sim,
+                    "metadata": meta,
                 })
 
         return candidates

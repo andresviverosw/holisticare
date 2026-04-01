@@ -23,6 +23,8 @@ services:
     container_name: holisticare_backend
     restart: unless-stopped
     env_file: .env
+    environment:
+      ALLOW_DEV_AUTH: "${ALLOW_DEV_AUTH:-true}"
     ports:
       - "8000:8000"
     volumes:
@@ -37,6 +39,8 @@ services:
     build: ./frontend
     container_name: holisticare_frontend
     restart: unless-stopped
+    environment:
+      VITE_PROXY_TARGET: "http://backend:8000"
     ports:
       - "5173:5173"
     volumes:

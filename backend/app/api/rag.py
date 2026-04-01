@@ -1,6 +1,9 @@
+import json
 from datetime import date
 from typing import Any, Optional
 
+import anthropic
+import openai
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -409,12 +412,63 @@ async def generate_plan(
     Returns a treatment plan with status='pending_review'.
     If no chunks are retrieved, returns a plan-shaped response with insufficient_evidence=true.
     """
-    plan = pipeline.generate_plan(
-        patient_id=str(request.patient_id),
-        intake_json=request.intake_json.model_dump(mode="json"),
-        available_therapies=request.available_therapies,
-        preferred_language=request.preferred_language,
-    )
+    try:
+        plan = pipeline.generate_plan(
+            patient_id=str(request.patient_id),
+            intake_json=request.intake_json.model_dump(mode="json"),
+            available_therapies=request.available_therapies,
+            preferred_language=request.preferred_language,
+        )
+    except anthropic.AuthenticationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Clave de API de Anthropic inválida o no configurada. "
+                "Configure ANTHROPIC_API_KEY en .env del backend (o variables del contenedor) y reinicie."
+            ),
+        ) from exc
+    except anthropic.AnthropicError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "El servicio Claude (Anthropic) no pudo completar la solicitud. "
+                f"Detalle técnico: {exc!s}. "
+                "Revise facturación, límites de tasa y el estado del servicio en console.anthropic.com."
+            ),
+        ) from exc
+    except openai.AuthenticationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Clave de API de OpenAI inválida o no configurada. "
+                "Configure OPENAI_API_KEY en .env (embeddings / búsqueda vectorial) y reinicie el backend."
+            ),
+        ) from exc
+    except openai.RateLimitError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "OpenAI: límite de uso o cuota insuficiente (embeddings). "
+                "Revise facturación y límites en https://platform.openai.com/account/billing"
+            ),
+        ) from exc
+    except openai.OpenAIError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "OpenAI no pudo completar la solicitud (p. ej. embeddings). "
+                f"Detalle técnico: {exc!s}. "
+                "Revise OPENAI_API_KEY, red y estado en https://status.openai.com"
+            ),
+        ) from exc
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "El modelo devolvió una respuesta que no es JSON válido al generar el plan. "
+                "Intente de nuevo; si persiste, revise el registro del backend."
+            ),
+        ) from exc
     if "insufficient_evidence" not in plan:
         plan["insufficient_evidence"] = False
     await persist_generated_plan(

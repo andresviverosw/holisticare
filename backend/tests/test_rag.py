@@ -185,3 +185,37 @@ class TestPlanGeneratorValidation:
         )
 
         assert result["requires_practitioner_review"] is True
+
+
+class TestVectorRetrieverPgVectorQuery:
+    """PGVectorStore.query expects a VectorStoreQuery (LlamaIndex API)."""
+
+    @patch("app.rag.retrieval.vector_search.get_vector_store")
+    @patch("app.rag.retrieval.vector_search.get_embed_model")
+    def test_retrieve_calls_query_with_vector_store_query(
+        self, mock_get_embed, mock_get_vs
+    ):
+        from llama_index.core.vector_stores.types import VectorStoreQuery
+        from app.rag.retrieval.vector_search import VectorRetriever, RetrievalConfig
+
+        mock_get_embed.return_value.get_text_embedding.return_value = [0.1, 0.2]
+        vs = MagicMock()
+        mock_get_vs.return_value = vs
+        from llama_index.core.schema import TextNode
+
+        node = TextNode(text="chunk", metadata={"ref_id": "REF-1"})
+        vs.query.return_value = MagicMock(nodes=[node], similarities=[0.91])
+
+        retriever = VectorRetriever()
+        cfg = RetrievalConfig(language="es")
+        out = retriever.retrieve(["single query"], cfg, top_k=6)
+
+        vs.query.assert_called_once()
+        arg0 = vs.query.call_args[0][0]
+        assert isinstance(arg0, VectorStoreQuery)
+        assert arg0.query_embedding == [0.1, 0.2]
+        assert arg0.similarity_top_k == 6
+        assert arg0.filters is not None
+        assert len(out) == 1
+        assert out[0]["ref_id"] == "REF-1"
+        assert out[0]["score"] == pytest.approx(0.91)

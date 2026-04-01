@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.api import rag
+from app.api import auth, rag
 import app.models  # noqa: F401 — register ORM metadata
 
 settings = get_settings()
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 # ─── Routers ──────────────────────────────────────────────────
+app.include_router(auth.router, tags=["Auth"])
 app.include_router(rag.router, prefix="/rag", tags=["RAG"])
 
 

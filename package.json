@@ -1,0 +1,7 @@
+{
+  "name": "holisticare",
+  "private": true,
+  "scripts": {
+    "smoke:api": "node scripts/smoke-api.mjs"
+  }
+}

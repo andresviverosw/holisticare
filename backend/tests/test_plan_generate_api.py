@@ -1,8 +1,11 @@
 """HTTP contract tests for POST /rag/plan/generate — no PostgreSQL or LLM (overridden deps)."""
 
+import json
 import uuid
 from unittest.mock import AsyncMock, MagicMock
 
+import anthropic
+import openai
 import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
@@ -119,6 +122,96 @@ def test_plan_generate_200_delegates_to_pipeline(client: TestClient, mock_plan):
     assert call_kw["available_therapies"] == ["fisioterapia", "acupuntura"]
     assert call_kw["preferred_language"] == "es"
     assert call_kw["intake_json"]["profile_version"] == "generic_holistic_v0"
+
+
+def test_plan_generate_503_when_anthropic_auth_fails(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = anthropic.AuthenticationError(
+        "invalid x-api-key",
+        response=MagicMock(status_code=401),
+        body={},
+    )
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 503
+    assert "ANTHROPIC_API_KEY" in r.json()["detail"]
+
+
+def test_plan_generate_503_when_openai_auth_fails(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = openai.AuthenticationError(
+        "invalid api key",
+        response=MagicMock(status_code=401),
+        body={},
+    )
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 503
+    assert "OPENAI_API_KEY" in r.json()["detail"]
+
+
+def test_plan_generate_503_when_openai_quota_exceeded(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = openai.RateLimitError(
+        "insufficient_quota",
+        response=MagicMock(status_code=429),
+        body={},
+    )
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 503
+    assert "cuota" in r.json()["detail"].lower() or "facturación" in r.json()["detail"].lower()
+
+
+def test_plan_generate_503_when_anthropic_other_error(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = anthropic.RateLimitError(
+        "rate limit",
+        response=MagicMock(status_code=429),
+        body={},
+    )
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 503
+    assert "Claude" in r.json()["detail"] or "Anthropic" in r.json()["detail"]
+
+
+def test_plan_generate_503_when_openai_other_error(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = openai.APIError(
+        "connection reset", request=MagicMock(), body=None
+    )
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 503
+    assert "OpenAI" in r.json()["detail"]
+
+
+def test_plan_generate_502_when_plan_output_not_json(client: TestClient):
+    fake_pipeline = MagicMock(spec=RAGPipeline)
+    fake_pipeline.generate_plan.side_effect = json.JSONDecodeError("Expecting value", "doc", 0)
+    app.dependency_overrides[get_rag_pipeline] = lambda: fake_pipeline
+    try:
+        r = client.post("/rag/plan/generate", json=_valid_body())
+    finally:
+        app.dependency_overrides.pop(get_rag_pipeline, None)
+    assert r.status_code == 502
+    assert "json" in r.json()["detail"].lower()
 
 
 def test_plan_generate_persists_treatment_plan_row(client: TestClient, mock_plan):

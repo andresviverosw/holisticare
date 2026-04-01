@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ragApi } from "../services/api";
-
-const EVIDENCE_COLORS = { A: "badge-green", B: "badge-yellow", C: "badge-gray" };
+import { formatApiError } from "../utils/apiErrors";
 
 function TherapyCard({ therapy }) {
   return (
@@ -102,7 +101,9 @@ export default function PlanReview() {
       setActionDone(action);
       setPlan((p) => ({ ...p, status: action === "approve" ? "approved" : "rejected" }));
     } catch (err) {
-      setError(err.response?.data?.detail || "Error al procesar la decisión.");
+      setError(
+        formatApiError(err, { fallback: "Error al procesar la decisión." }),
+      );
     } finally {
       setApproving(false);
     }

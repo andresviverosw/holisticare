@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ragApi } from "../services/api";
+import { formatApiError } from "../utils/apiErrors";
 
 const THERAPY_OPTIONS = ["", "acupunctura", "fisioterapia", "hidroterapia", "herbolaria", "psicoemocional"];
 const LANG_OPTIONS = [{ value: "", label: "Todos" }, { value: "es", label: "Español" }, { value: "en", label: "English" }];
@@ -7,21 +8,28 @@ const LANG_OPTIONS = [{ value: "", label: "Todos" }, { value: "es", label: "Espa
 export default function Chunks() {
   const [chunks, setChunks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ therapy_type: "", language: "", has_contraindication: "" });
 
-  function load() {
+  const load = useCallback(() => {
     setLoading(true);
+    setError(null);
     const params = {};
     if (filters.therapy_type) params.therapy_type = filters.therapy_type;
     if (filters.language) params.language = filters.language;
     if (filters.has_contraindication !== "") params.has_contraindication = filters.has_contraindication === "true";
 
     ragApi.listChunks(params)
-      .then((res) => setChunks(res.data?.chunks || []))
+      .then((res) => setChunks(res.data?.items || []))
+      .catch((err) =>
+        setError(formatApiError(err, { fallback: "No se pudieron cargar los fragmentos clínicos." })),
+      )
       .finally(() => setLoading(false));
-  }
+  }, [filters]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-6">
@@ -81,7 +89,13 @@ export default function Chunks() {
       {/* Results */}
       {loading && <p className="text-neutral-500 text-sm">Cargando…</p>}
 
-      {!loading && chunks.length === 0 && (
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && chunks.length === 0 && (
         <p className="text-neutral-400 text-sm">
           No hay chunks indexados. Ejecuta el pipeline de ingesta primero.
         </p>

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # App
     debug: bool = False
+    allow_dev_auth: bool = False
     secret_key: str
     cors_origins: str = "http://localhost:5173"
 

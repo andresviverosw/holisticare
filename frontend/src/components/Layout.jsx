@@ -1,4 +1,5 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "🏠" },
@@ -24,6 +25,14 @@ function NavItem({ to, label, icon }) {
 }
 
 export default function Layout() {
+  const { role, sub, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
@@ -47,8 +56,23 @@ export default function Layout() {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-neutral-200">
-          <p className="text-xs text-neutral-400">v0.1.0 — MVP</p>
+        <div className="px-5 py-4 border-t border-neutral-200 space-y-2">
+          <p className="text-xs text-neutral-500">
+            {role && (
+              <>
+                <span className="font-medium text-neutral-700">{role}</span>
+                {sub && <span className="text-neutral-400"> · {sub}</span>}
+              </>
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-xs text-red-600 hover:underline"
+          >
+            Cerrar sesión
+          </button>
+          <p className="text-xs text-neutral-400">v0.1.0 — MVP clínico</p>
         </div>
       </aside>
 
