@@ -7,7 +7,7 @@ Security checks were run on:
 - Backend static code (`bandit`)
 - Frontend dependencies (`npm audit`)
 
-Date: 2026-04-07
+Date: 2026-04-07 (last reviewed with codebase and CI alignment)
 
 ## Commands used
 
@@ -15,37 +15,27 @@ Date: 2026-04-07
 - `bandit -r backend/app -f txt`
 - `npm audit --json` (in `frontend/`)
 
-## Findings summary
+## Current posture (summary)
 
-### 1) Python dependency vulnerabilities (high priority)
+After the remediation slices below (dependencies, SQL hardening, CI integration):
 
-`pip-audit` reported vulnerabilities in key packages.
+- **Backend dependencies:** `pip-audit -r backend/requirements.txt` reports **no known vulnerabilities** at last verification.
+- **Frontend dependencies:** `npm audit` reports **no known vulnerabilities** at last verification (Vite 8.x path).
+- **Static analysis (Bandit):** re-run on `backend/app` as needed; see **Bandit notes** below.
+- **CI:** `.github/workflows/ci.yml` includes job `security-audit` (**blocking** by default). Set GitHub repository variable `SECURITY_AUDIT_ADVISORY=true` only while triaging scanner noise without failing the workflow.
 
-Latest rerun after remediation slices (`python-jose`, FastAPI/Starlette, and `llama-index` modernization) reports:
-- no known backend dependency vulnerabilities (`pip-audit -r backend/requirements.txt`)
+## Historical context (initial scans, pre-remediation)
 
-- `python-jose==3.3.0`
-  - JWT/JWE related vulnerabilities
-  - fix version: `>=3.4.0`
-- transitive `starlette==0.38.6`
-  - multipart DoS advisories fixed in newer Starlette (`>=0.40.0`, `>=0.47.2`)
+These items motivated work; they are **not** the current state of pinned versions:
 
-### 2) Frontend dependency vulnerabilities (medium priority)
+- **Python:** Older pins had issues in `python-jose`, transitive `starlette`, `llama-index-core`, and `pypdf` (see completed TODOs).
+- **Frontend:** Older `vite` / `esbuild` advisories were addressed by upgrading to a current Vite major.
+- **Bandit `B608` (chunk listing):** addressed by **static parameterized SQL** with explicit `CAST(...)` for nullable filters (avoids both injection-style assembly and PostgreSQL/asyncpg untyped-`NULL` parameter issues). See `backend/app/services/chunk_query.py` and `backend/tests/test_chunk_query_security.py`.
 
-Initial scan reported:
-- `vite` advisory (path traversal related)
-- transitive `esbuild` advisory
-- suggested fix path to `vite@8.x`
+## Bandit notes (ongoing)
 
-Latest rerun after remediation (`npm audit --json`) reports no known frontend dependency vulnerabilities.
-
-### 3) Bandit code scan (low/medium confidence issues)
-
-Bandit reported:
-- `B105` in `backend/app/api/auth.py` on `"token_type": "bearer"` (likely false positive)
-- `B608` in `backend/app/services/chunk_query.py` due SQL text construction with f-string
-  - currently low confidence because values are parameterized and filters are controlled
-  - still worth hardening by removing dynamic query string assembly
+- **`B105`** on `"token_type": "bearer"` in `backend/app/api/auth.py` — commonly a **false positive** (string literal in API response, not a hardcoded password).
+- Re-run Bandit after substantive backend changes; treat new **high** findings as blocking until triaged.
 
 ## Prioritized TODOs
 
@@ -66,7 +56,7 @@ Bandit reported:
  - Implemented:
    - `backend/requirements.txt` now pins `pypdf==6.9.2`.
    - verified installation compatibility after `llama-index-*` modernization.
-   - regression suite remains green (`pytest -q`: 99 passed).
+   - regression suite remains green (`pytest -q`: 100+ tests; run `pytest` for current count).
 
 - [x] TODO-SEC-003 Plan and execute `llama-index-*` security upgrade
 - Implemented with compatible modern set:
@@ -77,7 +67,7 @@ Bandit reported:
   - `llama-index-llms-anthropic==0.11.2`
   - supporting alignments: `pydantic==2.12.5`, `pydantic-settings==2.13.1`, `anthropic==0.90.0`
 - Verification evidence:
-  - backend tests: `pytest -q` -> `99 passed`
+  - backend tests: full suite green (see `pytest -q` for current count)
   - security scan: `pip-audit -r backend/requirements.txt` -> `No known vulnerabilities found`
 
 - [x] TODO-SEC-004 Patch transitive Starlette/FastAPI chain
@@ -128,12 +118,12 @@ Bandit reported:
    - Confirm `POST /auth/dev-login` returns **404** (route absent), not a token.
    - Never set `ALLOW_DEV_AUTH=true` on staging/production hosts.
 
-- [x] TODO-SEC-008 Add security checks to CI (non-blocking first)
-- Add optional/nightly job for:
+- [x] TODO-SEC-008 Add security checks to CI
+- Add job for:
   - `pip-audit`
   - `npm audit --audit-level=moderate`
   - `bandit -r backend/app`
-- Start as advisory; promote to blocking after dependency remediation.
+- Start strict in production CI; use `SECURITY_AUDIT_ADVISORY=true` only when triaging.
  - Implemented:
    - added `security-audit` job to `.github/workflows/ci.yml`
    - job runs `pip-audit`, `bandit`, and frontend `npm audit --audit-level=moderate`

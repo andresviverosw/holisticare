@@ -47,6 +47,33 @@ Expected services:
 - `holisticare_backend`
 - `holisticare_frontend`
 
+### 3.1) Dev login (`ALLOW_DEV_AUTH`)
+
+`docker-compose.yml` defaults **`ALLOW_DEV_AUTH` to `false`** (safe default). The SPA **“Entrar (desarrollo)”** button calls `POST /auth/dev-login`, which is **not registered** unless dev auth is on — you will see **404** until you opt in.
+
+Add to your **`.env`** (copy from `.env.example` if needed):
+
+```env
+ALLOW_DEV_AUTH=true
+```
+
+Restart the backend container after changing env:
+
+```powershell
+docker compose up -d backend
+```
+
+Never set `ALLOW_DEV_AUTH=true` in production. See `09-security-audit-and-todos.md` (TODO-SEC-007).
+
+### 3.2) Backend Docker image vs `requirements.txt`
+
+Application code is bind-mounted from `./backend`, but **Python packages inside the image** come from the last **`docker compose build`**. After you change **`backend/requirements.txt`**, rebuild so the container matches (for example before exercising RAG or LLM imports):
+
+```powershell
+docker compose build backend
+docker compose up -d backend
+```
+
 ## 4) Health checks
 
 Backend docs:
@@ -94,7 +121,13 @@ cd backend
 ..\.venv\Scripts\python -m pytest tests\ -q
 ```
 
-GitHub Actions runs the same suite on push/PR (`.github/workflows/ci.yml`).
+GitHub Actions runs the same suite on push/PR (`.github/workflows/ci.yml`). The workflow also runs **`security-audit`** (`pip-audit`, `bandit`, `npm audit`) — **blocking** by default; see `docs/README.md` and `09-security-audit-and-todos.md`.
+
+API smoke (from repository root, backend reachable at `http://127.0.0.1:8000`):
+
+```powershell
+npm run smoke:api
+```
 
 Frontend production build check:
 

@@ -84,6 +84,12 @@ Define repeatable deployment, monitoring, incident response, backup, and mainten
 - Vulnerability scanning:
 - Access review cadence:
 
+### HolistiCare (repository-specific)
+
+- **Dependency and static scans in CI:** GitHub Actions job `security-audit` runs `pip-audit`, `bandit`, and `npm audit` (see `.github/workflows/ci.yml`). It is **blocking** unless repository variable **`SECURITY_AUDIT_ADVISORY=true`** is set for triage. Documented in `docs/README.md` and `09-security-audit-and-todos.md`.
+- **Dev auth:** Production and shared staging must keep **`ALLOW_DEV_AUTH=false`** (or unset). The dev-login route must not exist in those environments (`POST /auth/dev-login` → **404**). See `09-security-audit-and-todos.md` checklist.
+- **Image rebuilds:** When `backend/requirements.txt` changes, production pipelines should rebuild the backend image (not only rely on bind mounts). Local analogue: `docs/setup.md` section 3.2.
+
 ## 9. Data governance operations
 
 - Retention enforcement:

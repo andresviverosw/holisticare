@@ -2,6 +2,21 @@
 
 This directory contains the six core documentation phases for the AI4devs master's project.
 
+## Documentation map (by audience)
+
+| Need | Start here |
+|------|------------|
+| Run the app locally, tests, Docker | `setup.md` |
+| Clinician / demo usage of the MVP UI | `07-user-guide.md` |
+| Architecture, modules, env vars, diagrams | `08-developer-guide-and-architecture.md` |
+| Security scanners, remediation history, CI behavior | `09-security-audit-and-todos.md` |
+| Demo commands and expected outputs | `demo-smoke-checklist.md` |
+| Product requirements and stories | `01-` … `04-` phase docs |
+| Test strategy | `05-test-plan.md` |
+| Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
+| Sprint notes | `sprint-01.md` … `sprint-06.md` |
+| Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
+
 ## How to use
 
 1. Complete each phase in order.
@@ -27,7 +42,7 @@ This directory contains the six core documentation phases for the AI4devs master
 - `demo-smoke-checklist.md` - demo-day command checklist with expected outputs
 - `07-user-guide.md` - clinician-facing usage guide for current MVP UI
 - `08-developer-guide-and-architecture.md` - developer setup, module map, and mermaid diagrams
-- `09-security-audit-and-todos.md` - latest scanner findings and remediation backlog
+- `09-security-audit-and-todos.md` - security posture, scanner commands, completed remediation, and CI strict vs advisory mode
 
 ### CI security scans (advisory vs blocking)
 
