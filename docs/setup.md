@@ -104,6 +104,15 @@ Force reindex for the same files (removes previous chunks by `source_file` and r
 Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/mock","force_reindex":true}'
 ```
 
+### 4.2) Scanned PDFs (OCR)
+
+Digital PDFs with a text layer are ingested without OCR. **Scanned or image-only PDFs** need **Tesseract**: the backend uses **PyMuPDF** plus **pytesseract** when native text per file is very short or empty (see `backend/app/rag/ingestion/pdf_ocr.py`).
+
+- **Docker:** the backend image installs `tesseract-ocr` with Spanish and English data (`Dockerfile`). Rebuild after pulling changes.
+- **Local Python (no Docker):** install [Tesseract](https://github.com/tesseract-ocr/tesseract) and ensure it is on `PATH`, or OCR fallback will log a warning and skip those files.
+
+Optional environment variables: `PDF_OCR_*` in `.env.example`.
+
 ## 5) Local test commands
 
 Backend tests (no PostgreSQL or API keys required — `conftest.py` sets CI-safe defaults and stubs DB for HTTP tests):

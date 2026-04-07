@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     num_query_variants: int = 4
     min_evidence_level: str = "B"
 
+    # PDF ingestion — OCR fallback for scanned / image-heavy pages (PyMuPDF + Tesseract)
+    pdf_ocr_fallback_enabled: bool = True
+    # If total native text per file is below this, run hybrid OCR for that PDF (chars).
+    pdf_ocr_min_text_chars: int = 80
+    # Per-page: if native text shorter than this, OCR that page (hybrid path).
+    pdf_ocr_min_page_chars: int = 50
+    pdf_ocr_lang: str = "spa+eng"
+    pdf_ocr_dpi: int = 200
+
     # Reranker
     reranker_backend: str = "crossencoder"
     crossencoder_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"

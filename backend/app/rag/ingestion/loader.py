@@ -9,8 +9,9 @@ Responsibilities:
 - Tag each chunk with clinical metadata
 """
 
-import os
 import hashlib
+import logging
+from collections import defaultdict
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
@@ -21,9 +22,11 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import Document, TextNode
 from llama_index.readers.file import PDFReader
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
+from app.rag.ingestion.pdf_ocr import hybrid_documents_from_pdf, pdf_ocr_available
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -84,7 +87,69 @@ class DocumentLoader:
             file_extractor={".pdf": pdf_reader},
         )
         documents = reader.load_data()
-        return documents
+        cfg = get_settings()
+
+        if not cfg.pdf_ocr_fallback_enabled:
+            return documents
+
+        source_path = Path(source_dir)
+        if not documents:
+            return self._load_scanned_only_fallback(source_path, cfg)
+
+        return self._maybe_replace_thin_files(source_path, documents, cfg)
+
+    def _load_scanned_only_fallback(
+        self, source_path: Path, cfg: Settings
+    ) -> list[Document]:
+        """PDFReader returned nothing (common for image-only PDFs). Try hybrid OCR per file."""
+        out: list[Document] = []
+        for pdf_path in sorted(source_path.glob("*.pdf")):
+            if not pdf_ocr_available():
+                logger.warning(
+                    "No text from PDF reader and Tesseract is not available; skip %s",
+                    pdf_path.name,
+                )
+                continue
+            try:
+                out.extend(hybrid_documents_from_pdf(pdf_path, cfg))
+            except Exception as exc:
+                logger.warning("OCR fallback failed for %s: %s", pdf_path.name, exc)
+        return out
+
+    def _maybe_replace_thin_files(
+        self, source_path: Path, documents: list[Document], cfg: Settings
+    ) -> list[Document]:
+        """If native extraction yields very little text for a file, re-ingest with hybrid OCR."""
+        groups: dict[str, list[Document]] = defaultdict(list)
+        for d in documents:
+            fn = d.metadata.get("file_name", "unknown")
+            if isinstance(fn, str) and ("/" in fn or "\\" in fn):
+                fn = Path(fn).name
+            groups[str(fn)].append(d)
+
+        result: list[Document] = []
+        for fn, group in groups.items():
+            total = sum(len(x.text.strip()) for x in group)
+            if total >= cfg.pdf_ocr_min_text_chars:
+                result.extend(group)
+                continue
+            pdf_path = source_path / fn
+            if not pdf_path.is_file():
+                result.extend(group)
+                continue
+            if not pdf_ocr_available():
+                logger.warning(
+                    "Little text extracted from %s; Tesseract unavailable, keeping native text",
+                    fn,
+                )
+                result.extend(group)
+                continue
+            try:
+                result.extend(hybrid_documents_from_pdf(pdf_path, cfg))
+            except Exception as exc:
+                logger.warning("OCR fallback failed for %s: %s", fn, exc)
+                result.extend(group)
+        return result
 
 
 class ChunkingPipeline:

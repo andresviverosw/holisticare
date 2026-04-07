@@ -6,6 +6,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
