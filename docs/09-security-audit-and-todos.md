@@ -137,9 +137,9 @@ Bandit reported:
  - Implemented:
    - added `security-audit` job to `.github/workflows/ci.yml`
    - job runs `pip-audit`, `bandit`, and frontend `npm audit --audit-level=moderate`
-   - configured as advisory by default with a rollout toggle:
-     - set repository variable `SECURITY_AUDIT_BLOCKING=true` to make it blocking
-     - unset/false keeps it advisory (`continue-on-error`)
+   - **blocking by default**; optional triage mode:
+     - set repository variable `SECURITY_AUDIT_ADVISORY=true` to make the job non-blocking (`continue-on-error`)
+     - unset (or not `true`) keeps scans **strict** (fail the workflow on scanner failure)
 
 ## Notes and assumptions
 

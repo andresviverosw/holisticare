@@ -31,7 +31,7 @@ This directory contains the six core documentation phases for the AI4devs master
 
 ### CI security scans (advisory vs blocking)
 
-GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audit` job (see `.github/workflows/ci.yml`). By default this job is **advisory** so the rest of CI can stay green while findings are triaged. To **fail the workflow** when a scanner reports issues, set the repository variable **`SECURITY_AUDIT_BLOCKING=true`** (GitHub: repo **Settings → Secrets and variables → Actions → Variables**). Details and context live in `09-security-audit-and-todos.md`.
+GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audit` job (see `.github/workflows/ci.yml`). By default this job is **blocking**: if any scanner fails, the workflow fails. To temporarily make it **advisory** (non-blocking) while triaging findings, set the repository variable **`SECURITY_AUDIT_ADVISORY=true`** (GitHub: repo **Settings → Secrets and variables → Actions → Variables**). Unset or set to anything other than `true` to restore strict behavior. Details and context live in `09-security-audit-and-todos.md`.
 
 ## Active sprint
 

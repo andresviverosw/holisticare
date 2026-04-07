@@ -57,9 +57,9 @@ jobs:
 
   security-audit:
     runs-on: ubuntu-latest
-    # Advisory by default. Set repository variable SECURITY_AUDIT_BLOCKING=true
-    # to make this job blocking without changing workflow code.
-    continue-on-error: ${{ vars.SECURITY_AUDIT_BLOCKING != 'true' }}
+    # Blocking by default. Set repository variable SECURITY_AUDIT_ADVISORY=true
+    # to keep this job non-blocking while triaging findings.
+    continue-on-error: ${{ vars.SECURITY_AUDIT_ADVISORY == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -74,10 +74,10 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pip-audit bandit
 
-      - name: Run pip-audit (advisory)
+      - name: Run pip-audit
         run: pip-audit -r backend/requirements.txt
 
-      - name: Run bandit (advisory)
+      - name: Run bandit
         run: bandit -r backend/app
 
       - name: Set up Node.js
@@ -91,6 +91,6 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      - name: Run npm audit (advisory)
+      - name: Run npm audit
         run: npm audit --audit-level=moderate
         working-directory: frontend

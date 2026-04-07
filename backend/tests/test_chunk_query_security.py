@@ -43,3 +43,34 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
     assert params["language"] == "es"
     assert params["has_contraindication"] is True
 
+
+@pytest.mark.asyncio
+async def test_list_clinical_chunks_null_optional_filters_use_typed_cast_sql():
+    """Guards PostgreSQL/asyncpg: untyped NULL bind caused AmbiguousParameterError before CAST()."""
+    db = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.mappings.return_value.all.return_value = []
+    db.execute.return_value = execute_result
+
+    await list_clinical_chunks(
+        db,
+        therapy_type=None,
+        language=None,
+        has_contraindication=None,
+        limit=1,
+        offset=0,
+    )
+
+    stmt = db.execute.await_args.args[0]
+    params = db.execute.await_args.args[1]
+    sql = str(stmt)
+
+    assert "CAST(:therapy_type AS TEXT)" in sql
+    assert "CAST(:language AS TEXT)" in sql
+    assert "CAST(:has_contraindication AS BOOLEAN)" in sql
+    assert params["therapy_type"] is None
+    assert params["language"] is None
+    assert params["has_contraindication"] is None
+    assert params["limit"] == 1
+    assert params["offset"] == 0
+
