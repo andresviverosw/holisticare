@@ -15,26 +15,24 @@ async def list_clinical_chunks(
     limit: int,
     offset: int,
 ) -> dict[str, Any]:
-    filters: list[str] = []
-    params: dict[str, Any] = {"limit": limit, "offset": offset}
-
-    if therapy_type:
-        filters.append(":therapy_type = ANY(therapy_type)")
-        params["therapy_type"] = therapy_type
-    if language:
-        filters.append("language = :language")
-        params["language"] = language
-    if has_contraindication is not None:
-        filters.append("has_contraindication = :has_contraindication")
-        params["has_contraindication"] = has_contraindication
-
-    where_clause = f"WHERE {' AND '.join(filters)}" if filters else ""
+    params: dict[str, Any] = {
+        "therapy_type": therapy_type,
+        "language": language,
+        "has_contraindication": has_contraindication,
+        "limit": limit,
+        "offset": offset,
+    }
     query = text(
-        f"""
+        """
         SELECT ref_id, content, therapy_type, condition, evidence_level, language,
                section, has_contraindication, source_file, page_number
         FROM clinical_chunks
-        {where_clause}
+        WHERE (CAST(:therapy_type AS TEXT) IS NULL OR CAST(:therapy_type AS TEXT) = ANY(therapy_type))
+          AND (CAST(:language AS TEXT) IS NULL OR language = CAST(:language AS TEXT))
+          AND (
+            CAST(:has_contraindication AS BOOLEAN) IS NULL
+            OR has_contraindication = CAST(:has_contraindication AS BOOLEAN)
+          )
         ORDER BY created_at DESC
         LIMIT :limit OFFSET :offset
         """

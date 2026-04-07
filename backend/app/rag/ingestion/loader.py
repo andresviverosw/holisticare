@@ -19,6 +19,7 @@ from langdetect import detect, LangDetectException
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import Document, TextNode
+from llama_index.readers.file import PDFReader
 
 from app.core.config import get_settings
 
@@ -75,10 +76,12 @@ class DocumentLoader:
     """Loads and prepares documents from a source directory."""
 
     def load(self, source_dir: str) -> list[Document]:
+        pdf_reader = PDFReader(return_full_document=False)
         reader = SimpleDirectoryReader(
             input_dir=source_dir,
             required_exts=[".pdf"],
             recursive=False,
+            file_extractor={".pdf": pdf_reader},
         )
         documents = reader.load_data()
         return documents

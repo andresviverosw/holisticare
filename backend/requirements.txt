@@ -1,8 +1,8 @@
 # ─── Core framework ───────────────────────────────────────────
-fastapi==0.115.0
+fastapi==0.121.3
 uvicorn[standard]==0.30.6
-pydantic==2.7.4
-pydantic-settings==2.3.4
+pydantic==2.12.5
+pydantic-settings==2.13.1
 python-dotenv==1.0.1
 
 # ─── Database ─────────────────────────────────────────────────
@@ -11,25 +11,25 @@ sqlalchemy[asyncio]==2.0.31
 psycopg2-binary==2.9.9
 
 # ─── LlamaIndex ───────────────────────────────────────────────
-llama-index-core==0.10.68
-llama-index-vector-stores-postgres==0.1.14
-llama-index-embeddings-openai==0.1.11
-llama-index-llms-anthropic==0.1.13
-llama-index-readers-file==0.1.33
+llama-index-core==0.14.20
+llama-index-vector-stores-postgres==0.8.1
+llama-index-embeddings-openai==0.6.0
+llama-index-llms-anthropic==0.11.2
+llama-index-readers-file==0.6.0
 
 # ─── Embeddings & reranker ────────────────────────────────────
 openai==1.40.0
 sentence-transformers==3.0.1    # free cross-encoder reranker
 
 # ─── LLM ─────────────────────────────────────────────────────
-anthropic==0.28.1
+anthropic==0.90.0
 
 # ─── Document processing ──────────────────────────────────────
-pypdf==4.3.1
+pypdf==6.9.2
 langdetect==1.0.9
 
 # ─── Auth & security ──────────────────────────────────────────
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
 
 # ─── Dev & testing ────────────────────────────────────────────

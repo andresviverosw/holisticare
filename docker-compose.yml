@@ -24,7 +24,8 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      ALLOW_DEV_AUTH: "${ALLOW_DEV_AUTH:-true}"
+      # Safer default: opt in via .env for local dev (see .env.example).
+      ALLOW_DEV_AUTH: "${ALLOW_DEV_AUTH:-false}"
     ports:
       - "8000:8000"
     volumes:

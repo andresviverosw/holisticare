@@ -54,3 +54,41 @@ jobs:
 
       - name: Vite build
         run: npm run build
+
+  security-audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies and scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pip-audit bandit
+
+      - name: Run pip-audit (advisory)
+        run: pip-audit -r backend/requirements.txt
+
+      - name: Run bandit (advisory)
+        run: bandit -r backend/app
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run npm audit (advisory)
+        run: npm audit --audit-level=moderate
+        working-directory: frontend
