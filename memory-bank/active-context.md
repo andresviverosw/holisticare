@@ -2,17 +2,15 @@
 
 ## Ongoing Tasks
 
-- Execute TODO-SEC-002: upgrade pypdf to a patched major version and validate ingestion compatibility
-- Prepare TODO-SEC-003 plan: llama-index security upgrade with compatibility matrix and staged tests
+- Keep memory bank files aligned with shipped work (see `docs/09-security-audit-and-todos.md` for security backlog).
+
 ## Known Issues
 
-- pip-audit still reports vulnerabilities in pypdf and llama-index-core
-- Major-version library upgrades may break ingestion/retrieval APIs and require careful regression coverage
+- None tracked here; use `docs/09-security-audit-and-todos.md` for scanner findings and follow-ups.
+
 ## Next Steps
 
-- Create TDD-first failing tests for pypdf-sensitive ingestion behavior
-- Upgrade pypdf in a dedicated slice and run backend regression suite
-- Re-run pip-audit and update security TODO document with evidence
+- After each feature slice: append `progress.md`, refresh this file, and log non-trivial decisions in `decision-log.md`.
 ## Current Session Notes
 
 - [12:18:31 PM] [Unknown User] Decision Made: Standardize Memory Bank MCP usage
