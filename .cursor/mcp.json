@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "memory-bank-mcp": {
+      "alwaysApply": true,
+      "command": "npx",
+      "args": [
+        "-y",
+        "@movibe/memory-bank-mcp",
+        "--mode",
+        "architect",
+        "--path",
+        ".",
+        "--folder",
+        "memory-bank"
+      ]
+    }
+  }
+}

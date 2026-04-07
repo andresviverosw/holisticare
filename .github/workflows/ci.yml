@@ -57,7 +57,9 @@ jobs:
 
   security-audit:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    # Advisory by default. Set repository variable SECURITY_AUDIT_BLOCKING=true
+    # to make this job blocking without changing workflow code.
+    continue-on-error: ${{ vars.SECURITY_AUDIT_BLOCKING != 'true' }}
     steps:
       - uses: actions/checkout@v4
 

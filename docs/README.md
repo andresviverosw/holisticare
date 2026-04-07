@@ -29,6 +29,10 @@ This directory contains the six core documentation phases for the AI4devs master
 - `08-developer-guide-and-architecture.md` - developer setup, module map, and mermaid diagrams
 - `09-security-audit-and-todos.md` - latest scanner findings and remediation backlog
 
+### CI security scans (advisory vs blocking)
+
+GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audit` job (see `.github/workflows/ci.yml`). By default this job is **advisory** so the rest of CI can stay green while findings are triaged. To **fail the workflow** when a scanner reports issues, set the repository variable **`SECURITY_AUDIT_BLOCKING=true`** (GitHub: repo **Settings → Secrets and variables → Actions → Variables**). Details and context live in `09-security-audit-and-todos.md`.
+
 ## Active sprint
 
 - `sprint-01.md` - Sprint 1 (backend, US-PLAN-001, generic holistic intake v0)
