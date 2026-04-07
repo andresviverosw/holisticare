@@ -29,7 +29,8 @@ async def dev_login(request: DevLoginRequest) -> dict[str, str]:
     )
     return {
         "access_token": token,
-        "token_type": "bearer",
+        # Literal OAuth 2.0 token_type (RFC 6749); Bandit flags the string as B105 otherwise.
+        "token_type": "bearer",  # nosec B105
         "role": request.role,
         "sub": request.sub,
     }
