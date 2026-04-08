@@ -76,6 +76,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
+| US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Planned |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
@@ -306,6 +307,22 @@ Implementation evidence (backend):
 - `backend/app/rag/ingestion/html_reader.py` — `HolisticareHTMLReader`, UTF-8 read, BeautifulSoup `html.parser`.
 - `backend/app/rag/ingestion/loader.py` — `required_exts` includes `.pdf`, `.html`, `.htm`; shared HTML reader instance; OCR thin-file path gated to `.pdf` only.
 
+### US-RAG-002 - Onboard curated research / clinical corpus
+
+- Given a curated set of clinical reference files (PDF and/or HTML) owned by the project, when an admin places them under an agreed `source_dir` visible to the backend (local bind mount or image copy), then `POST /rag/ingest` indexes them without manual JSON or ad-hoc steps.
+- Given a first-time load or a corpus refresh, when ingestion completes, then counts (files processed, chunks created) are recorded and **at least one** smoke check (e.g. chunk browse or plan generation with expected citations) confirms retrieval uses the new material.
+- Given licensing or privacy constraints on the corpus, when documents are added, then the team documents consent/source provenance in the ops or research appendix (out of band from code, but required for acceptance in academic / pilot contexts).
+
+Test intent:
+
+- Integration / ops: scripted or documented sequence from `docker compose` + `POST /rag/ingest` with `source_dir` and optional `force_reindex=true`; capture expected HTTP `200` and non-empty chunk listing for a known filename or therapy tag if metadata allows.
+- Regression: existing ingestion tests (`test_html_ingestion`, loader security) remain green after any path or wiring changes.
+
+Implementation notes:
+
+- Technical ingestion capability is covered by **US-RAG-001**; this story is about **operational delivery** of *your* corpus: directory layout, compose volume or image rebuild, env-safe ingest command, and verification checklist (see `docs/setup.md` ingestion smoke, `docs/demo-smoke-checklist.md` if extended).
+- If the corpus must live outside `data/mock`, define a stable repo path (e.g. `data/corpus/`) and document it in deployment/runbook material without committing restricted PDFs if policy requires.
+
 ## 6. Non-functional acceptance criteria
 
 - Performance: 95th percentile API response <= 800 ms for non-AI endpoints in staging baseline load.
@@ -321,6 +338,7 @@ Implementation evidence (backend):
 | US-INT-001 | Must | R1 | None | Foundation for all downstream features |
 | US-PLAN-001 | Must | R1 | US-INT-001 | Initial RAG core value |
 | US-RAG-001 | Must | R1 | None | Multi-format ingestion (PDF, HTML); enables retrieval corpus |
+| US-RAG-002 | Must | R2 | US-RAG-001 | Load curated corpus + verify retrieval (ops slice) |
 | US-PLAN-002 | Must | R1 | US-PLAN-001 | Required trust control |
 | US-PLAN-003 | Must | R1 | US-PLAN-001 | Required safety gate |
 | US-SESS-001 | Must | R1 | US-INT-001 | Longitudinal tracking base |
@@ -336,7 +354,7 @@ Implementation evidence (backend):
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection, optional clinician-facing intake form in the plan generator (US-INT-004) to replace raw JSON entry.
+- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (US-RAG-002), optional clinician-facing intake form in the plan generator (US-INT-004) to replace raw JSON entry.
 - R3 (advanced): trajectory prediction and adjustment suggestions.
 
 ## 8. Definition of ready / done
