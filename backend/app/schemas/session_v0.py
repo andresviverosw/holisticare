@@ -53,3 +53,20 @@ class ClinicalSessionLogV0(BaseModel):
             s = v.strip()
             return s if s else None
         return v
+
+
+class SessionNoteAssistV0(BaseModel):
+    profile_version: Literal["clinical_session_note_assist_v0"]
+    interventions: list[SessionInterventionV0] = Field(..., min_length=1)
+    observations_draft: str | None = None
+    patient_reported_response: str | None = None
+
+    @field_validator("observations_draft", "patient_reported_response", mode="before")
+    @classmethod
+    def strip_optional_strings(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, str):
+            s = v.strip()
+            return s if s else None
+        return v

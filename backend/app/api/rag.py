@@ -19,7 +19,7 @@ from app.core.database import get_db
 from app.rag.pipeline import RAGPipeline
 from app.schemas.intake_v0 import GenericHolisticIntakeV0
 from app.schemas.diary_v0 import PatientDiaryCheckinV0
-from app.schemas.session_v0 import ClinicalSessionLogV0
+from app.schemas.session_v0 import ClinicalSessionLogV0, SessionNoteAssistV0
 from app.services.plan_persistence import (
     apply_plan_approval_action,
     get_persisted_plan,
@@ -41,6 +41,7 @@ from app.services.analytics_service import (
 )
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
+from app.services.session_note_service import suggest_session_note
 
 router = APIRouter()
 
@@ -110,6 +111,10 @@ class SessionCreateRequest(BaseModel):
 class DiarySaveRequest(BaseModel):
     patient_id: UUID4
     checkin: PatientDiaryCheckinV0
+
+
+class SessionNoteAssistRequest(BaseModel):
+    session_note_input: SessionNoteAssistV0
 
 
 # ─── Endpoints ────────────────────────────────────────────────
@@ -280,6 +285,21 @@ async def list_patient_sessions(
         ],
         "limit": limit,
         "offset": offset,
+    }
+
+
+@router.post("/sessions/suggest-note")
+async def suggest_session_note_completion(
+    request: SessionNoteAssistRequest,
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """
+    Suggest completion text for session notes from structured interventions.
+    """
+    suggestion = suggest_session_note(request.session_note_input)
+    return {
+        "profile_version": "clinical_session_note_assist_v0",
+        **suggestion,
     }
 
 

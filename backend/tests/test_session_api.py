@@ -36,6 +36,23 @@ def _valid_session_body():
     }
 
 
+def _valid_suggest_note_body():
+    return {
+        "session_note_input": {
+            "profile_version": "clinical_session_note_assist_v0",
+            "interventions": [
+                {
+                    "therapy_type": "fisioterapia",
+                    "description": "Movilidad lumbar guiada",
+                    "duration_minutes": 20,
+                }
+            ],
+            "observations_draft": "Buena ejecución técnica.",
+            "patient_reported_response": "Dolor leve al final de la sesión.",
+        }
+    }
+
+
 def test_create_session_422_when_interventions_empty(client: TestClient):
     body = _valid_session_body()
     body["session_log"]["interventions"] = []
@@ -141,6 +158,22 @@ def test_list_sessions_200_empty(client: TestClient):
     }
 
 
+def test_suggest_session_note_200(client: TestClient):
+    r = client.post("/rag/sessions/suggest-note", json=_valid_suggest_note_body())
+    assert r.status_code == 200
+    data = r.json()
+    assert data["profile_version"] == "clinical_session_note_assist_v0"
+    assert "fisioterapia" in data["suggested_observations"].lower()
+    assert data["suggested_patient_reported_response"] == "Dolor leve al final de la sesión."
+
+
+def test_suggest_session_note_422_when_interventions_empty(client: TestClient):
+    body = _valid_suggest_note_body()
+    body["session_note_input"]["interventions"] = []
+    r = client.post("/rag/sessions/suggest-note", json=body)
+    assert r.status_code == 422
+
+
 def test_create_session_401_when_not_authenticated(client: TestClient):
     app.dependency_overrides.pop(get_current_user, None)
     try:
@@ -154,6 +187,15 @@ def test_list_sessions_401_when_not_authenticated(client: TestClient):
     app.dependency_overrides.pop(get_current_user, None)
     try:
         r = client.get(f"/rag/sessions/patient/{PATIENT_ID}")
+    finally:
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+    assert r.status_code == 401
+
+
+def test_suggest_session_note_401_when_not_authenticated(client: TestClient):
+    app.dependency_overrides.pop(get_current_user, None)
+    try:
+        r = client.post("/rag/sessions/suggest-note", json=_valid_suggest_note_body())
     finally:
         app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
     assert r.status_code == 401

@@ -76,9 +76,9 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
-| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
+| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
-| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Planned |
+| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Done (backend API slice) |
 | US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Planned |
@@ -152,6 +152,21 @@ Implementation evidence (backend):
 - `POST /rag/sessions` and `GET /rag/sessions/patient/{patient_id}` (JWT roles `clinician` or `admin`).
 - Contract tests in `backend/tests/test_session_api.py`.
 
+### US-SESS-002 - AI-assisted note completion
+
+- Given structured interventions and optional draft text, when a clinician requests note assistance, then the API returns suggested observations and patient-reported response text.
+- Given empty interventions, when assistance is requested, then validation fails with `422`.
+- Given an unauthenticated caller, when assistance is requested, then the API returns `401`.
+
+Test intent:
+- Integration: `POST /rag/sessions/suggest-note` contract tests and auth checks.
+
+Implementation evidence (backend):
+- `SessionNoteAssistV0` schema in `backend/app/schemas/session_v0.py`.
+- Suggestion service in `backend/app/services/session_note_service.py`.
+- `POST /rag/sessions/suggest-note` endpoint (JWT roles `clinician`/`admin`).
+- Tests in `backend/tests/test_session_api.py`.
+
 ### US-PLAN-001 - Draft treatment plan generation
 
 **Input framing (locked for Sprint 1):** Option **A** — **generic holistic rehab** profile in `intake_json` (chief complaint, conditions, goals, modalities, contraindications, baseline outcomes such as NRS). NMG-specific fields (e.g. Bioshock, capas) are **out of scope** for v0; see `docs/sprint-01.md` for the normative JSON shape and sprint slice.
@@ -211,6 +226,20 @@ Implementation evidence (backend):
 - `POST /rag/diary` and `GET /rag/diary/patient/{patient_id}` with optional `date_from` / `date_to` query filters; list ordered by `entry_date` descending.
 - JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
 - Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
+
+### US-DIARY-002 - Optional Spanish free-text notes
+
+- Given a diary check-in, when a patient includes optional `notes_es`, then the value is trimmed, persisted, and returned in the API payload.
+- Given blank `notes_es`, when a check-in is submitted, then the field is normalized to `null`.
+- Given excessive note length, when a check-in is submitted, then validation rejects the payload.
+
+Test intent:
+- Integration: `POST /rag/diary` persistence/response includes `notes_es`.
+
+Implementation evidence (backend):
+- `notes_es` added to `patient_diary_v0` in `backend/app/schemas/diary_v0.py`.
+- Existing diary upsert flow persists `notes_es` within `diary_json`.
+- Tests updated in `backend/tests/test_diary_api.py`.
 
 ### US-ANLY-001 - Outcome trends (baseline analytics)
 

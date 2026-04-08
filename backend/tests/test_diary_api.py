@@ -27,6 +27,7 @@ def _valid_body():
             "sleep_quality_0_10": 6,
             "mood_0_10": 7,
             "function_0_10": 5,
+            "notes_es": "Me sentí mejor hoy después de la caminata.",
         },
     }
 
@@ -61,6 +62,7 @@ def test_diary_post_200_persists(client: TestClient):
     assert data["patient_id"] == PATIENT_ID
     assert data["entry_date"] == "2026-04-02"
     assert data["checkin"]["pain_nrs_0_10"] == 4
+    assert data["checkin"]["notes_es"] == "Me sentí mejor hoy después de la caminata."
     db_session.add.assert_called_once()
     added = db_session.add.call_args[0][0]
     assert isinstance(added, PatientDiaryEntry)
