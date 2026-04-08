@@ -139,17 +139,18 @@ These items motivated work; they are **not** the current state of pinned version
 - Implemented:
   - `backend/requirements.txt` pins `pillow==12.1.1`
 
-- [~] TODO-SEC-010 Remove temporary `pip-audit` ignore for `CVE-2026-1839` (`transformers`)
+- [x] TODO-SEC-010 Remove temporary `pip-audit` ignore for `CVE-2026-1839` (`transformers`)
 - Context:
-  - `pip-audit` reports `CVE-2026-1839` on `transformers==4.57.6`.
-  - Scanner fix points to `5.0.0rc3`, but current `sentence-transformers` releases in this stack require `transformers<5.0.0`, so direct upgrade is resolver-incompatible.
-- Temporary CI mitigation:
-  - `.github/workflows/ci.yml` `security-audit` step uses:
-    - `pip-audit -r backend/requirements.txt --ignore-vuln CVE-2026-1839`
-  - All other `pip-audit` findings remain blocking.
-- Exit criteria:
-  - Upgrade `sentence-transformers`/`transformers` to a compatible patched pair.
-  - Remove the `--ignore-vuln CVE-2026-1839` flag and keep CI strict.
+  - Prior temporary CI ignore existed while `sentence-transformers`/`transformers` versions were incompatible for the scanner fix.
+- Implemented:
+  - `backend/requirements.txt` upgraded to:
+    - `sentence-transformers==5.3.0`
+    - `transformers==5.0.0rc3`
+  - `.github/workflows/ci.yml` now runs strict:
+    - `pip-audit -r backend/requirements.txt`
+- Verify:
+  - `pip-audit -r backend/requirements.txt` reports no known vulnerabilities.
+  - backend tests remain green after dependency update.
 
 ## Notes and assumptions
 
