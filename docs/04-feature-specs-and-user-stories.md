@@ -74,6 +74,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
+| US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Planned |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
@@ -245,6 +246,21 @@ Implementation evidence (backend):
 - Orquestación en `get_patient_plateau_flags_payload` (`analytics_service.py`).
 - Tests: `backend/tests/test_plateau_service.py`, `backend/tests/test_plateau_api.py`.
 
+### US-RAG-001 - Multi-format corpus ingestion
+
+- Given a directory used as `source_dir` for `POST /rag/ingest`, when it contains `.pdf`, `.html`, and `.htm` files, then each supported file is indexed (PDFs via the existing reader; HTML via text extraction with script/style stripped).
+- Given an HTML file, when ingested, then chunk metadata remains consistent with PDFs (`file_name`, `page_label` for non-paged HTML as a single logical page).
+- Given a non-PDF file, when the pipeline evaluates “thin” document replacement, then OCR / hybrid PDF logic runs **only** for `.pdf` files (HTML is never passed to the PDF hybrid path).
+
+Test intent:
+
+- Unit / integration: `backend/tests/test_html_ingestion.py`, `backend/tests/test_loader_security.py` (extension registration and guards).
+
+Implementation evidence (backend):
+
+- `backend/app/rag/ingestion/html_reader.py` — `HolisticareHTMLReader`, UTF-8 read, BeautifulSoup `html.parser`.
+- `backend/app/rag/ingestion/loader.py` — `required_exts` includes `.pdf`, `.html`, `.htm`; shared HTML reader instance; OCR thin-file path gated to `.pdf` only.
+
 ## 6. Non-functional acceptance criteria
 
 - Performance: 95th percentile API response <= 800 ms for non-AI endpoints in staging baseline load.
@@ -259,6 +275,7 @@ Implementation evidence (backend):
 |------|----------|----------------|------------|-------|
 | US-INT-001 | Must | R1 | None | Foundation for all downstream features |
 | US-PLAN-001 | Must | R1 | US-INT-001 | Initial RAG core value |
+| US-RAG-001 | Must | R1 | None | Multi-format ingestion (PDF, HTML); enables retrieval corpus |
 | US-PLAN-002 | Must | R1 | US-PLAN-001 | Required trust control |
 | US-PLAN-003 | Must | R1 | US-PLAN-001 | Required safety gate |
 | US-SESS-001 | Must | R1 | US-INT-001 | Longitudinal tracking base |

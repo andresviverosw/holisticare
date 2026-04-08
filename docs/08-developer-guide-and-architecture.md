@@ -115,6 +115,7 @@ Defined in `.github/workflows/ci.yml`:
 
 ## Current design notes
 
+- **RAG ingestion** (`/rag/ingest`) indexes **`.pdf`**, **`.html`**, and **`.htm`** from the configured `source_dir`. PDFs may use native text or OCR fallback for scanned pages; HTML uses stripped visible text only (see `app/rag/ingestion/loader.py` and `html_reader.py`). OCR and hybrid PDF replacement do not apply to HTML.
 - Plan generation returns practitioner-governed output (`pending_review`, `requires_practitioner_review=true`).
 - Provider/model failures are mapped to explicit `502/503` responses with user-facing details.
 - Retrieval is aligned with current LlamaIndex `PGVectorStore.query(VectorStoreQuery)` API and uses parallel similarity arrays.

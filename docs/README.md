@@ -7,6 +7,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Need | Start here |
 |------|------------|
 | Run the app locally, tests, Docker | `setup.md` |
+| Release notes (high-level) | `CHANGELOG.md` (repository root) |
 | Clinician / demo usage of the MVP UI | `07-user-guide.md` |
 | Architecture, modules, env vars, diagrams | `08-developer-guide-and-architecture.md` |
 | Security scanners, remediation history, CI behavior | `09-security-audit-and-todos.md` |

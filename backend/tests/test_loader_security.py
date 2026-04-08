@@ -20,8 +20,9 @@ def test_document_loader_configures_pdf_reader(monkeypatch):
 
     kwargs = captured["kwargs"]
     assert kwargs["input_dir"] == "data/mock"
-    assert kwargs["required_exts"] == [".pdf"]
+    assert set(kwargs["required_exts"]) == {".pdf", ".html", ".htm"}
     assert kwargs["recursive"] is False
-    assert ".pdf" in kwargs["file_extractor"]
-    assert kwargs["file_extractor"][".pdf"] is not None
+    fe = kwargs["file_extractor"]
+    assert ".pdf" in fe and ".html" in fe and ".htm" in fe
+    assert fe[".html"] is fe[".htm"]
 

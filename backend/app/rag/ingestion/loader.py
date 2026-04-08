@@ -23,6 +23,7 @@ from llama_index.core.schema import Document, TextNode
 from llama_index.readers.file import PDFReader
 
 from app.core.config import Settings, get_settings
+from app.rag.ingestion.html_reader import HolisticareHTMLReader
 from app.rag.ingestion.pdf_ocr import hybrid_documents_from_pdf, pdf_ocr_available
 
 settings = get_settings()
@@ -80,11 +81,16 @@ class DocumentLoader:
 
     def load(self, source_dir: str) -> list[Document]:
         pdf_reader = PDFReader(return_full_document=False)
+        html_reader = HolisticareHTMLReader()
         reader = SimpleDirectoryReader(
             input_dir=source_dir,
-            required_exts=[".pdf"],
+            required_exts=[".pdf", ".html", ".htm"],
             recursive=False,
-            file_extractor={".pdf": pdf_reader},
+            file_extractor={
+                ".pdf": pdf_reader,
+                ".html": html_reader,
+                ".htm": html_reader,
+            },
         )
         documents = reader.load_data()
         cfg = get_settings()
@@ -131,6 +137,9 @@ class DocumentLoader:
         for fn, group in groups.items():
             total = sum(len(x.text.strip()) for x in group)
             if total >= cfg.pdf_ocr_min_text_chars:
+                result.extend(group)
+                continue
+            if not str(fn).lower().endswith(".pdf"):
                 result.extend(group)
                 continue
             pdf_path = source_path / fn

@@ -131,6 +131,26 @@ These items motivated work; they are **not** the current state of pinned version
      - set repository variable `SECURITY_AUDIT_ADVISORY=true` to make the job non-blocking (`continue-on-error`)
      - unset (or not `true`) keeps scans **strict** (fail the workflow on scanner failure)
 
+- [x] TODO-SEC-009 Pin **Pillow** to a release patched for CVE-2026-25990
+- **CVE:** CVE-2026-25990 — fix versions **12.1.1+** (scanner reported against `pillow==12.0.0`).
+- Verify:
+  - `pip-audit -r backend/requirements.txt` reports no known vulnerabilities
+  - backend test suite green after pin bump
+- Implemented:
+  - `backend/requirements.txt` pins `pillow==12.1.1`
+
+- [~] TODO-SEC-010 Remove temporary `pip-audit` ignore for `CVE-2026-1839` (`transformers`)
+- Context:
+  - `pip-audit` reports `CVE-2026-1839` on `transformers==4.57.6`.
+  - Scanner fix points to `5.0.0rc3`, but current `sentence-transformers` releases in this stack require `transformers<5.0.0`, so direct upgrade is resolver-incompatible.
+- Temporary CI mitigation:
+  - `.github/workflows/ci.yml` `security-audit` step uses:
+    - `pip-audit -r backend/requirements.txt --ignore-vuln CVE-2026-1839`
+  - All other `pip-audit` findings remain blocking.
+- Exit criteria:
+  - Upgrade `sentence-transformers`/`transformers` to a compatible patched pair.
+  - Remove the `--ignore-vuln CVE-2026-1839` flag and keep CI strict.
+
 ## Notes and assumptions
 
 - Findings are based on automated scanners; some are environment-specific or low-confidence.

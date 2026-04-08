@@ -113,6 +113,12 @@ Digital PDFs with a text layer are ingested without OCR. **Scanned or image-only
 
 Optional environment variables: `PDF_OCR_*` in `.env.example`.
 
+### 4.3) HTML pages (`.html` / `.htm`)
+
+The same ingestion endpoint indexes **static HTML** as well as PDFs. Drop `.html` or `.htm` files under your `source_dir` (for example `data/mock`). The backend strips `script`, `style`, and `noscript`, extracts visible text (preferring `<body>`), and indexes one document per file. **OCR and the “thin PDF” hybrid path apply only to `.pdf` files**, not HTML.
+
+Implementation: `backend/app/rag/ingestion/html_reader.py`, wired in `backend/app/rag/ingestion/loader.py`.
+
 ## 5) Local test commands
 
 Backend tests (no PostgreSQL or API keys required — `conftest.py` sets CI-safe defaults and stubs DB for HTTP tests):
