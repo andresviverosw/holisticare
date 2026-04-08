@@ -71,6 +71,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
+| US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Planned |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
@@ -134,6 +135,21 @@ Implementation evidence (backend):
 - `intake_profile_audit` persistence added (`before_json`, `after_json`, `actor_sub`, `changed_at`).
 - `GET /rag/intake/{patient_id}/audit` implemented as admin-only, returning newest-first audit entries.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for update success, audit retrieval (`200/404`), and non-admin forbidden (`403`).
+
+### US-INT-004 - Clinician intake form in plan generator (replace raw JSON)
+
+- Given the plan generation screen (`generic_holistic_v0`), when a clinician fills separate fields (chief complaint, conditions, goals, list-style fields, optional demographics, baseline pain, etc.), then the UI builds a valid `intake_json` payload without requiring manual JSON editing.
+- Given required intake fields are empty or invalid, when the clinician tries to generate a plan, then the UI blocks submit and shows clear, field-level validation (aligned with backend rules: at least one non-empty condition and goal, non-empty chief complaint, optional list fields normalized to arrays).
+- Given the clinician still needs to debug or import data, when an advanced option exists, then they may view or edit the derived JSON in a collapsible panel or secondary control (optional secondary story slice).
+
+Test intent:
+- Unit: pure function or small module that maps form state → `generic_holistic_v0` object (including `profile_version`).
+- Component/integration: React tests or smoke that submission calls `ragApi.generatePlan` with the assembled object.
+- E2E: deferred until Playwright (if introduced).
+
+Implementation notes:
+- Current UI: `frontend/src/pages/Dashboard.jsx` uses a monospace `textarea` for intake JSON; replace with form controls wired to the same API contract.
+- Canonical schema: `backend/app/schemas/intake_v0.py` (`GenericHolisticIntakeV0`, nested demographics, baseline outcomes, string lists).
 
 ### US-SESS-001 - Structured session logging
 
@@ -314,12 +330,13 @@ Implementation evidence (backend):
 | US-INT-002 | Must | R2 | US-INT-001 | Safety enhancement |
 | US-SESS-002 | Should | R2 | US-SESS-001 | Productivity enhancement |
 | US-DIARY-002 | Should | R2 | US-DIARY-001 | Patient engagement |
+| US-INT-004 | Should | R2 | US-PLAN-001 | Clinician UX: structured intake on plan generator |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | Predictive model maturity |
 | US-PRED-002 | Should | R3 | US-PRED-001 | Recommendation layer |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection.
+- R2 (MVP+): risk flags, AI note completion, plateau detection, optional clinician-facing intake form in the plan generator (US-INT-004) to replace raw JSON entry.
 - R3 (advanced): trajectory prediction and adjustment suggestions.
 
 ## 8. Definition of ready / done
