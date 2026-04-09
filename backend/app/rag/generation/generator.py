@@ -12,11 +12,10 @@ import json
 import uuid
 from datetime import datetime, timezone
 
-import anthropic
 from app.core.config import get_settings
+from app.rag.llm_chat import complete_claude_or_openai
 
 settings = get_settings()
-client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
 SYSTEM_PROMPT = """You are a clinical decision support assistant for holistic rehabilitation.
@@ -111,14 +110,11 @@ Your output must be a valid JSON object matching this schema:
 Replace 'uuid' values with actual UUIDs. patient_id = {patient_id}.
 Only cite REF-IDs that appear in the RETRIEVED CLINICAL CONTEXT above."""
 
-        response = client.messages.create(
-            model=settings.claude_model,
-            max_tokens=2000,
+        raw = complete_claude_or_openai(
             system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_message}],
+            user=user_message,
+            max_tokens=2000,
         )
-
-        raw = response.content[0].text.strip()
         plan = self._parse_and_validate(raw, patient_id, citations_in_context)
         return plan
 

@@ -25,6 +25,7 @@ dist/
 # Data — don't commit real clinical PDFs
 backend/data/raw/
 backend/data/processed/
+backend/data/corpus/
 
 # IDE
 .vscode/

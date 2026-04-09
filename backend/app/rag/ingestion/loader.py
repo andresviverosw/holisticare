@@ -52,6 +52,22 @@ def detect_language(text: str) -> str:
         return "en"
 
 
+def metadata_page_number(metadata: dict) -> int:
+    """Coerce document metadata page_label to int; empty or invalid → 0."""
+    raw = metadata.get("page_label", 0)
+    if raw is None:
+        return 0
+    if isinstance(raw, int):
+        return raw
+    s = str(raw).strip()
+    if not s:
+        return 0
+    try:
+        return int(s)
+    except ValueError:
+        return 0
+
+
 def compute_ref_id(source_file: str, page: int, chunk_index: int) -> str:
     """
     Deterministic REF-ID for a chunk. Stable across re-runs so
@@ -179,7 +195,7 @@ class ChunkingPipeline:
 
         for doc in documents:
             source_file = Path(doc.metadata.get("file_name", "unknown")).name
-            page_number = int(doc.metadata.get("page_label", 0))
+            page_number = metadata_page_number(doc.metadata)
             doc_language = detect_language(doc.text)
 
             nodes = self.splitter.get_nodes_from_documents([doc])

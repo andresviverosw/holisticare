@@ -119,6 +119,44 @@ The same ingestion endpoint indexes **static HTML** as well as PDFs. Drop `.html
 
 Implementation: `backend/app/rag/ingestion/html_reader.py`, wired in `backend/app/rag/ingestion/loader.py`.
 
+### 4.4) Curated corpus (`data/corpus`) and verification (US-RAG-002)
+
+The backend working directory in Docker is `/app`; the repo bind-mounts `backend/data` to `/app/data`. Put PDF/HTML sources under a stable path such as **`backend/data/corpus`** (ingest with `source_dir` **`data/corpus`**).
+
+**Preferred (long runs): run ingestion inside the container** — no admin JWT and no HTTP timeout; same code path as `POST /rag/ingest`:
+
+```bash
+# From repository root
+docker compose exec backend env PYTHONPATH=/app python scripts/run_corpus_ingest.py \
+  --source-dir data/corpus --force-reindex
+```
+
+Optional: point `--source-dir` at any folder under `backend/data/` (for example a small `data/mock` folder if you keep one) and omit `--force-reindex` for an idempotent pass.
+
+**Alternative (HTTP):** admin JWT required — `POST /rag/ingest` with a JSON body, for example:
+
+```powershell
+# Full reindex of the curated corpus (PowerShell; replace $token)
+$token = "<admin_jwt>"
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" `
+  -Body '{"source_dir":"data/corpus","force_reindex":true}'
+```
+
+**Smoke checks after ingest**
+
+- **`GET /rag/chunks?limit=5`** — should return non-empty `items`. Indexed rows are stored in Postgres table **`data_clinical_chunks`** (LlamaIndex `PGVectorStore` naming). The **`clinical_chunks`** table in `infra/init.sql` is legacy DDL and is not the browse/retrieval source of truth for this stack.
+- Response field **`status`** on ingest: `partial` means at least one file failed; inspect **`ingestion_log`** (columns `source_file`, `status`, `error_msg`).
+
+**Failure report (optional)**
+
+From the backend container:
+
+```bash
+docker compose exec backend env PYTHONPATH=/app python scripts/ingestion_log_report.py
+```
+
 ## 5) Local test commands
 
 Backend tests (no PostgreSQL or API keys required — `conftest.py` sets CI-safe defaults and stubs DB for HTTP tests):

@@ -24,12 +24,19 @@ class IngestionService:
         files_processed = len(documents)
         chunks_created = 0
         status = "success"
+        # PDFReader yields one Document per page sharing the same file_name; deleting
+        # on every page would remove chunks indexed for earlier pages of the same file.
+        reindexed_sources: set[str] = set()
 
         for doc in documents:
-            source_file = doc.metadata.get("file_name", "unknown")
+            raw_name = doc.metadata.get("file_name", "unknown")
+            source_file = (
+                Path(raw_name).name if isinstance(raw_name, str) else str(raw_name)
+            )
             try:
-                if force_reindex:
+                if force_reindex and source_file not in reindexed_sources:
                     self.embedder.remove_existing_for_source(source_file)
+                    reindexed_sources.add(source_file)
                 pairs = self.chunker.process([doc])
                 stored = self.embedder.embed_and_store(pairs, source_file)
                 self.embedder.log_ingestion(source_file, stored, "success")

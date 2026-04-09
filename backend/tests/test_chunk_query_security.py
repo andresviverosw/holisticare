@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
 from app.services.chunk_query import list_clinical_chunks
 
 
@@ -25,17 +26,16 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
     params = db.execute.await_args.args[1]
     sql = str(stmt)
 
-    # Query text should be static with optional parameter predicates.
+    # Query text should be static with optional parameter predicates (PGVector JSON metadata).
+    assert f"FROM {PGVECTOR_DATA_TABLE}" in sql
     assert (
-        "WHERE (CAST(:therapy_type AS TEXT) IS NULL OR CAST(:therapy_type AS TEXT) = ANY(therapy_type))"
-        in sql
+        "CAST(:therapy_type AS TEXT) IS NULL" in sql
+        and "jsonb_build_array(CAST(:therapy_type AS TEXT))" in sql
     )
-    assert (
-        "AND (CAST(:language AS TEXT) IS NULL OR language = CAST(:language AS TEXT))" in sql
-    )
+    assert "metadata_::jsonb->>'language' = CAST(:language AS TEXT)" in sql
     assert (
         "CAST(:has_contraindication AS BOOLEAN) IS NULL" in sql
-        and "has_contraindication = CAST(:has_contraindication AS BOOLEAN)" in sql
+        and "CAST(:has_contraindication AS BOOLEAN)" in sql
     )
 
     # Inputs are bound via params, not interpolated in SQL text.

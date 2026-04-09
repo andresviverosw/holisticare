@@ -6,11 +6,10 @@ Responsibilities:
 - Expand that summary into multiple search queries (multi-query)
 """
 
-import anthropic
 from app.core.config import get_settings
+from app.rag.llm_chat import complete_claude_or_openai
 
 settings = get_settings()
-client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
 SUMMARIZER_PROMPT = """You are a clinical summarization assistant for a holistic rehabilitation platform.
@@ -50,31 +49,24 @@ class QueryBuilder:
 
     def build_clinical_summary(self, intake_json: dict) -> str:
         """Compress intake profile into a search-optimized clinical summary."""
-        response = client.messages.create(
-            model=settings.claude_model,
+        return complete_claude_or_openai(
+            system=None,
+            user=f"{SUMMARIZER_PROMPT}\n\nPatient intake:\n{intake_json}",
             max_tokens=300,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"{SUMMARIZER_PROMPT}\n\nPatient intake:\n{intake_json}",
-                }
-            ],
         )
-        return response.content[0].text.strip()
 
     def expand_queries(self, clinical_summary: str) -> list[str]:
         """Generate multi-query variants from the clinical summary."""
         n = settings.num_query_variants
         prompt = QUERY_EXPANSION_PROMPT.format(n=n, summary=clinical_summary)
 
-        response = client.messages.create(
-            model=settings.claude_model,
+        raw = complete_claude_or_openai(
+            system=None,
+            user=prompt,
             max_tokens=400,
-            messages=[{"role": "user", "content": prompt}],
         )
 
         import json
-        raw = response.content[0].text.strip()
         try:
             queries = json.loads(raw)
             if isinstance(queries, list) and all(isinstance(q, str) for q in queries):

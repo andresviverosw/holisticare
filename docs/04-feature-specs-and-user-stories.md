@@ -322,6 +322,7 @@ Implementation notes:
 
 - Technical ingestion capability is covered by **US-RAG-001**; this story is about **operational delivery** of *your* corpus: directory layout, compose volume or image rebuild, env-safe ingest command, and verification checklist (see `docs/setup.md` ingestion smoke, `docs/demo-smoke-checklist.md` if extended).
 - If the corpus must live outside `data/mock`, define a stable repo path (e.g. `data/corpus/`) and document it in deployment/runbook material without committing restricted PDFs if policy requires.
+- Operational steps and verification commands: **`docs/setup.md` (section 4.4)**; ingestion failures: `backend/scripts/ingestion_log_report.py`.
 
 ## 6. Non-functional acceptance criteria
 

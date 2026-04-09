@@ -5,6 +5,8 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
+
 
 async def list_clinical_chunks(
     db: AsyncSession,
@@ -22,18 +24,45 @@ async def list_clinical_chunks(
         "limit": limit,
         "offset": offset,
     }
+    # Rows live in LlamaIndex PGVectorStore table data_<index>, with metadata in metadata_ JSON.
     query = text(
-        """
-        SELECT ref_id, content, therapy_type, condition, evidence_level, language,
-               section, has_contraindication, source_file, page_number
-        FROM clinical_chunks
-        WHERE (CAST(:therapy_type AS TEXT) IS NULL OR CAST(:therapy_type AS TEXT) = ANY(therapy_type))
-          AND (CAST(:language AS TEXT) IS NULL OR language = CAST(:language AS TEXT))
+        f"""
+        SELECT
+            metadata_::jsonb->>'ref_id' AS ref_id,
+            text AS content,
+            ARRAY(
+                SELECT jsonb_array_elements_text(
+                    COALESCE(metadata_::jsonb->'therapy_type', '[]'::jsonb)
+                )
+            ) AS therapy_type,
+            ARRAY(
+                SELECT jsonb_array_elements_text(
+                    COALESCE(metadata_::jsonb->'condition', '[]'::jsonb)
+                )
+            ) AS condition,
+            metadata_::jsonb->>'evidence_level' AS evidence_level,
+            metadata_::jsonb->>'language' AS language,
+            metadata_::jsonb->>'section' AS section,
+            COALESCE((metadata_::jsonb->>'has_contraindication')::boolean, false)
+                AS has_contraindication,
+            metadata_::jsonb->>'source_file' AS source_file,
+            (metadata_::jsonb->>'page_number')::int AS page_number
+        FROM {PGVECTOR_DATA_TABLE}
+        WHERE (
+            CAST(:therapy_type AS TEXT) IS NULL
+            OR COALESCE(metadata_::jsonb->'therapy_type', '[]'::jsonb)
+                @> jsonb_build_array(CAST(:therapy_type AS TEXT))
+        )
+          AND (
+            CAST(:language AS TEXT) IS NULL
+            OR metadata_::jsonb->>'language' = CAST(:language AS TEXT)
+          )
           AND (
             CAST(:has_contraindication AS BOOLEAN) IS NULL
-            OR has_contraindication = CAST(:has_contraindication AS BOOLEAN)
+            OR COALESCE((metadata_::jsonb->>'has_contraindication')::boolean, false)
+                = CAST(:has_contraindication AS BOOLEAN)
           )
-        ORDER BY created_at DESC
+        ORDER BY id DESC
         LIMIT :limit OFFSET :offset
         """
     )

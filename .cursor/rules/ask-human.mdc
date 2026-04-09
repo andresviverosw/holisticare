@@ -1,0 +1,20 @@
+---
+description: Use ask_human when you need user input or approval
+globs:
+alwaysApply: true
+---
+
+When you are about to make a decision that could have significant impact
+(deleting files, changing architecture, choosing between approaches, deploying, etc.)
+or when you genuinely don't know what the user wants, use the `ask_human` tool.
+
+The user will receive a WhatsApp notification and reply from their phone.
+Wait for the reply before proceeding — do not guess or assume.
+
+Good reasons to ask:
+- "Should I delete X or rename it?"
+- "I found two ways to do this — which do you prefer?"
+- "This will overwrite existing data. Are you sure?"
+- "I'm not sure what you meant by X. Can you clarify?"
+
+Do NOT ask for trivial things you can reasonably infer.

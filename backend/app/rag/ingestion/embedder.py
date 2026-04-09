@@ -19,6 +19,10 @@ from app.rag.ingestion.loader import ChunkMetadata
 
 settings = get_settings()
 
+# LlamaIndex PGVectorStore persists to data_<table_name>, not <table_name>.
+PGVECTOR_INDEX_TABLE = "clinical_chunks"
+PGVECTOR_DATA_TABLE = f"data_{PGVECTOR_INDEX_TABLE}"
+
 
 def get_embed_model() -> OpenAIEmbedding:
     return OpenAIEmbedding(
@@ -34,7 +38,7 @@ def get_vector_store() -> PGVectorStore:
         port=str(settings.postgres_port),
         user=settings.postgres_user,
         password=settings.postgres_password,
-        table_name="clinical_chunks",
+        table_name=PGVECTOR_INDEX_TABLE,
         embed_dim=settings.embedding_dims,
     )
 
@@ -62,6 +66,9 @@ class Embedder:
         for node, meta in pairs:
             if meta.ref_id in existing_refs:
                 continue  # already indexed
+            content = getattr(node, "text", None) or ""
+            if not str(content).strip():
+                continue  # OpenAI rejects empty embedding inputs
 
             # Attach metadata so LlamaIndex stores it alongside the vector
             node.metadata = {
@@ -95,8 +102,13 @@ class Embedder:
         conn = psycopg2.connect(settings.database_url_sync)
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT ref_id FROM clinical_chunks")
-                return {row[0] for row in cur.fetchall()}
+                cur.execute(
+                    f"""
+                    SELECT metadata_->>'ref_id' FROM {PGVECTOR_DATA_TABLE}
+                    WHERE metadata_->>'ref_id' IS NOT NULL
+                    """
+                )
+                return {row[0] for row in cur.fetchall() if row[0]}
         finally:
             conn.close()
 
@@ -105,7 +117,13 @@ class Embedder:
         conn = psycopg2.connect(settings.database_url_sync)
         try:
             with conn.cursor() as cur:
-                cur.execute("DELETE FROM clinical_chunks WHERE source_file = %s", (source_file,))
+                cur.execute(
+                    f"""
+                    DELETE FROM {PGVECTOR_DATA_TABLE}
+                    WHERE metadata_->>'source_file' = %s
+                    """,
+                    (source_file,),
+                )
                 deleted = cur.rowcount
             conn.commit()
             return deleted

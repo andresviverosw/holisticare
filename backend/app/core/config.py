@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     # LLM
     anthropic_api_key: str
     claude_model: str = "claude-sonnet-4-20250514"
+    # When True, RAG stages (query builder + plan JSON) retry via OpenAI if Anthropic errors
+    # (e.g. insufficient credits). Uses OPENAI_API_KEY and OPENAI_CHAT_MODEL.
+    rag_llm_fallback_openai: bool = True
+    openai_chat_model: str = "gpt-4o-mini"
 
     # Embeddings
     openai_api_key: str

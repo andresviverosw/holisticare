@@ -29,6 +29,24 @@ def test_ingestion_service_force_reindex_removes_existing(monkeypatch, tmp_path)
     )
 
 
+def test_ingestion_service_force_reindex_deletes_once_per_source_file(tmp_path):
+    """Multi-page PDFs load as many documents with the same file_name."""
+    service = IngestionService()
+    service.loader = MagicMock()
+    service.chunker = MagicMock()
+    service.embedder = MagicMock()
+    service.loader.load.return_value = [_doc("a.pdf"), _doc("a.pdf"), _doc("b.pdf")]
+    service.chunker.process.return_value = [("n", "m")]
+    service.embedder.embed_and_store.return_value = 1
+
+    result = service.ingest(str(tmp_path), force_reindex=True)
+
+    assert result["chunks_created"] == 3
+    assert service.embedder.remove_existing_for_source.call_count == 2
+    service.embedder.remove_existing_for_source.assert_any_call("a.pdf")
+    service.embedder.remove_existing_for_source.assert_any_call("b.pdf")
+
+
 def test_ingestion_service_partial_when_one_document_fails(tmp_path):
     service = IngestionService()
     service.loader = MagicMock()

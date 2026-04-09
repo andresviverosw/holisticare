@@ -8,6 +8,7 @@ from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.treatment_plan import TreatmentPlan
+from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
 
 
 def build_treatment_plan_row(
@@ -75,13 +76,21 @@ async def get_plan_sources_payload(
             "sources": [],
         }
 
-    # ref_id is our citation key in plan_json and clinical_chunks.
+    # ref_id is stored in PGVectorStore row metadata (data_clinical_chunks).
     query = text(
-        """
-        SELECT ref_id, content, source_file, page_number, section, language,
-               evidence_level, has_contraindication
-        FROM clinical_chunks
-        WHERE ref_id IN :refs
+        f"""
+        SELECT
+            metadata_::jsonb->>'ref_id' AS ref_id,
+            text AS content,
+            metadata_::jsonb->>'source_file' AS source_file,
+            (metadata_::jsonb->>'page_number')::int AS page_number,
+            metadata_::jsonb->>'section' AS section,
+            metadata_::jsonb->>'language' AS language,
+            metadata_::jsonb->>'evidence_level' AS evidence_level,
+            COALESCE((metadata_::jsonb->>'has_contraindication')::boolean, false)
+                AS has_contraindication
+        FROM {PGVECTOR_DATA_TABLE}
+        WHERE metadata_::jsonb->>'ref_id' IN :refs
         """
     ).bindparams(bindparam("refs", expanding=True))
     chunk_result = await db.execute(query, {"refs": citations})
