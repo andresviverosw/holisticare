@@ -8,7 +8,6 @@ from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.treatment_plan import TreatmentPlan
-from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
 
 
 def build_treatment_plan_row(
@@ -78,7 +77,7 @@ async def get_plan_sources_payload(
 
     # ref_id is stored in PGVectorStore row metadata (data_clinical_chunks).
     query = text(
-        f"""
+        """
         SELECT
             metadata_::jsonb->>'ref_id' AS ref_id,
             text AS content,
@@ -89,7 +88,7 @@ async def get_plan_sources_payload(
             metadata_::jsonb->>'evidence_level' AS evidence_level,
             COALESCE((metadata_::jsonb->>'has_contraindication')::boolean, false)
                 AS has_contraindication
-        FROM {PGVECTOR_DATA_TABLE}
+        FROM data_clinical_chunks
         WHERE metadata_::jsonb->>'ref_id' IN :refs
         """
     ).bindparams(bindparam("refs", expanding=True))

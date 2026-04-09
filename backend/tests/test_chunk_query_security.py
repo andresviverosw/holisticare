@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
 from app.services.chunk_query import list_clinical_chunks
 
 
@@ -27,7 +26,7 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
     sql = str(stmt)
 
     # Query text should be static with optional parameter predicates (PGVector JSON metadata).
-    assert f"FROM {PGVECTOR_DATA_TABLE}" in sql
+    assert "FROM data_clinical_chunks" in sql
     assert (
         "CAST(:therapy_type AS TEXT) IS NULL" in sql
         and "jsonb_build_array(CAST(:therapy_type AS TEXT))" in sql

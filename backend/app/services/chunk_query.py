@@ -5,9 +5,6 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.rag.ingestion.embedder import PGVECTOR_DATA_TABLE
-
-
 async def list_clinical_chunks(
     db: AsyncSession,
     *,
@@ -24,9 +21,9 @@ async def list_clinical_chunks(
         "limit": limit,
         "offset": offset,
     }
-    # Rows live in LlamaIndex PGVectorStore table data_<index>, with metadata in metadata_ JSON.
+    # Rows live in LlamaIndex PGVectorStore table data_clinical_chunks (metadata_ JSON).
     query = text(
-        f"""
+        """
         SELECT
             metadata_::jsonb->>'ref_id' AS ref_id,
             text AS content,
@@ -47,7 +44,7 @@ async def list_clinical_chunks(
                 AS has_contraindication,
             metadata_::jsonb->>'source_file' AS source_file,
             (metadata_::jsonb->>'page_number')::int AS page_number
-        FROM {PGVECTOR_DATA_TABLE}
+        FROM data_clinical_chunks
         WHERE (
             CAST(:therapy_type AS TEXT) IS NULL
             OR COALESCE(metadata_::jsonb->'therapy_type', '[]'::jsonb)

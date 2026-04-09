@@ -21,7 +21,14 @@ settings = get_settings()
 
 # LlamaIndex PGVectorStore persists to data_<table_name>, not <table_name>.
 PGVECTOR_INDEX_TABLE = "clinical_chunks"
-PGVECTOR_DATA_TABLE = f"data_{PGVECTOR_INDEX_TABLE}"
+# Literal name of the backing table (must equal f"data_{PGVECTOR_INDEX_TABLE}").
+PGVECTOR_DATA_TABLE = "data_clinical_chunks"
+_expected = f"data_{PGVECTOR_INDEX_TABLE}"
+if PGVECTOR_DATA_TABLE != _expected:
+    raise RuntimeError(
+        f"PGVECTOR_DATA_TABLE must be {_expected!r} to match LlamaIndex PGVectorStore naming"
+    )
+del _expected
 
 
 def get_embed_model() -> OpenAIEmbedding:
@@ -103,8 +110,8 @@ class Embedder:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    f"""
-                    SELECT metadata_->>'ref_id' FROM {PGVECTOR_DATA_TABLE}
+                    """
+                    SELECT metadata_->>'ref_id' FROM data_clinical_chunks
                     WHERE metadata_->>'ref_id' IS NOT NULL
                     """
                 )
@@ -118,8 +125,8 @@ class Embedder:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    f"""
-                    DELETE FROM {PGVECTOR_DATA_TABLE}
+                    """
+                    DELETE FROM data_clinical_chunks
                     WHERE metadata_->>'source_file' = %s
                     """,
                     (source_file,),
