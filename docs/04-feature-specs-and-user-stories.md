@@ -72,6 +72,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
 | US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
+| US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Planned |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
@@ -152,6 +153,25 @@ Implementation evidence (frontend):
 - `frontend/src/pages/Dashboard.jsx` — structured fields only; **Guardar intake** / **Cargar intake guardado**; JSON shown under `<details>` for debugging only.
 - `frontend/src/services/api.js` — `saveIntake`, `getIntake` alongside plan generation.
 - Canonical schema: `backend/app/schemas/intake_v0.py` (`GenericHolisticIntakeV0`).
+
+### US-INT-005 - Automatic patient UUID (new) and retrieval (existing)
+
+- Given a **new** patient workflow on the plan/intake screen, when the clinician chooses “new patient” (or equivalent), then the UI assigns a **new RFC-4122 UUID version 4** for `patient_id` and shows it in a copy-friendly field (read-only or confirm-before-edit).
+- Given an **existing** patient, when the clinician needs that patient’s id, then the UI provides a way to **retrieve** it without manual typing — e.g. load by prior saved intake (**Cargar intake guardado** already uses `patient_id`), a **recent patients** list (session/local storage or server-backed), and/or a **search/list patients** API once available.
+- Given a pasted or edited UUID, when it is not a valid v4 UUID, then the UI blocks save/generate and explains the format expected.
+- Optional (product policy): warn if generating a plan for a `patient_id` that has no saved intake yet.
+
+Test intent:
+
+- Unit: UUID v4 validation helper; generator uses `crypto.randomUUID()` or equivalent.
+- Integration: Dashboard (or patient picker component) wires new vs existing flows; contract tests if a new `GET /rag/patients` (or search) endpoint is added.
+- E2E: deferred until Playwright (if introduced).
+
+Implementation notes:
+
+- **Minimal slice (frontend-only):** “Nuevo paciente” button sets `patient_id` via `crypto.randomUUID()`; show copy button; keep manual override under advanced if needed.
+- **Existing patients without a new API:** reuse **patient_id** field + **Cargar intake guardado**; optional “recientes” storing last N `(id, label, date)` in `localStorage`.
+- **Richer slice (backend):** add listing/search endpoints over `intake_profiles` / patients (scoped by clinic/practitioner) — requires authz design and possibly pagination; follow-on task.
 
 ### US-SESS-001 - Structured session logging
 
@@ -357,12 +377,13 @@ Implementation evidence (accepted):
 | US-SESS-002 | Should | R2 | US-SESS-001 | Productivity enhancement |
 | US-DIARY-002 | Should | R2 | US-DIARY-001 | Patient engagement |
 | US-INT-004 | Should | R2 | US-PLAN-001 | Clinician UX: structured intake on plan generator |
+| US-INT-005 | Should | R2 | US-INT-004 | Auto UUID for new patients; retrieve/select existing id |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | Predictive model maturity |
 | US-PRED-002 | Should | R3 | US-PRED-001 | Recommendation layer |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**).
+- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**); **US-INT-005** (auto patient UUID + retrieve existing) is the next intake UX slice.
 - R3 (advanced): trajectory prediction and adjustment suggestions.
 
 ## 8. Definition of ready / done
