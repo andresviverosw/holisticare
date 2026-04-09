@@ -2,7 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
-import { buildIntakePayload, parseCsvList, validateIntakeForm } from "../utils/intakeBuilder";
+import {
+  buildIntakePayload,
+  formStateFromIntakeJson,
+  parseCsvList,
+  validateIntakeForm,
+} from "../utils/intakeBuilder";
 
 // Must be RFC-4122 UUID **version 4** (backend validates with Pydantic UUID4).
 const DEFAULT_PATIENT_ID = "a1111111-1111-4111-8111-111111111111";
@@ -30,11 +35,66 @@ export default function Dashboard() {
   const [language, setLanguage] = useState("es");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showDerivedJson, setShowDerivedJson] = useState(false);
+  const [intakeNotice, setIntakeNotice] = useState(null);
+
+  async function handleSaveIntake() {
+    setIntakeNotice(null);
+    setError(null);
+    const validationError = validateIntakeForm(intakeForm);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    try {
+      const intake_json = buildIntakePayload(intakeForm);
+      await ragApi.saveIntake({
+        patient_id: patientId.trim(),
+        intake_json,
+      });
+      setIntakeNotice("Intake guardado en el servidor.");
+    } catch (err) {
+      setError(
+        formatApiError(err, {
+          fallback: "No se pudo guardar el intake.",
+        }),
+      );
+    }
+  }
+
+  async function handleLoadIntake() {
+    setIntakeNotice(null);
+    setError(null);
+    const id = patientId.trim();
+    if (!id) {
+      setError("Indica un ID de paciente (UUID) para cargar.");
+      return;
+    }
+    try {
+      const res = await ragApi.getIntake(id);
+      const next = formStateFromIntakeJson(res.data.intake_json);
+      if (!next) {
+        setError("El intake guardado no es compatible (generic_holistic_v0).");
+        return;
+      }
+      setIntakeForm(next);
+      setIntakeNotice("Intake cargado desde el servidor.");
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setError("No hay intake guardado para este paciente.");
+        return;
+      }
+      setError(
+        formatApiError(err, {
+          fallback: "No se pudo cargar el intake.",
+        }),
+      );
+    }
+  }
 
   async function handleGenerate() {
     setLoading(true);
     setError(null);
+    setIntakeNotice(null);
     try {
       const validationError = validateIntakeForm(intakeForm);
       if (validationError) {
@@ -76,20 +136,31 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900">Generador de planes de tratamiento</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          El plan es generado por IA y requiere revisión y aprobación del practicante.
+          Completa el formulario (no hace falta editar JSON). El plan es generado por IA y requiere revisión
+          del practicante.
         </p>
       </div>
 
       <div className="card space-y-6">
-        <div>
-          <label className="label">ID del paciente (UUID v4)</label>
-          <input
-            type="text"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            className="input font-mono text-sm"
-            spellCheck={false}
-          />
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <div className="flex-1 min-w-0">
+            <label className="label">ID del paciente (UUID v4)</label>
+            <input
+              type="text"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              className="input font-mono text-sm"
+              spellCheck={false}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary text-sm px-3 py-2" onClick={handleLoadIntake}>
+              Cargar intake guardado
+            </button>
+            <button type="button" className="btn-secondary text-sm px-3 py-2" onClick={handleSaveIntake}>
+              Guardar intake
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -223,20 +294,17 @@ export default function Dashboard() {
             />
           </div>
 
-          <div>
-            <button
-              type="button"
-              className="text-xs text-neutral-500 underline"
-              onClick={() => setShowDerivedJson((prev) => !prev)}
-            >
-              {showDerivedJson ? "Ocultar JSON derivado" : "Ver JSON derivado"}
-            </button>
-            {showDerivedJson && (
-              <pre className="mt-2 rounded border bg-neutral-50 p-3 text-xs overflow-x-auto">
-                {JSON.stringify(buildIntakePayload(intakeForm), null, 2)}
-              </pre>
-            )}
-          </div>
+          <details className="rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-2">
+            <summary className="cursor-pointer text-xs font-medium text-neutral-600">
+              Avanzado: vista JSON (solo depuración / integración)
+            </summary>
+            <p className="mt-2 text-xs text-neutral-500">
+              El envío al servidor usa el mismo objeto; no necesitas copiar JSON manualmente.
+            </p>
+            <pre className="mt-2 rounded border bg-white p-3 text-xs overflow-x-auto">
+              {JSON.stringify(buildIntakePayload(intakeForm), null, 2)}
+            </pre>
+          </details>
         </div>
 
         <div>
@@ -261,6 +329,12 @@ export default function Dashboard() {
             <option value="en">English</option>
           </select>
         </div>
+
+        {intakeNotice && (
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+            {intakeNotice}
+          </div>
+        )}
 
         {error && (
           <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">

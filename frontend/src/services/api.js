@@ -41,6 +41,12 @@ export const ragApi = {
   /** Browse indexed clinical chunks */
   listChunks: (params = {}) => api.get("/rag/chunks", { params }),
 
+  /** Persist intake profile (generic_holistic_v0) */
+  saveIntake: (payload) => api.post("/rag/intake", payload),
+
+  /** Load persisted intake for a patient */
+  getIntake: (patientId) => api.get(`/rag/intake/${patientId}`),
+
   /** Generate a treatment plan */
   generatePlan: (payload) => api.post("/rag/plan/generate", payload),
 

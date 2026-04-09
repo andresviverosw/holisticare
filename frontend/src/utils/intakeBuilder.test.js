@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildIntakePayload, parseCsvList, validateIntakeForm } from "./intakeBuilder";
+import {
+  buildIntakePayload,
+  formStateFromIntakeJson,
+  parseCsvList,
+  validateIntakeForm,
+} from "./intakeBuilder";
 
 describe("parseCsvList", () => {
   it("splits, trims and removes empty values", () => {
@@ -60,6 +65,39 @@ describe("buildIntakePayload", () => {
       pain_nrs_0_10: 7,
       notes: "función limitada",
     });
+  });
+
+  it("round-trips through formStateFromIntakeJson", () => {
+    const form = {
+      ageRange: "40-50",
+      sexAtBirth: "F",
+      chiefComplaint: "Dolor lumbar",
+      conditions: "lumbalgia, ciática",
+      goals: "reducir dolor",
+      contraindications: "",
+      currentMedications: "ibuprofeno",
+      allergies: "",
+      baselinePain: "7",
+      baselineNotes: "nota",
+      psychosocialSummary: "",
+      priorInterventions: "fisio",
+    };
+    const payload = buildIntakePayload(form);
+    const back = formStateFromIntakeJson(payload);
+    expect(back).toMatchObject({
+      ageRange: "40-50",
+      sexAtBirth: "F",
+      chiefComplaint: "Dolor lumbar",
+      conditions: "lumbalgia, ciática",
+      goals: "reducir dolor",
+      baselinePain: "7",
+      baselineNotes: "nota",
+      priorInterventions: "fisio",
+    });
+  });
+
+  it("formStateFromIntakeJson returns null for wrong version", () => {
+    expect(formStateFromIntakeJson({ profile_version: "other" })).toBeNull();
   });
 });
 

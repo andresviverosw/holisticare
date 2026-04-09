@@ -71,12 +71,12 @@ Translate requirements into implementable product specifications, user stories, 
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
-| US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Planned |
+| US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
-| US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Planned |
+| US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
@@ -141,16 +141,17 @@ Implementation evidence (backend):
 
 - Given the plan generation screen (`generic_holistic_v0`), when a clinician fills separate fields (chief complaint, conditions, goals, list-style fields, optional demographics, baseline pain, etc.), then the UI builds a valid `intake_json` payload without requiring manual JSON editing.
 - Given required intake fields are empty or invalid, when the clinician tries to generate a plan, then the UI blocks submit and shows clear, field-level validation (aligned with backend rules: at least one non-empty condition and goal, non-empty chief complaint, optional list fields normalized to arrays).
-- Given the clinician still needs to debug or import data, when an advanced option exists, then they may view or edit the derived JSON in a collapsible panel or secondary control (optional secondary story slice).
+- Given the clinician still needs to debug or import data, when an advanced option exists, then they may view the derived JSON in a collapsible **Avanzado** panel (read-only preview).
 
 Test intent:
-- Unit: pure function or small module that maps form state → `generic_holistic_v0` object (including `profile_version`).
-- Component/integration: React tests or smoke that submission calls `ragApi.generatePlan` with the assembled object.
+- Unit: `frontend/src/utils/intakeBuilder.js` maps form state ↔ `generic_holistic_v0` (`buildIntakePayload`, `formStateFromIntakeJson`, `validateIntakeForm`).
+- Component/integration: Dashboard calls `ragApi.generatePlan` with the assembled object; save/load intake via `POST /rag/intake` and `GET /rag/intake/{patient_id}`.
 - E2E: deferred until Playwright (if introduced).
 
-Implementation notes:
-- Current UI: `frontend/src/pages/Dashboard.jsx` uses a monospace `textarea` for intake JSON; replace with form controls wired to the same API contract.
-- Canonical schema: `backend/app/schemas/intake_v0.py` (`GenericHolisticIntakeV0`, nested demographics, baseline outcomes, string lists).
+Implementation evidence (frontend):
+- `frontend/src/pages/Dashboard.jsx` — structured fields only; **Guardar intake** / **Cargar intake guardado**; JSON shown under `<details>` for debugging only.
+- `frontend/src/services/api.js` — `saveIntake`, `getIntake` alongside plan generation.
+- Canonical schema: `backend/app/schemas/intake_v0.py` (`GenericHolisticIntakeV0`).
 
 ### US-SESS-001 - Structured session logging
 
@@ -322,7 +323,13 @@ Implementation notes:
 
 - Technical ingestion capability is covered by **US-RAG-001**; this story is about **operational delivery** of *your* corpus: directory layout, compose volume or image rebuild, env-safe ingest command, and verification checklist (see `docs/setup.md` ingestion smoke, `docs/demo-smoke-checklist.md` if extended).
 - If the corpus must live outside `data/mock`, define a stable repo path (e.g. `data/corpus/`) and document it in deployment/runbook material without committing restricted PDFs if policy requires.
-- Operational steps and verification commands: **`docs/setup.md` (section 4.4)**; ingestion failures: `backend/scripts/ingestion_log_report.py`.
+- Operational steps and verification commands: **`docs/setup.md` (section 4.4)**; container ingest: `backend/scripts/run_corpus_ingest.py`; ingestion failures: `backend/scripts/ingestion_log_report.py`.
+- Retrieval/browse uses Postgres table **`data_clinical_chunks`** (LlamaIndex); smoke: `GET /rag/chunks`, plan generation with citations, optional `backend/scripts/e2e_plan_smoke.py`.
+
+Implementation evidence (accepted):
+
+- Corpus ingested under `backend/data/corpus` (gitignored); `force_reindex` + per-file delete fix documented in prior commits.
+- Chunk listing and plan sources aligned to `data_clinical_chunks` in application SQL.
 
 ## 6. Non-functional acceptance criteria
 
@@ -355,7 +362,7 @@ Implementation notes:
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (US-RAG-002), optional clinician-facing intake form in the plan generator (US-INT-004) to replace raw JSON entry.
+- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**).
 - R3 (advanced): trajectory prediction and adjustment suggestions.
 
 ## 8. Definition of ready / done

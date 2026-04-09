@@ -18,6 +18,43 @@ export function validateIntakeForm(form) {
   return null;
 }
 
+/**
+ * Maps a persisted `generic_holistic_v0` object back to flat Dashboard form fields.
+ * Returns null if the payload is missing or not v0.
+ */
+export function formStateFromIntakeJson(intakeJson) {
+  if (!intakeJson || intakeJson.profile_version !== "generic_holistic_v0") {
+    return null;
+  }
+  const demo = intakeJson.demographics || {};
+  const listsToCsv = (arr) => (Array.isArray(arr) ? arr.join(", ") : "");
+  const bo = intakeJson.baseline_outcomes;
+  let baselinePain = "";
+  let baselineNotes = "";
+  if (bo && typeof bo === "object") {
+    if (bo.pain_nrs_0_10 != null && bo.pain_nrs_0_10 !== "") {
+      baselinePain = String(bo.pain_nrs_0_10);
+    }
+    if (bo.notes != null) {
+      baselineNotes = String(bo.notes);
+    }
+  }
+  return {
+    ageRange: demo.age_range ?? "",
+    sexAtBirth: demo.sex_at_birth ?? "",
+    chiefComplaint: intakeJson.chief_complaint ?? "",
+    conditions: listsToCsv(intakeJson.conditions),
+    goals: listsToCsv(intakeJson.goals),
+    contraindications: listsToCsv(intakeJson.contraindications),
+    currentMedications: listsToCsv(intakeJson.current_medications),
+    allergies: listsToCsv(intakeJson.allergies),
+    baselinePain,
+    baselineNotes,
+    psychosocialSummary: intakeJson.psychosocial_summary ?? "",
+    priorInterventions: listsToCsv(intakeJson.prior_interventions_tried),
+  };
+}
+
 export function buildIntakePayload(form) {
   const painRaw = String(form.baselinePain || "").trim();
   const pain = painRaw === "" ? null : Number.parseInt(painRaw, 10);
