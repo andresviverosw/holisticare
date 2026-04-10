@@ -76,6 +76,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
+| US-PLAN-004 | AI treatment planning | Clinician | a memory bank of **approved** treatment plans that I can search and reuse as a starting point for a new patient | I spend less time drafting similar plans and stay aligned with evidence-backed patterns the team already validated | Should | L | Planned |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
@@ -247,6 +248,27 @@ Implementation evidence (backend):
 - Regression tests in `backend/tests/test_plan_generate_api.py` for generate/persist/retrieve/sources/approval flows.
 - Write endpoints are role-guarded via JWT roles (`clinician`/`admin`) with `401/403` contract tests.
 
+### US-PLAN-004 - Plan memory bank (reuse approved plans)
+
+- Given a plan with status **`approved`**, when the clinician (or policy-defined role) adds it to the **memory bank** (opt-in or automatic per policy), then a **reusable template record** is stored with enough metadata to find it later (e.g. tags, therapy mix, condition keywords, language, approval date, optional short title — **no unnecessary PHI**; patient identifiers should be omitted or tokenized per privacy policy).
+- Given the memory bank, when a clinician searches or filters, then matching **approved** plan templates are listed with clear labels so the right template can be chosen.
+- Given a selected bank entry, when “**Use as starting point**” (or equivalent) is chosen for a **new** patient context, then the system creates a **new draft** plan (new `plan_id`, `pending_review`) derived from the template so the practitioner must **review and approve again** before it counts as active care — reuse is **assistive**, not silent activation.
+- Given a `pending_review` or `rejected` plan, when someone tries to publish it to the bank, then the operation is **blocked** unless product policy explicitly allows drafts (default: **approved only**).
+- Given regulatory or clinic policy, when audit is required, then bank add / reuse events are logged with actor and timestamps.
+
+Test intent:
+
+- Unit: eligibility rules (approved-only), clone/sanitize of `plan_json` for new draft, metadata indexing.
+- Integration: APIs for add-to-bank, list/search, instantiate draft; authz (`clinician`/`admin` as decided); persistence model (new table or flagged rows on `treatment_plans`).
+- E2E: approve plan → add to bank → new patient → instantiate → review screen shows draft.
+
+Implementation notes:
+
+- **Data model options:** (A) `plan_memory_bank` table with `source_plan_id`, `snapshot_json`, `tags`, `created_at`, `created_by`; (B) boolean `in_memory_bank` + denormalized search fields on approved plans. Prefer immutable snapshot so later edits to the original do not silently change templates.
+- **Reuse flow:** copy structure/weeks into new row; strip or replace `patient_id`; reset `status`, `plan_id`, `generated_at`; preserve or refresh `citations_used` consistency with current RAG corpus (warn if REF-IDs no longer exist).
+- **Privacy:** default bank entries should be **de-identified** at template level; document consent/retention in ops appendix.
+- **Dependencies:** **US-PLAN-003** (approval gate) must be reliable before bank eligibility.
+
 ### US-DIARY-001 - Daily patient diary
 
 - Given a patient has active care plan, when submitting daily check-in, then pain/sleep/mood/function entries are saved.
@@ -369,6 +391,7 @@ Implementation evidence (accepted):
 | US-RAG-002 | Must | R2 | US-RAG-001 | Load curated corpus + verify retrieval (ops slice) |
 | US-PLAN-002 | Must | R1 | US-PLAN-001 | Required trust control |
 | US-PLAN-003 | Must | R1 | US-PLAN-001 | Required safety gate |
+| US-PLAN-004 | Should | R3 | US-PLAN-003 | Memory bank: reuse approved plans as new drafts |
 | US-SESS-001 | Must | R1 | US-INT-001 | Longitudinal tracking base |
 | US-DIARY-001 | Must | R1 | US-INT-001 | Between-session continuity |
 | US-ANLY-001 | Must | R1 | US-SESS-001, US-DIARY-001 | Outcome visibility |
@@ -384,7 +407,7 @@ Implementation evidence (accepted):
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**); **US-INT-005** (auto patient UUID + retrieve existing) is the next intake UX slice.
-- R3 (advanced): trajectory prediction and adjustment suggestions.
+- R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft).
 
 ## 8. Definition of ready / done
 
