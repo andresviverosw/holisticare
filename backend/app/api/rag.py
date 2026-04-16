@@ -402,6 +402,7 @@ async def get_plateau_flags(
 @router.get("/chunks")
 async def list_chunks(
     therapy_type: Optional[str] = None,
+    topic: Optional[str] = None,
     language: Optional[str] = None,
     has_contraindication: Optional[bool] = None,
     limit: int = Query(default=50, ge=1, le=100),
@@ -412,6 +413,7 @@ async def list_chunks(
     return await list_clinical_chunks(
         db,
         therapy_type=therapy_type,
+        topic=topic,
         language=language,
         has_contraindication=has_contraindication,
         limit=limit,

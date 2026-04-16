@@ -4,6 +4,8 @@
 
 This document describes the current implementation architecture, local workflows, and key integration points for contributors.
 
+**Diagrams:** For additional **entity-relationship**, **flow**, **state**, and **component** views (all Mermaid source), see [`10-solution-diagrams.md`](10-solution-diagrams.md).
+
 ## Runtime architecture
 
 ```mermaid

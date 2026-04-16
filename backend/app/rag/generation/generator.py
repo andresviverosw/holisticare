@@ -54,6 +54,22 @@ PLAN_SCHEMA_EXAMPLE = {
         }
     ],
     "confidence_note": "string",
+    "diet_recommendations": {
+        "eat": [
+            {
+                "item": "string",
+                "rationale": "string",
+                "citations": ["REF-XXXXXX"],
+            }
+        ],
+        "avoid": [
+            {
+                "item": "string",
+                "rationale": "string",
+                "citations": ["REF-XXXXXX"],
+            }
+        ],
+    },
     "requires_practitioner_review": True,
     "citations_used": ["REF-XXXXXX"]
 }
@@ -103,6 +119,10 @@ RETRIEVED CLINICAL CONTEXT:
 TASK:
 Generate a {num_weeks}-week holistic treatment plan for this patient.
 Output language: {"Spanish" if language == "es" else "English"}
+Include profile-aware dietary guidance in a diet_recommendations object with:
+- eat: list of recommended foods/patterns
+- avoid: list of foods/patterns to avoid
+- each entry must include item, rationale, and citations
 
 Your output must be a valid JSON object matching this schema:
 {json.dumps(PLAN_SCHEMA_EXAMPLE, indent=2)}
@@ -144,5 +164,39 @@ Only cite REF-IDs that appear in the RETRIEVED CLINICAL CONTEXT above."""
         # Citation integrity: strip any hallucinated REF-IDs
         used = plan.get("citations_used", [])
         plan["citations_used"] = [r for r in used if r in allowed_citations]
+        plan["diet_recommendations"] = self._normalize_diet_recommendations(
+            plan.get("diet_recommendations"),
+            allowed_citations,
+        )
 
         return plan
+
+    @staticmethod
+    def _normalize_diet_recommendations(diet: dict | None, allowed_citations: list[str]) -> dict:
+        """Return normalized eat/avoid arrays and strip hallucinated refs."""
+        allowed = set(allowed_citations)
+        payload = diet if isinstance(diet, dict) else {}
+
+        def _normalize_entries(entries: object) -> list[dict]:
+            if not isinstance(entries, list):
+                return []
+            normalized: list[dict] = []
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                citations = entry.get("citations", [])
+                if not isinstance(citations, list):
+                    citations = []
+                normalized.append(
+                    {
+                        "item": str(entry.get("item", "")),
+                        "rationale": str(entry.get("rationale", "")),
+                        "citations": [c for c in citations if isinstance(c, str) and c in allowed],
+                    }
+                )
+            return normalized
+
+        return {
+            "eat": _normalize_entries(payload.get("eat")),
+            "avoid": _normalize_entries(payload.get("avoid")),
+        }

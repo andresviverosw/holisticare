@@ -79,6 +79,22 @@ SAMPLE_PLAN = {
         }
     ],
     "confidence_note": "Contexto suficiente para recomendaciones de fisioterapia. Acupuntura requiere verificación.",
+    "diet_recommendations": {
+        "eat": [
+            {
+                "item": "Vegetales de hoja verde",
+                "rationale": "Patron antiinflamatorio [REF-AABBCCDD]",
+                "citations": ["REF-AABBCCDD"],
+            }
+        ],
+        "avoid": [
+            {
+                "item": "Ultraprocesados altos en azucar",
+                "rationale": "Asociado a peor dolor reportado [REF-11223344]",
+                "citations": ["REF-11223344"],
+            }
+        ],
+    },
     "retrieval_metadata": {
         "queries_used": ["dolor lumbar crónico irradiación"],
         "candidates_retrieved": 3,
@@ -124,7 +140,7 @@ class TestPlanOutputContracts:
 
     def test_plan_has_required_fields(self):
         required = ["plan_id", "patient_id", "generated_at", "weeks",
-                    "requires_practitioner_review", "citations_used", "status"]
+                    "requires_practitioner_review", "citations_used", "status", "diet_recommendations"]
         for field in required:
             assert field in SAMPLE_PLAN, f"Missing required field: {field}"
 
@@ -135,6 +151,15 @@ class TestPlanOutputContracts:
             assert "therapies" in week
             assert "contraindications_flagged" in week
             assert "outcome_checkpoints" in week
+
+    def test_diet_recommendations_have_required_structure(self):
+        diet = SAMPLE_PLAN["diet_recommendations"]
+        assert "eat" in diet and isinstance(diet["eat"], list)
+        assert "avoid" in diet and isinstance(diet["avoid"], list)
+        for entry in diet["eat"] + diet["avoid"]:
+            assert "item" in entry
+            assert "rationale" in entry
+            assert "citations" in entry
 
 
 # ─── Generator unit tests ─────────────────────────────────────
@@ -186,6 +211,51 @@ class TestPlanGeneratorValidation:
 
         assert result["requires_practitioner_review"] is True
 
+    def test_diet_recommendations_default_shape_is_added(self):
+        from app.rag.generation.generator import PlanGenerator
+
+        gen = PlanGenerator()
+        raw_plan = {
+            "plan_id": "x",
+            "patient_id": "p1",
+            "generated_at": "now",
+            "requires_practitioner_review": True,
+            "citations_used": [],
+            "weeks": [],
+            "confidence_note": "test",
+        }
+        result = gen._parse_and_validate(
+            raw=json.dumps(raw_plan),
+            patient_id="p1",
+            allowed_citations=[],
+        )
+        assert result["diet_recommendations"] == {"eat": [], "avoid": []}
+
+    def test_hallucinated_citations_stripped_from_diet_recommendations(self):
+        from app.rag.generation.generator import PlanGenerator
+
+        gen = PlanGenerator()
+        raw_plan = {
+            "plan_id": "x",
+            "patient_id": "p1",
+            "generated_at": "now",
+            "requires_practitioner_review": True,
+            "citations_used": ["REF-AABBCCDD"],
+            "weeks": [],
+            "confidence_note": "test",
+            "diet_recommendations": {
+                "eat": [{"item": "Pescado", "rationale": "x", "citations": ["REF-AABBCCDD", "REF-FAKE"]}],
+                "avoid": [{"item": "Azucar", "rationale": "y", "citations": ["REF-FAKE"]}],
+            },
+        }
+        result = gen._parse_and_validate(
+            raw=json.dumps(raw_plan),
+            patient_id="p1",
+            allowed_citations=["REF-AABBCCDD"],
+        )
+        assert result["diet_recommendations"]["eat"][0]["citations"] == ["REF-AABBCCDD"]
+        assert result["diet_recommendations"]["avoid"][0]["citations"] == []
+
 
 class TestVectorRetrieverPgVectorQuery:
     """PGVectorStore.query expects a VectorStoreQuery (LlamaIndex API)."""
@@ -219,3 +289,87 @@ class TestVectorRetrieverPgVectorQuery:
         assert len(out) == 1
         assert out[0]["ref_id"] == "REF-1"
         assert out[0]["score"] == pytest.approx(0.91)
+
+
+class TestNutritionSafetyGuards:
+    def test_blocks_diet_entries_matching_intake_contraindications_or_allergies(self):
+        from app.rag.pipeline import apply_nutrition_safety_guards
+
+        plan = {
+            "diet_recommendations": {
+                "eat": [
+                    {
+                        "item": "Pescado azul",
+                        "rationale": "Aporta omega 3",
+                        "citations": ["REF-AABBCCDD"],
+                    },
+                    {
+                        "item": "Frutas frescas",
+                        "rationale": "Fibra y antioxidantes",
+                        "citations": ["REF-11223344"],
+                    },
+                ],
+                "avoid": [],
+            }
+        }
+        intake = {
+            "contraindications": ["anticoagulantes"],
+            "allergies": ["pescado"],
+        }
+
+        out = apply_nutrition_safety_guards(plan, intake)
+
+        assert len(out["diet_recommendations"]["eat"]) == 1
+        assert out["diet_recommendations"]["eat"][0]["item"] == "Frutas frescas"
+        assert len(out["nutrition_safety_flags"]) == 1
+        assert out["nutrition_safety_flags"][0]["action"] == "blocked"
+        assert "pescado" in out["nutrition_safety_flags"][0]["matched_terms"]
+
+    def test_pipeline_applies_nutrition_safety_guards(self):
+        from app.rag.pipeline import RAGPipeline
+
+        pipe = RAGPipeline()
+        pipe.query_builder = MagicMock()
+        pipe.retriever = MagicMock()
+        pipe.reranker = MagicMock()
+        pipe.generator = MagicMock()
+
+        pipe.query_builder.build_clinical_summary.return_value = "summary"
+        pipe.query_builder.expand_queries.return_value = ["query"]
+        pipe.retriever.retrieve.return_value = [{"ref_id": "REF-A", "text": "ctx"}]
+        pipe.reranker.rerank.return_value = [{"ref_id": "REF-A", "text": "ctx"}]
+        pipe.generator.generate.return_value = {
+            "plan_id": "p",
+            "patient_id": "pat",
+            "generated_at": "now",
+            "requires_practitioner_review": True,
+            "status": "pending_review",
+            "citations_used": ["REF-A"],
+            "weeks": [],
+            "confidence_note": "ok",
+            "diet_recommendations": {
+                "eat": [
+                    {"item": "Pescado", "rationale": "Proteina", "citations": ["REF-A"]},
+                    {"item": "Avena", "rationale": "Fibra", "citations": ["REF-A"]},
+                ],
+                "avoid": [],
+            },
+        }
+
+        result = pipe.generate_plan(
+            patient_id="pat",
+            intake_json={
+                "profile_version": "generic_holistic_v0",
+                "chief_complaint": "x",
+                "conditions": ["c"],
+                "goals": ["g"],
+                "allergies": ["pescado"],
+            },
+            available_therapies=["fisioterapia"],
+            preferred_language="es",
+        )
+
+        assert result["diet_recommendations"]["eat"] == [
+            {"item": "Avena", "rationale": "Fibra", "citations": ["REF-A"]}
+        ]
+        assert result["nutrition_safety_flags"][0]["item"] == "Pescado"

@@ -15,6 +15,7 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
     await list_clinical_chunks(
         db,
         therapy_type="fisioterapia",
+        topic="nutrition",
         language="es",
         has_contraindication=True,
         limit=10,
@@ -31,6 +32,10 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
         "CAST(:therapy_type AS TEXT) IS NULL" in sql
         and "jsonb_build_array(CAST(:therapy_type AS TEXT))" in sql
     )
+    assert (
+        "CAST(:topic AS TEXT) IS NULL" in sql
+        and "jsonb_build_array(CAST(:topic AS TEXT))" in sql
+    )
     assert "metadata_::jsonb->>'language' = CAST(:language AS TEXT)" in sql
     assert (
         "CAST(:has_contraindication AS BOOLEAN) IS NULL" in sql
@@ -39,6 +44,7 @@ async def test_list_clinical_chunks_uses_static_parameterized_query():
 
     # Inputs are bound via params, not interpolated in SQL text.
     assert params["therapy_type"] == "fisioterapia"
+    assert params["topic"] == "nutrition"
     assert params["language"] == "es"
     assert params["has_contraindication"] is True
 
@@ -54,6 +60,7 @@ async def test_list_clinical_chunks_null_optional_filters_use_typed_cast_sql():
     await list_clinical_chunks(
         db,
         therapy_type=None,
+        topic=None,
         language=None,
         has_contraindication=None,
         limit=1,
@@ -65,9 +72,11 @@ async def test_list_clinical_chunks_null_optional_filters_use_typed_cast_sql():
     sql = str(stmt)
 
     assert "CAST(:therapy_type AS TEXT)" in sql
+    assert "CAST(:topic AS TEXT)" in sql
     assert "CAST(:language AS TEXT)" in sql
     assert "CAST(:has_contraindication AS BOOLEAN)" in sql
     assert params["therapy_type"] is None
+    assert params["topic"] is None
     assert params["language"] is None
     assert params["has_contraindication"] is None
     assert params["limit"] == 1

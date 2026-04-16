@@ -79,6 +79,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PLAN-004 | AI treatment planning | Clinician | a memory bank of **approved** treatment plans that I can search and reuse as a starting point for a new patient | I spend less time drafting similar plans and stay aligned with evidence-backed patterns the team already validated | Should | L | Planned |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
+| US-RAG-003 | Knowledge base (RAG) | Clinician | to include nutrition evidence in the corpus and retrieve profile-aware dietary guidance | generated plans include what to eat and what to avoid based on patient profile and contraindications | Must | M | Done (backend + ops + UI review) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
@@ -373,6 +374,29 @@ Implementation evidence (accepted):
 - Corpus ingested under `backend/data/corpus` (gitignored); `force_reindex` + per-file delete fix documented in prior commits.
 - Chunk listing and plan sources aligned to `data_clinical_chunks` in application SQL.
 
+### US-RAG-003 - Nutrition corpus and profile-aware dietary recommendations
+
+- Given curated nutrition references are added to the corpus (e.g. anti-inflammatory nutrition, metabolic risk guidance, condition-specific dietary contraindications), when ingestion runs, then nutrition chunks are indexed and retrievable with metadata that identifies nutrition topic and source.
+- Given a patient profile with relevant context (conditions, goals, contraindications/allergies where present), when plan generation runs, then the generated plan includes explicit dietary recommendations with two clear sections: **what to eat** and **what to avoid**.
+- Given evidence for a dietary claim is missing or weak, when generation runs, then the plan states insufficiency or uncertainty rather than fabricating recommendations.
+- Given nutrition recommendations are produced, when citations are inspected, then each nutrition recommendation has at least one REF-ID pointing to nutrition corpus sources.
+- Given high-risk dietary contradictions (e.g. recommendation conflicts with documented contraindication/allergy), when validation runs, then the recommendation is blocked or flagged for clinician review before approval.
+
+Test intent:
+
+- Unit: nutrition retrieval filters/ranking and contraindication conflict validator (recommendation vs intake profile constraints).
+- Integration: ingestion includes nutrition corpus files; `POST /rag/plan/generate` returns nutrition sections and citations under profile-specific scenarios.
+- Regression: existing citation integrity and plan approval tests remain green when nutrition sections are added to output schema/prompting.
+- E2E: clinician generates plan for a patient profile and verifies “eat/avoid” guidance + source traceability in UI.
+
+Implementation notes:
+
+- Corpus: define a stable nutrition source directory (`backend/data/corpus/nutrition` or equivalent), with provenance/licensing documented in ops/research docs.
+- Retrieval: tag or classify nutrition chunks during ingestion (`topic=nutrition`, optional subtopics like diabetes, hypertension, GI, anti-inflammatory) to improve targeted recall.
+- Generation: update prompt contract and output schema to include normalized nutrition sections (`diet_recommendations.eat`, `diet_recommendations.avoid`) while preserving backward compatibility for consumers.
+- Safety: add a lightweight rule-based post-check against profile contraindications/allergies before returning final draft.
+- Dependency: relies on **US-RAG-002** corpus operations and **US-PLAN-002** citation traceability behavior.
+
 ## 6. Non-functional acceptance criteria
 
 - Performance: 95th percentile API response <= 800 ms for non-AI endpoints in staging baseline load.
@@ -389,6 +413,7 @@ Implementation evidence (accepted):
 | US-PLAN-001 | Must | R1 | US-INT-001 | Initial RAG core value |
 | US-RAG-001 | Must | R1 | None | Multi-format ingestion (PDF, HTML); enables retrieval corpus |
 | US-RAG-002 | Must | R2 | US-RAG-001 | Load curated corpus + verify retrieval (ops slice) |
+| US-RAG-003 | Must | R2 | US-RAG-002, US-PLAN-002 | Add nutrition corpus and profile-aware eat/avoid recommendations with citations |
 | US-PLAN-002 | Must | R1 | US-PLAN-001 | Required trust control |
 | US-PLAN-003 | Must | R1 | US-PLAN-001 | Required safety gate |
 | US-PLAN-004 | Should | R3 | US-PLAN-003 | Memory bank: reuse approved plans as new drafts |
@@ -406,7 +431,7 @@ Implementation evidence (accepted):
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**); **US-INT-005** (auto patient UUID + retrieve existing) is the next intake UX slice.
+- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**); **US-INT-005** (auto patient UUID + retrieve existing) is the next intake UX slice.
 - R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft).
 
 ## 8. Definition of ready / done
