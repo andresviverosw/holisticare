@@ -689,6 +689,23 @@ def test_ingest_400_when_source_dir_missing(client: TestClient):
     assert "Source directory not found" in r.json()["detail"]
 
 
+def test_ingest_400_when_malformed_pdf_detected(client: TestClient):
+    fake_ingestion = MagicMock()
+    fake_ingestion.ingest.side_effect = ValueError(
+        "Malformed PDF files detected before ingest: bad.pdf. Fix or remove them and retry."
+    )
+    app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-user", role="admin")
+    try:
+        r = client.post("/rag/ingest", json={"source_dir": "data/corpus/nutrition"})
+    finally:
+        app.dependency_overrides.pop(get_ingestion_service, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+
+    assert r.status_code == 400
+    assert "Malformed PDF files detected before ingest" in r.json()["detail"]
+
+
 def test_ingest_200_forwards_force_reindex(client: TestClient):
     fake_ingestion = MagicMock()
     fake_ingestion.ingest.return_value = {

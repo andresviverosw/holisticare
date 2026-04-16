@@ -19,6 +19,13 @@ class IngestionService:
         source_path = Path(source_dir)
         if not source_path.exists() or not source_path.is_dir():
             raise FileNotFoundError(f"Source directory not found: {source_dir}")
+        invalid_pdfs = self.loader.find_invalid_pdfs(source_dir)
+        if invalid_pdfs:
+            raise ValueError(
+                "Malformed PDF files detected before ingest: "
+                + ", ".join(invalid_pdfs)
+                + ". Fix or remove them and retry."
+            )
 
         documents = self.loader.load(source_dir)
         files_processed = len(documents)
