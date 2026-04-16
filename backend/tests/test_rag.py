@@ -373,3 +373,47 @@ class TestNutritionSafetyGuards:
             {"item": "Avena", "rationale": "Fibra", "citations": ["REF-A"]}
         ]
         assert result["nutrition_safety_flags"][0]["item"] == "Pescado"
+
+    def test_blocks_entries_by_synonym_match(self):
+        from app.rag.pipeline import apply_nutrition_safety_guards
+
+        plan = {
+            "diet_recommendations": {
+                "eat": [
+                    {
+                        "item": "Salmón a la plancha",
+                        "rationale": "Fuente de omega 3",
+                        "citations": ["REF-A"],
+                    }
+                ],
+                "avoid": [],
+            }
+        }
+        intake = {"allergies": ["pescado"], "contraindications": []}
+
+        out = apply_nutrition_safety_guards(plan, intake)
+        assert out["diet_recommendations"]["eat"] == []
+        assert out["nutrition_safety_flags"][0]["item"] == "Salmón a la plancha"
+        assert "pescado" in out["nutrition_safety_flags"][0]["matched_terms"]
+
+    def test_does_not_block_partial_word_collision(self):
+        from app.rag.pipeline import apply_nutrition_safety_guards
+
+        plan = {
+            "diet_recommendations": {
+                "eat": [
+                    {
+                        "item": "Pescadería local",
+                        "rationale": "Texto de prueba sin consumo directo",
+                        "citations": ["REF-A"],
+                    }
+                ],
+                "avoid": [],
+            }
+        }
+        intake = {"allergies": ["pescado"], "contraindications": []}
+
+        out = apply_nutrition_safety_guards(plan, intake)
+        # "pescadería" token should not match "pescado" token.
+        assert len(out["diet_recommendations"]["eat"]) == 1
+        assert out.get("nutrition_safety_flags", []) == []
