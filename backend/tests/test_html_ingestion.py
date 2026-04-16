@@ -74,3 +74,15 @@ def test_document_loader_end_to_end_html(tmp_path: Path, ocr_off):
     assert len(docs) == 1
     assert "lumbar" in docs[0].text
     assert docs[0].metadata.get("file_name") == "note.html"
+
+
+def test_document_loader_find_invalid_pdfs_detects_bad_header_and_eof(tmp_path: Path):
+    good = tmp_path / "good.pdf"
+    good.write_bytes(b"%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF")
+    bad_header = tmp_path / "bad-header.pdf"
+    bad_header.write_bytes(b"not-a-pdf")
+    bad_eof = tmp_path / "bad-eof.pdf"
+    bad_eof.write_bytes(b"%PDF-1.7\n1 0 obj\n<<>>\nendobj\n")
+
+    invalid = DocumentLoader().find_invalid_pdfs(str(tmp_path))
+    assert invalid == ["bad-eof.pdf", "bad-header.pdf"]

@@ -93,6 +93,31 @@ def mock_plan():
             }
         ],
         "confidence_note": "Nota",
+        "diet_recommendations": {
+            "eat": [
+                {
+                    "item": "Verduras de hoja verde",
+                    "rationale": "Apoyo antiinflamatorio",
+                    "citations": ["REF-A"],
+                }
+            ],
+            "avoid": [
+                {
+                    "item": "Ultraprocesados",
+                    "rationale": "Puede incrementar inflamación",
+                    "citations": ["REF-A"],
+                }
+            ],
+        },
+        "nutrition_safety_flags": [
+            {
+                "section": "eat",
+                "item": "Pescado",
+                "matched_terms": ["pescado"],
+                "action": "blocked",
+                "message": "Diet recommendation blocked due to intake contraindication/allergy match.",
+            }
+        ],
         "retrieval_metadata": {
             "queries_used": [],
             "candidates_retrieved": 1,
@@ -314,6 +339,24 @@ def test_get_plan_200_returns_persisted_json(client: TestClient):
             "status": "pending_review",
             "weeks": [],
             "citations_used": [],
+            "diet_recommendations": {
+                "eat": [
+                    {
+                        "item": "Verduras",
+                        "rationale": "Fibra",
+                        "citations": ["REF-A"],
+                    }
+                ],
+                "avoid": [],
+            },
+            "nutrition_safety_flags": [
+                {
+                    "section": "eat",
+                    "item": "Pescado",
+                    "matched_terms": ["pescado"],
+                    "action": "blocked",
+                }
+            ],
         },
         citations_used=[],
     )
@@ -335,6 +378,8 @@ def test_get_plan_200_returns_persisted_json(client: TestClient):
     assert r.status_code == 200
     assert r.json()["plan_id"] == str(plan_id)
     assert r.json()["status"] == "pending_review"
+    assert r.json()["diet_recommendations"]["eat"][0]["item"] == "Verduras"
+    assert r.json()["nutrition_safety_flags"][0]["item"] == "Pescado"
     db_session.execute.assert_awaited_once()
 
 
@@ -687,6 +732,23 @@ def test_ingest_400_when_source_dir_missing(client: TestClient):
 
     assert r.status_code == 400
     assert "Source directory not found" in r.json()["detail"]
+
+
+def test_ingest_400_when_malformed_pdf_detected(client: TestClient):
+    fake_ingestion = MagicMock()
+    fake_ingestion.ingest.side_effect = ValueError(
+        "Malformed PDF files detected before ingest: bad.pdf. Fix or remove them and retry."
+    )
+    app.dependency_overrides[get_ingestion_service] = lambda: fake_ingestion
+    app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="admin-user", role="admin")
+    try:
+        r = client.post("/rag/ingest", json={"source_dir": "data/corpus/nutrition"})
+    finally:
+        app.dependency_overrides.pop(get_ingestion_service, None)
+        app.dependency_overrides[get_current_user] = lambda: AuthUser(sub="test-user", role="clinician")
+
+    assert r.status_code == 400
+    assert "Malformed PDF files detected before ingest" in r.json()["detail"]
 
 
 def test_ingest_200_forwards_force_reindex(client: TestClient):

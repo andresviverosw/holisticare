@@ -116,6 +116,30 @@ def infer_topics(text: str, source_file: str) -> list[str]:
 class DocumentLoader:
     """Loads and prepares documents from a source directory."""
 
+    def find_invalid_pdfs(self, source_dir: str) -> list[str]:
+        """
+        Return malformed PDF file names in source_dir.
+
+        Validation is intentionally lightweight for fast pre-ingest checks:
+        - starts with %PDF-
+        - contains %%EOF marker in file tail
+        """
+        source_path = Path(source_dir)
+        invalid: list[str] = []
+        for pdf_path in sorted(source_path.glob("*.pdf")):
+            try:
+                with pdf_path.open("rb") as fh:
+                    header = fh.read(8)
+                    fh.seek(0, 2)
+                    size = fh.tell()
+                    fh.seek(max(0, size - 2048))
+                    tail = fh.read()
+                if not header.startswith(b"%PDF-") or b"%%EOF" not in tail:
+                    invalid.append(pdf_path.name)
+            except OSError:
+                invalid.append(pdf_path.name)
+        return invalid
+
     def load(self, source_dir: str) -> list[Document]:
         pdf_reader = PDFReader(return_full_document=False)
         html_reader = HolisticareHTMLReader()
