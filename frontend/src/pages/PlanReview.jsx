@@ -77,6 +77,22 @@ function WeekPanel({ week }) {
   );
 }
 
+function DietEntry({ entry }) {
+  return (
+    <li className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
+      <p className="font-medium text-neutral-800">{entry.item}</p>
+      {entry.rationale && <p className="mt-1">{entry.rationale}</p>}
+      {entry.citations?.length > 0 && (
+        <div className="flex flex-wrap gap-1 pt-2">
+          {entry.citations.map((ref) => (
+            <span key={ref} className="badge badge-green text-xs font-mono">{ref}</span>
+          ))}
+        </div>
+      )}
+    </li>
+  );
+}
+
 export default function PlanReview() {
   const { planId } = useParams();
   const [plan, setPlan] = useState(null);
@@ -89,7 +105,7 @@ export default function PlanReview() {
   useEffect(() => {
     ragApi.getPlan(planId)
       .then((res) => setPlan(res.data))
-      .catch(() => setError("No se pudo cargar el plan."))
+      .catch((err) => setError(formatApiError(err, { fallback: "No se pudo cargar el plan." })))
       .finally(() => setLoading(false));
   }, [planId]);
 
@@ -157,6 +173,52 @@ export default function PlanReview() {
       <div className="space-y-4">
         {plan?.weeks?.map((week) => <WeekPanel key={week.week} week={week} />)}
       </div>
+
+      {/* Nutrition recommendations */}
+      {(plan?.diet_recommendations?.eat?.length > 0 || plan?.diet_recommendations?.avoid?.length > 0) && (
+        <div className="card space-y-4">
+          <p className="text-sm font-semibold text-neutral-700">Recomendaciones nutricionales</p>
+          {plan?.diet_recommendations?.eat?.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Qué comer</p>
+              <ul className="space-y-2">
+                {plan.diet_recommendations.eat.map((entry, index) => (
+                  <DietEntry key={`eat-${index}`} entry={entry} />
+                ))}
+              </ul>
+            </div>
+          )}
+          {plan?.diet_recommendations?.avoid?.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
+                Qué evitar
+              </p>
+              <ul className="space-y-2">
+                {plan.diet_recommendations.avoid.map((entry, index) => (
+                  <DietEntry key={`avoid-${index}`} entry={entry} />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Nutrition safety flags */}
+      {plan?.nutrition_safety_flags?.length > 0 && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+          <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">
+            ⚠️ Alertas de seguridad nutricional
+          </p>
+          <ul className="list-disc list-inside space-y-1">
+            {plan.nutrition_safety_flags.map((flag, index) => (
+              <li key={index} className="text-sm text-red-700">
+                {flag.item || "Recomendación nutricional"} bloqueada en sección {flag.section}
+                {flag.matched_terms?.length > 0 ? ` (coincidencias: ${flag.matched_terms.join(", ")})` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Citations */}
       {plan?.citations_used?.length > 0 && (

@@ -41,6 +41,7 @@ class ChunkMetadata:
     evidence_level: str = "C"
     section: str = "body"
     has_contraindication: bool = False
+    topic: list[str] = field(default_factory=list)
 
 
 def detect_language(text: str) -> str:
@@ -90,6 +91,26 @@ def contains_contraindication(text: str) -> bool:
     ]
     text_lower = text.lower()
     return any(s in text_lower for s in signals)
+
+
+def infer_topics(text: str, source_file: str) -> list[str]:
+    """Infer coarse content topics for retrieval filtering."""
+    haystack = f"{source_file} {text}".lower()
+    nutrition_signals = [
+        "nutrition",
+        "nutricion",
+        "nutrición",
+        "diet",
+        "dieta",
+        "alimentacion",
+        "alimentación",
+        "alimento",
+        "alimentos",
+    ]
+    topics: list[str] = []
+    if any(signal in haystack for signal in nutrition_signals):
+        topics.append("nutrition")
+    return topics
 
 
 class DocumentLoader:
@@ -208,6 +229,7 @@ class ChunkingPipeline:
                     page_number=page_number,
                     language=doc_language,
                     has_contraindication=contains_contraindication(node.text),
+                    topic=infer_topics(node.text, source_file),
                     # therapy_type, condition, evidence_level → set manually
                     # or via LLM tagger in a later phase
                 )

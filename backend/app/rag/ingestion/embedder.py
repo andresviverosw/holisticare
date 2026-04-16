@@ -83,6 +83,7 @@ class Embedder:
                 "source_file": meta.source_file,
                 "page_number": meta.page_number,
                 "language": meta.language,
+                "topic": meta.topic,
                 "therapy_type": meta.therapy_type,
                 "condition": meta.condition,
                 "evidence_level": meta.evidence_level,

@@ -9,6 +9,7 @@ async def list_clinical_chunks(
     db: AsyncSession,
     *,
     therapy_type: str | None,
+    topic: str | None,
     language: str | None,
     has_contraindication: bool | None,
     limit: int,
@@ -16,6 +17,7 @@ async def list_clinical_chunks(
 ) -> dict[str, Any]:
     params: dict[str, Any] = {
         "therapy_type": therapy_type,
+        "topic": topic,
         "language": language,
         "has_contraindication": has_contraindication,
         "limit": limit,
@@ -37,6 +39,11 @@ async def list_clinical_chunks(
                     COALESCE(metadata_::jsonb->'condition', '[]'::jsonb)
                 )
             ) AS condition,
+            ARRAY(
+                SELECT jsonb_array_elements_text(
+                    COALESCE(metadata_::jsonb->'topic', '[]'::jsonb)
+                )
+            ) AS topic,
             metadata_::jsonb->>'evidence_level' AS evidence_level,
             metadata_::jsonb->>'language' AS language,
             metadata_::jsonb->>'section' AS section,
@@ -50,6 +57,11 @@ async def list_clinical_chunks(
             OR COALESCE(metadata_::jsonb->'therapy_type', '[]'::jsonb)
                 @> jsonb_build_array(CAST(:therapy_type AS TEXT))
         )
+          AND (
+            CAST(:topic AS TEXT) IS NULL
+            OR COALESCE(metadata_::jsonb->'topic', '[]'::jsonb)
+                @> jsonb_build_array(CAST(:topic AS TEXT))
+          )
           AND (
             CAST(:language AS TEXT) IS NULL
             OR metadata_::jsonb->>'language' = CAST(:language AS TEXT)

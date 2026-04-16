@@ -10,12 +10,14 @@ This directory contains the six core documentation phases for the AI4devs master
 | Release notes (high-level) | `CHANGELOG.md` (repository root) |
 | Clinician / demo usage of the MVP UI | `07-user-guide.md` |
 | Architecture, modules, env vars, diagrams | `08-developer-guide-and-architecture.md` |
+| Diagrams (ER, flows, UML-style, Mermaid) | `10-solution-diagrams.md` |
+| Phase 2 architecture narrative (links to diagrams) | `02-system-architecture.md` |
 | Security scanners, remediation history, CI behavior | `09-security-audit-and-todos.md` |
 | Demo commands and expected outputs | `demo-smoke-checklist.md` |
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-06.md` |
+| Sprint notes | `sprint-01.md` … `sprint-07.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -57,6 +59,7 @@ GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audi
 - `sprint-04.md` - Sprint 4 (backend, US-DIARY-001 patient diary check-ins)
 - `sprint-05.md` - Sprint 5 (backend, US-ANLY-001 outcome trends from diary)
 - `sprint-06.md` - Sprint 6 (backend, US-ANLY-002 plateau / worsening flags)
+- `sprint-07.md` - Sprint 7 (planned: US-RAG-003 nutrition corpus, eat/avoid guidance in generated plans)
 
 ## Suggested cadence
 

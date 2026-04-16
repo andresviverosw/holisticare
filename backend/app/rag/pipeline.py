@@ -51,6 +51,68 @@ def build_insufficient_evidence_plan(
     }
 
 
+def _as_lowered_terms(values: object) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    terms: list[str] = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        term = value.strip().lower()
+        if term:
+            terms.append(term)
+    return terms
+
+
+def apply_nutrition_safety_guards(plan: dict, intake_json: dict) -> dict:
+    """
+    Flag and block obvious dietary conflicts against contraindications/allergies.
+
+    Strategy:
+    - Scan each "eat"/"avoid" item+rationale text.
+    - If it contains a contraindication/allergy term from intake, remove it from output.
+    - Add a safety flag for clinician review.
+    """
+    diet = plan.get("diet_recommendations")
+    if not isinstance(diet, dict):
+        return plan
+
+    contraindications = _as_lowered_terms(intake_json.get("contraindications"))
+    allergies = _as_lowered_terms(intake_json.get("allergies"))
+    blocked_terms = list(dict.fromkeys(contraindications + allergies))
+    if not blocked_terms:
+        return plan
+
+    safety_flags: list[dict] = plan.setdefault("nutrition_safety_flags", [])
+    for section in ("eat", "avoid"):
+        entries = diet.get(section)
+        if not isinstance(entries, list):
+            diet[section] = []
+            continue
+
+        kept: list[dict] = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            text = f"{entry.get('item', '')} {entry.get('rationale', '')}".lower()
+            matched = [term for term in blocked_terms if term in text]
+            if matched:
+                safety_flags.append(
+                    {
+                        "section": section,
+                        "item": str(entry.get("item", "")),
+                        "matched_terms": matched,
+                        "action": "blocked",
+                        "message": "Diet recommendation blocked due to intake contraindication/allergy match.",
+                    }
+                )
+                continue
+            kept.append(entry)
+        diet[section] = kept
+
+    return plan
+
+
 class RAGPipeline:
     def __init__(self):
         self.query_builder = QueryBuilder()
@@ -125,5 +187,6 @@ class RAGPipeline:
             "chunks_passed_to_llm": len(reranked),
             "reranker_backend": settings.reranker_backend,
         }
+        plan = apply_nutrition_safety_guards(plan, intake_json)
 
         return plan

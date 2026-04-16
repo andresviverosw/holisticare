@@ -584,6 +584,7 @@ def test_list_chunks_200_with_filters_and_pagination(client: TestClient):
             "content": "Movilidad lumbar con progresion suave.",
             "therapy_type": ["fisioterapia"],
             "condition": ["lumbalgia"],
+            "topic": ["nutrition"],
             "evidence_level": "B",
             "language": "es",
             "section": "protocolo",
@@ -603,6 +604,7 @@ def test_list_chunks_200_with_filters_and_pagination(client: TestClient):
             "/rag/chunks",
             params={
                 "therapy_type": "fisioterapia",
+                "topic": "nutrition",
                 "language": "es",
                 "has_contraindication": "false",
                 "limit": 10,
@@ -618,6 +620,7 @@ def test_list_chunks_200_with_filters_and_pagination(client: TestClient):
     assert payload["offset"] == 5
     assert len(payload["items"]) == 1
     assert payload["items"][0]["ref_id"] == "REF-10"
+    assert payload["items"][0]["topic"] == ["nutrition"]
     db_session.execute.assert_awaited_once()
 
 
