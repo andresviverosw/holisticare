@@ -134,6 +134,7 @@ export default function PlanReview() {
     rejected: "badge-red",
     active: "badge-green",
   };
+  const blockedNutritionCount = plan?.nutrition_safety_flags?.length || 0;
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
@@ -158,6 +159,13 @@ export default function PlanReview() {
         </div>
       )}
 
+      {blockedNutritionCount > 0 && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <span className="font-semibold">Resumen de seguridad nutricional: </span>
+          {blockedNutritionCount} recomendación(es) bloqueada(s) por alergias o contraindicaciones.
+        </div>
+      )}
+
       {/* Retrieval metadata */}
       {plan?.retrieval_metadata && (
         <div className="card text-xs text-neutral-500 space-y-1">
@@ -175,31 +183,33 @@ export default function PlanReview() {
       </div>
 
       {/* Nutrition recommendations */}
-      {(plan?.diet_recommendations?.eat?.length > 0 || plan?.diet_recommendations?.avoid?.length > 0) && (
+      {plan?.diet_recommendations && (
         <div className="card space-y-4">
           <p className="text-sm font-semibold text-neutral-700">Recomendaciones nutricionales</p>
-          {plan?.diet_recommendations?.eat?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Qué comer</p>
+          <div>
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Qué comer</p>
+            {plan?.diet_recommendations?.eat?.length > 0 ? (
               <ul className="space-y-2">
                 {plan.diet_recommendations.eat.map((entry, index) => (
                   <DietEntry key={`eat-${index}`} entry={entry} />
                 ))}
               </ul>
-            </div>
-          )}
-          {plan?.diet_recommendations?.avoid?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
-                Qué evitar
-              </p>
+            ) : (
+              <p className="text-sm text-neutral-500">Sin recomendaciones de alimentación en este borrador.</p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Qué evitar</p>
+            {plan?.diet_recommendations?.avoid?.length > 0 ? (
               <ul className="space-y-2">
                 {plan.diet_recommendations.avoid.map((entry, index) => (
                   <DietEntry key={`avoid-${index}`} entry={entry} />
                 ))}
               </ul>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-neutral-500">Sin restricciones nutricionales adicionales en este borrador.</p>
+            )}
+          </div>
         </div>
       )}
 

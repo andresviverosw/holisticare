@@ -90,7 +90,7 @@ Add nutrition evidence to the RAG corpus so draft treatment plans include **what
   - Conflict handling (blocked or flagged): covered by safety unit tests and pipeline integration test.
   - Regression stability: plan API + ingestion regression suites green.
 - **Open risks / follow-ups:**
-  - Current safety matching is keyword/substring based; may require richer clinical rules to reduce false positives/negatives.
+  - Safety matching is now token + synonym based; still requires clinician review and periodic synonym list calibration for edge cases.
   - Topic tagging is heuristic (`text` + filename); optional future improvement via structured taxonomy tagger.
 
 ## Risks / follow-ups

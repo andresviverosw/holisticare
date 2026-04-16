@@ -93,6 +93,31 @@ def mock_plan():
             }
         ],
         "confidence_note": "Nota",
+        "diet_recommendations": {
+            "eat": [
+                {
+                    "item": "Verduras de hoja verde",
+                    "rationale": "Apoyo antiinflamatorio",
+                    "citations": ["REF-A"],
+                }
+            ],
+            "avoid": [
+                {
+                    "item": "Ultraprocesados",
+                    "rationale": "Puede incrementar inflamación",
+                    "citations": ["REF-A"],
+                }
+            ],
+        },
+        "nutrition_safety_flags": [
+            {
+                "section": "eat",
+                "item": "Pescado",
+                "matched_terms": ["pescado"],
+                "action": "blocked",
+                "message": "Diet recommendation blocked due to intake contraindication/allergy match.",
+            }
+        ],
         "retrieval_metadata": {
             "queries_used": [],
             "candidates_retrieved": 1,
@@ -314,6 +339,24 @@ def test_get_plan_200_returns_persisted_json(client: TestClient):
             "status": "pending_review",
             "weeks": [],
             "citations_used": [],
+            "diet_recommendations": {
+                "eat": [
+                    {
+                        "item": "Verduras",
+                        "rationale": "Fibra",
+                        "citations": ["REF-A"],
+                    }
+                ],
+                "avoid": [],
+            },
+            "nutrition_safety_flags": [
+                {
+                    "section": "eat",
+                    "item": "Pescado",
+                    "matched_terms": ["pescado"],
+                    "action": "blocked",
+                }
+            ],
         },
         citations_used=[],
     )
@@ -335,6 +378,8 @@ def test_get_plan_200_returns_persisted_json(client: TestClient):
     assert r.status_code == 200
     assert r.json()["plan_id"] == str(plan_id)
     assert r.json()["status"] == "pending_review"
+    assert r.json()["diet_recommendations"]["eat"][0]["item"] == "Verduras"
+    assert r.json()["nutrition_safety_flags"][0]["item"] == "Pescado"
     db_session.execute.assert_awaited_once()
 
 
