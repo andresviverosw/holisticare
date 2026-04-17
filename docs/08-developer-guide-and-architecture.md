@@ -93,6 +93,7 @@ From `app/core/config.py`:
 - DB: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_HOST`, `POSTGRES_PORT`
 - LLM: `ANTHROPIC_API_KEY`, `CLAUDE_MODEL`
 - Embeddings: `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIMS`
+- RAG (optional): `NUTRITION_SAFETY_TERMS_PATH` — override JSON for nutrition safety synonym groups (US-RAG-004); see `setup.md` §4.2.1 and `.env.example`.
 - Auth/App: `SECRET_KEY`, `ALLOW_DEV_AUTH`, `DEBUG`, `CORS_ORIGINS`
 
 ## Local developer workflow

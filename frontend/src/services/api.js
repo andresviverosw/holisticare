@@ -53,6 +53,16 @@ export const ragApi = {
   /** Get a plan by ID */
   getPlan: (planId) => api.get(`/rag/plan/${planId}`),
 
+  /** US-PLAN-004 — list approved-plan templates (memory bank) */
+  listPlanMemoryBank: (params = {}) => api.get("/rag/plan/memory-bank", { params }),
+
+  /** Save an approved plan snapshot into the memory bank */
+  addPlanToMemoryBank: (payload) => api.post("/rag/plan/memory-bank", payload),
+
+  /** Create a new pending_review plan from a memory-bank template */
+  instantiatePlanMemoryBank: (templateId, payload) =>
+    api.post(`/rag/plan/memory-bank/${templateId}/instantiate`, payload),
+
   /** Get source chunks for a plan */
   getPlanSources: (planId) => api.get(`/rag/plan/${planId}/sources`),
 

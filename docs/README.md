@@ -17,7 +17,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-07.md` |
+| Sprint notes | `sprint-01.md` … `sprint-10.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -53,13 +53,21 @@ GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audi
 
 ## Active sprint
 
+- **Current:** _TBD (Planning Agent)_ — next candidate: **US-PRED-001** / **US-PRED-002** or hardening (migrations, E2E).
+- **Recently completed:** [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
+
+### Sprint history (reference)
+
 - `sprint-01.md` - Sprint 1 (backend, US-PLAN-001, generic holistic intake v0)
 - `sprint-02.md` - Sprint 2 (backend, US-INT-001 intake persistence/retrieval API slice)
 - `sprint-03.md` - Sprint 3 (backend, US-SESS-001 structured session logging)
 - `sprint-04.md` - Sprint 4 (backend, US-DIARY-001 patient diary check-ins)
 - `sprint-05.md` - Sprint 5 (backend, US-ANLY-001 outcome trends from diary)
 - `sprint-06.md` - Sprint 6 (backend, US-ANLY-002 plateau / worsening flags)
-- `sprint-07.md` - Sprint 7 (planned: US-RAG-003 nutrition corpus, eat/avoid guidance in generated plans)
+- `sprint-07.md` - Sprint 7 (US-RAG-003 nutrition corpus, eat/avoid guidance in generated plans)
+- `sprint-08.md` - Sprint 8 (US-RAG-004 config-driven nutrition safety dictionaries) — **complete**
+- `sprint-09.md` - Sprint 9 (US-INT-005 automatic patient UUID + recent patients) — **complete**
+- `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
 
 ## Suggested cadence
 

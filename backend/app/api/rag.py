@@ -42,6 +42,11 @@ from app.services.analytics_service import (
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
 from app.services.session_note_service import suggest_session_note
+from app.services.plan_memory_bank_service import (
+    add_plan_to_memory_bank,
+    instantiate_plan_from_template,
+    list_memory_bank_entries,
+)
 
 router = APIRouter()
 
@@ -89,6 +94,19 @@ class PlanApprovalRequest(BaseModel):
         if value not in {"approve", "reject"}:
             raise ValueError("La accion debe ser 'approve' o 'reject'.")
         return value
+
+
+class MemoryBankAddRequest(BaseModel):
+    """Save an approved plan snapshot into the reusable template library (US-PLAN-004)."""
+
+    source_plan_id: UUID4
+    title: str = Field(..., min_length=1, max_length=200)
+    tags: list[str] = Field(default_factory=list)
+
+
+class MemoryBankInstantiateRequest(BaseModel):
+    patient_id: UUID4
+    practitioner_id: Optional[UUID4] = None
 
 
 class IntakeSaveRequest(BaseModel):
@@ -525,6 +543,82 @@ async def approve_plan(
     if payload is None:
         raise HTTPException(status_code=404, detail="Plan not found")
     return payload
+
+
+@router.post("/plan/memory-bank")
+async def memory_bank_add(
+    request: MemoryBankAddRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """Store a de-identified snapshot of an approved plan for later reuse."""
+    try:
+        entry = await add_plan_to_memory_bank(
+            db,
+            source_plan_id=request.source_plan_id,
+            title=request.title,
+            tags=request.tags,
+            created_by_sub=current_user.sub,
+        )
+    except ValueError as exc:
+        if str(exc) == "only_approved_plans":
+            raise HTTPException(
+                status_code=400,
+                detail="Solo los planes aprobados pueden guardarse en la biblioteca.",
+            ) from exc
+        raise
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return {
+        "id": str(entry.id),
+        "source_plan_id": str(entry.source_plan_id),
+        "title": entry.title,
+        "tags": entry.tags or [],
+    }
+
+
+@router.get("/plan/memory-bank")
+async def memory_bank_list(
+    q: Optional[str] = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    rows = await list_memory_bank_entries(db, q=q, limit=limit, offset=offset)
+    return {
+        "items": [
+            {
+                "id": str(r.id),
+                "title": r.title,
+                "tags": r.tags or [],
+                "therapy_types": r.therapy_types or [],
+                "language": r.language,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "source_plan_id": str(r.source_plan_id),
+            }
+            for r in rows
+        ]
+    }
+
+
+@router.post("/plan/memory-bank/{template_id}/instantiate")
+async def memory_bank_instantiate(
+    template_id: UUID4,
+    request: MemoryBankInstantiateRequest,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """Create a new pending_review plan from a library template for the given patient."""
+    plan = await instantiate_plan_from_template(
+        db,
+        template_id=template_id,
+        patient_id=request.patient_id,
+        practitioner_id=request.practitioner_id,
+    )
+    if plan is None:
+        raise HTTPException(status_code=404, detail="Plantilla no encontrada")
+    return plan
 
 
 @router.get("/plan/{plan_id}")

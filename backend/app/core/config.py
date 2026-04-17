@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     embedding_dims: int = 1536
 
+    # RAG — optional override for nutrition safety synonym JSON (US-RAG-004)
+    nutrition_safety_terms_path: str | None = None
+
     # RAG
     chunk_size: int = 512
     chunk_overlap: int = 64

@@ -74,6 +74,24 @@ docker compose build backend
 docker compose up -d backend
 ```
 
+### 3.3) PostgreSQL: schema updates on an existing data volume
+
+`infra/init.sql` runs **only when the database volume is first created**. If your volume is older than a schema change (for example `intake_profiles` was added after you first ran Compose), you may see **500** errors from the API with logs like `relation "intake_profiles" does not exist`.
+
+Apply idempotent DDL from the repository root (adjust `-U` / `-d` if your `.env` differs):
+
+```powershell
+Get-Content -Raw "infra/patch_intake_and_longitudinal.sql" | docker compose exec -T db psql -U holisticare -d holisticare_db
+```
+
+The script uses `CREATE TABLE IF NOT EXISTS` and is safe to re-run.
+
+If **`plan_memory_bank`** is missing (US-PLAN-004), apply:
+
+```powershell
+Get-Content -Raw "infra/patch_plan_memory_bank.sql" | docker compose exec -T db psql -U holisticare -d holisticare_db
+```
+
 ## 4) Health checks
 
 Backend docs:
@@ -112,6 +130,10 @@ Digital PDFs with a text layer are ingested without OCR. **Scanned or image-only
 - **Local Python (no Docker):** install [Tesseract](https://github.com/tesseract-ocr/tesseract) and ensure it is on `PATH`, or OCR fallback will log a warning and skip those files.
 
 Optional environment variables: `PDF_OCR_*` in `.env.example`.
+
+### 4.2.1) Nutrition safety synonyms (`NUTRITION_SAFETY_TERMS_PATH`, US-RAG-004)
+
+RAG plan generation expands intake **allergies** and **contraindications** against a synonym map before emitting diet lines. The default map is **`backend/app/config/nutrition_safety_terms.json`** (versioned `groups` with `canonical` and `synonyms`). Edit that file in the repo for shared defaults, or set **`NUTRITION_SAFETY_TERMS_PATH`** in `.env` to point at a clinic-specific JSON (same schema). The `backend` service in **`docker-compose.yml`** passes this variable through so entries in the project `.env` reach the container (process working directory **`/app`** — use paths like **`/app/data/...`** if you mount a file under `backend/data`). The backend validates the file at startup; invalid JSON or duplicate canonicals after normalization prevent the API from starting. After changing the bundled file in development, restart the backend container. Run **`pytest backend/tests/test_nutrition_safety_config.py backend/tests/test_rag.py::TestNutritionSafetyGuards`** before committing dictionary changes.
 
 ### 4.3) HTML pages (`.html` / `.htm`)
 

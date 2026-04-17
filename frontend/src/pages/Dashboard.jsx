@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
@@ -8,9 +8,8 @@ import {
   parseCsvList,
   validateIntakeForm,
 } from "../utils/intakeBuilder";
-
-// Must be RFC-4122 UUID **version 4** (backend validates with Pydantic UUID4).
-const DEFAULT_PATIENT_ID = "a1111111-1111-4111-8111-111111111111";
+import { addRecentPatient, listRecentPatients } from "../utils/recentPatients";
+import { isValidUuidV4, newPatientUuid } from "../utils/uuidV4";
 
 const SAMPLE_INTAKE_FORM = {
   ageRange: "40-50",
@@ -29,17 +28,119 @@ const SAMPLE_INTAKE_FORM = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [patientId, setPatientId] = useState(DEFAULT_PATIENT_ID);
+  const [patientId, setPatientId] = useState("");
   const [intakeForm, setIntakeForm] = useState(SAMPLE_INTAKE_FORM);
   const [therapies, setTherapies] = useState("acupuntura, fisioterapia, hidroterapia");
   const [language, setLanguage] = useState("es");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [intakeNotice, setIntakeNotice] = useState(null);
+  const [recentPatients, setRecentPatients] = useState(() => listRecentPatients());
+  const [memoryBankItems, setMemoryBankItems] = useState([]);
+  const [memoryBankQuery, setMemoryBankQuery] = useState("");
+  const [memoryBankLoading, setMemoryBankLoading] = useState(false);
+  const [memoryBankError, setMemoryBankError] = useState(null);
+  const memoryBankQueryRef = useRef(memoryBankQuery);
+  memoryBankQueryRef.current = memoryBankQuery;
+
+  const trimmedPatientId = patientId.trim();
+  const patientIdReady = trimmedPatientId !== "" && isValidUuidV4(trimmedPatientId);
+
+  const patientIdHint = useMemo(() => {
+    if (trimmedPatientId === "") {
+      return "Usa «Nuevo paciente» para generar un UUID, pega uno existente, o elige en «Pacientes recientes».";
+    }
+    if (!isValidUuidV4(trimmedPatientId)) {
+      return "El ID debe ser un UUID versión 4 válido (formato 8-4-4-4-12).";
+    }
+    return null;
+  }, [trimmedPatientId]);
+
+  function refreshRecentPatients() {
+    setRecentPatients(listRecentPatients());
+  }
+
+  const loadMemoryBank = useCallback(async () => {
+    setMemoryBankLoading(true);
+    setMemoryBankError(null);
+    try {
+      const res = await ragApi.listPlanMemoryBank({
+        q: memoryBankQueryRef.current.trim() || undefined,
+        limit: 20,
+      });
+      setMemoryBankItems(res.data.items || []);
+    } catch (err) {
+      setMemoryBankError(
+        formatApiError(err, { fallback: "No se pudo cargar la biblioteca de plantillas." }),
+      );
+    } finally {
+      setMemoryBankLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMemoryBank();
+  }, [loadMemoryBank]);
+
+  async function handleUseTemplate(templateId) {
+    setMemoryBankError(null);
+    setIntakeNotice(null);
+    if (!requirePatientUuidForAction()) return;
+    setMemoryBankLoading(true);
+    try {
+      const res = await ragApi.instantiatePlanMemoryBank(templateId, {
+        patient_id: trimmedPatientId,
+      });
+      navigate(`/plan/${res.data.plan_id}`);
+    } catch (err) {
+      setMemoryBankError(
+        formatApiError(err, { fallback: "No se pudo crear el borrador desde la plantilla." }),
+      );
+    } finally {
+      setMemoryBankLoading(false);
+    }
+  }
+
+  function requirePatientUuidForAction() {
+    if (trimmedPatientId === "") {
+      setError("Indica un ID de paciente: genera uno nuevo o pega un UUID v4.");
+      return false;
+    }
+    if (!isValidUuidV4(trimmedPatientId)) {
+      setError(
+        "El ID de paciente no es un UUID versión 4 válido. Corrige el formato o usa «Nuevo paciente».",
+      );
+      return false;
+    }
+    return true;
+  }
+
+  function handleNewPatient() {
+    setError(null);
+    setIntakeNotice(null);
+    try {
+      setPatientId(newPatientUuid());
+      setIntakeNotice("Nuevo ID de paciente generado. Puedes copiarlo o guardar el intake.");
+    } catch (e) {
+      setError(e?.message || "No se pudo generar el UUID.");
+    }
+  }
+
+  async function handleCopyPatientId() {
+    if (!patientIdReady) return;
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(trimmedPatientId);
+      setIntakeNotice("ID copiado al portapapeles.");
+    } catch {
+      setError("No se pudo copiar al portapapeles. Copia el texto del campo manualmente.");
+    }
+  }
 
   async function handleSaveIntake() {
     setIntakeNotice(null);
     setError(null);
+    if (!requirePatientUuidForAction()) return;
     const validationError = validateIntakeForm(intakeForm);
     if (validationError) {
       setError(validationError);
@@ -48,9 +149,14 @@ export default function Dashboard() {
     try {
       const intake_json = buildIntakePayload(intakeForm);
       await ragApi.saveIntake({
-        patient_id: patientId.trim(),
+        patient_id: trimmedPatientId,
         intake_json,
       });
+      addRecentPatient({
+        id: trimmedPatientId,
+        label: intakeForm.chiefComplaint?.trim().slice(0, 120) || "",
+      });
+      refreshRecentPatients();
       setIntakeNotice("Intake guardado en el servidor.");
     } catch (err) {
       setError(
@@ -64,19 +170,20 @@ export default function Dashboard() {
   async function handleLoadIntake() {
     setIntakeNotice(null);
     setError(null);
-    const id = patientId.trim();
-    if (!id) {
-      setError("Indica un ID de paciente (UUID) para cargar.");
-      return;
-    }
+    if (!requirePatientUuidForAction()) return;
     try {
-      const res = await ragApi.getIntake(id);
+      const res = await ragApi.getIntake(trimmedPatientId);
       const next = formStateFromIntakeJson(res.data.intake_json);
       if (!next) {
         setError("El intake guardado no es compatible (generic_holistic_v0).");
         return;
       }
       setIntakeForm(next);
+      addRecentPatient({
+        id: trimmedPatientId,
+        label: next.chiefComplaint?.trim().slice(0, 120) || "",
+      });
+      refreshRecentPatients();
       setIntakeNotice("Intake cargado desde el servidor.");
     } catch (err) {
       if (err.response?.status === 404) {
@@ -96,6 +203,9 @@ export default function Dashboard() {
     setError(null);
     setIntakeNotice(null);
     try {
+      if (!requirePatientUuidForAction()) {
+        return;
+      }
       const validationError = validateIntakeForm(intakeForm);
       if (validationError) {
         throw new Error(validationError);
@@ -106,11 +216,16 @@ export default function Dashboard() {
         throw new Error("Agrega al menos una modalidad disponible.");
       }
       const res = await ragApi.generatePlan({
-        patient_id: patientId.trim(),
+        patient_id: trimmedPatientId,
         intake_json,
         available_therapies: availableTherapies,
         preferred_language: language,
       });
+      addRecentPatient({
+        id: trimmedPatientId,
+        label: intakeForm.chiefComplaint?.trim().slice(0, 120) || "",
+      });
+      refreshRecentPatients();
       navigate(`/plan/${res.data.plan_id}`);
     } catch (err) {
       if (typeof err.message === "string") {
@@ -151,17 +266,152 @@ export default function Dashboard() {
               onChange={(e) => setPatientId(e.target.value)}
               className="input font-mono text-sm"
               spellCheck={false}
+              autoComplete="off"
+              aria-invalid={trimmedPatientId !== "" && !isValidUuidV4(trimmedPatientId)}
+              placeholder="Genera un ID nuevo o pega un UUID existente"
             />
+            {patientIdHint && (
+              <p className="mt-1 text-xs text-neutral-500">{patientIdHint}</p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="btn-secondary text-sm px-3 py-2" onClick={handleLoadIntake}>
+            <button type="button" className="btn-secondary text-sm px-3 py-2" onClick={handleNewPatient}>
+              Nuevo paciente
+            </button>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleCopyPatientId}
+              disabled={!patientIdReady}
+              title={!patientIdReady ? "Necesitas un UUID v4 válido para copiar" : "Copiar al portapapeles"}
+            >
+              Copiar ID
+            </button>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleLoadIntake}
+              disabled={!patientIdReady}
+            >
               Cargar intake guardado
             </button>
-            <button type="button" className="btn-secondary text-sm px-3 py-2" onClick={handleSaveIntake}>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleSaveIntake}
+              disabled={!patientIdReady}
+            >
               Guardar intake
             </button>
           </div>
         </div>
+
+        {recentPatients.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-neutral-600 mb-2">Pacientes recientes</p>
+            <div className="flex flex-wrap gap-2">
+              {recentPatients.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="btn-secondary text-xs px-2 py-1 max-w-full truncate"
+                  title={p.id}
+                  onClick={() => {
+                    setPatientId(p.id);
+                    setError(null);
+                    setIntakeNotice(null);
+                  }}
+                >
+                  {(p.label || "").trim() ? `${p.label.trim().slice(0, 40)}` : p.id.slice(0, 13) + "…"}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-neutral-400">
+              Solo en este navegador. Tras elegir, usa «Cargar intake guardado» si el intake está en el servidor.
+            </p>
+          </div>
+        )}
+
+        <section
+          className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3"
+          aria-busy={memoryBankLoading}
+          aria-labelledby="memory-bank-heading"
+        >
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p id="memory-bank-heading" className="text-sm font-semibold text-neutral-800">
+                Biblioteca de plantillas
+              </p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Planes aprobados guardados como plantilla. Crea un <strong>borrador nuevo</strong> para el paciente
+                actual (requiere revisión otra vez).
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <input
+                type="search"
+                className="input text-sm flex-1 min-w-[140px]"
+                placeholder="Buscar por título, etiqueta o terapia…"
+                value={memoryBankQuery}
+                onChange={(e) => setMemoryBankQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && loadMemoryBank()}
+                aria-label="Buscar plantillas por título, etiqueta o terapia"
+              />
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={() => loadMemoryBank()}
+                disabled={memoryBankLoading}
+              >
+                {memoryBankLoading ? "Cargando…" : "Buscar"}
+              </button>
+            </div>
+          </div>
+          {memoryBankError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {memoryBankError}
+            </div>
+          )}
+          {memoryBankLoading && memoryBankItems.length === 0 && !memoryBankError && (
+            <p className="text-xs text-neutral-500">Cargando plantillas…</p>
+          )}
+          {memoryBankItems.length === 0 && !memoryBankLoading && !memoryBankError && (
+            <p className="text-xs text-neutral-500">No hay plantillas. Aprueba un plan y guárdalo desde la revisión.</p>
+          )}
+          {memoryBankItems.length > 0 && (
+            <ul className="space-y-2">
+              {memoryBankItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded border border-neutral-200 bg-white px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-neutral-800 truncate">{item.title}</p>
+                    <p className="text-xs text-neutral-500 font-mono truncate">{item.id}</p>
+                    {(item.tags?.length > 0 || item.therapy_types?.length > 0) && (
+                      <p className="text-xs text-neutral-600 mt-1">
+                        {item.tags?.length > 0 && <span>Etiquetas: {item.tags.join(", ")}. </span>}
+                        {item.therapy_types?.length > 0 && (
+                          <span>Terapias: {item.therapy_types.join(", ")}</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-primary text-sm px-3 py-2 shrink-0"
+                    onClick={() => handleUseTemplate(item.id)}
+                    disabled={memoryBankLoading || !patientIdReady}
+                    title={!patientIdReady ? "Indica un UUID v4 de paciente arriba" : "Crear borrador para este paciente"}
+                    aria-label={`Usar plantilla «${item.title}» como borrador para el paciente actual`}
+                  >
+                    Usar como borrador
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <div className="space-y-4">
           <h2 className="text-sm font-semibold text-neutral-700">Intake clínico (formulario)</h2>
@@ -348,8 +598,9 @@ export default function Dashboard() {
           </p>
           <button
             onClick={handleGenerate}
-            disabled={loading}
+            disabled={loading || !patientIdReady}
             className="btn-primary min-w-[160px]"
+            title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
           >
             {loading ? "Generando…" : "Generar plan IA"}
           </button>

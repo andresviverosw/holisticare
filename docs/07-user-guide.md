@@ -31,12 +31,15 @@ If login fails, an actionable message is shown (e.g. auth disabled, invalid toke
 ## Generate a treatment plan
 
 1. Open `Dashboard`.
-2. Fill:
-   - `ID del paciente (UUID v4)`
-   - `Intake JSON (generic_holistic_v0)`
-   - `Modalidades disponibles`
-   - `Idioma del plan`
-3. Click `Generar plan IA`.
+2. Set **patient ID** (RFC-4122 UUID version 4):
+   - Click **`Nuevo paciente`** to generate a new id, or paste an existing id, or pick from **`Pacientes recientes`** (stored in this browser) and then **`Cargar intake guardado`** if you need the saved intake from the server.
+   - Use **`Copiar ID`** to copy the current id to the clipboard.
+3. Fill the structured intake form (or **`Cargar intake guardado`** after selecting an id).
+4. Set **`Modalidades disponibles`** and **`Idioma del plan`**.
+5. Optionally **`Guardar intake`** before generating.
+6. Click **`Generar plan IA`**.
+
+Invalid UUIDs are rejected before save/load/generate; the field must be a valid **version 4** UUID (same rules as the backend).
 
 Result:
 - On success, app navigates to plan review.
@@ -58,6 +61,12 @@ Result:
 Behavior:
 - Plans are generated as `pending_review`.
 - Approval/rejection updates status and is persisted.
+
+### Plan library (memory bank)
+
+After a plan is **approved**, you can **Guardar en biblioteca** on the plan review screen (title + optional tags). That stores a **de-identified** copy for your team.
+
+On the **Dashboard**, **Biblioteca de plantillas** lists saved templates; use **Usar como borrador** to create a **new** `pending_review` plan for the **current patient ID** (you must review and approve again).
 
 ## View source evidence
 

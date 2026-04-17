@@ -74,6 +74,21 @@ CREATE TABLE IF NOT EXISTS intake_profile_audit (
     changed_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ─── Plan memory bank (US-PLAN-004) — reusable approved-plan templates ──
+CREATE TABLE IF NOT EXISTS plan_memory_bank (
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    source_plan_id   UUID NOT NULL,
+    title            VARCHAR(200) NOT NULL,
+    tags             TEXT[],
+    therapy_types    TEXT[],
+    language         VARCHAR(8),
+    snapshot_json    JSONB NOT NULL,
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    created_by_sub   VARCHAR(255) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS plan_memory_bank_created_at_idx ON plan_memory_bank (created_at DESC);
+
 -- ─── Care sessions (clinical visit log) ───────────────────────
 CREATE TABLE IF NOT EXISTS care_sessions (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -26,6 +26,9 @@ services:
     environment:
       # Safer default: opt in via .env for local dev (see .env.example).
       ALLOW_DEV_AUTH: "${ALLOW_DEV_AUTH:-false}"
+      # Optional: clinic-specific nutrition safety synonym JSON (US-RAG-004). Unset uses bundled
+      # backend/app/config/nutrition_safety_terms.json. Path is resolved inside the container (cwd /app).
+      NUTRITION_SAFETY_TERMS_PATH: "${NUTRITION_SAFETY_TERMS_PATH:-}"
     ports:
       - "8000:8000"
     volumes:

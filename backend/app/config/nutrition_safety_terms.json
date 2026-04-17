@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "canonical": "pescado",
+      "synonyms": ["atun", "atún", "salmon", "salmón", "mariscos"]
+    },
+    {
+      "canonical": "frutas",
+      "synonyms": ["fruta"]
+    },
+    {
+      "canonical": "lacteos",
+      "synonyms": ["lácteos", "leche", "queso", "yogurt", "yoghurt"]
+    },
+    {
+      "canonical": "gluten",
+      "synonyms": ["trigo", "cebada", "centeno"]
+    },
+    {
+      "canonical": "nueces",
+      "synonyms": ["nuez", "almendra", "almendras", "cacahuate", "mani"]
+    }
+  ]
+}

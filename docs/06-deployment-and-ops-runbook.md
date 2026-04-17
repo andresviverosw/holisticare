@@ -32,6 +32,7 @@ Define repeatable deployment, monitoring, incident response, backup, and mainten
 ## 4. Deployment checklist
 
 - [ ] Configuration and secrets validated
+- [ ] If **`NUTRITION_SAFETY_TERMS_PATH`** is set (clinic-specific nutrition safety synonym JSON, US-RAG-004), the file is present in the runtime filesystem, schema-valid, and mounted or baked into the image as intended; the API will not start if the file is missing or invalid (same contract as local development; see `setup.md` §4.2.1).
 - [ ] Database migrations reviewed
 - [ ] Backward compatibility check complete
 - [ ] Rollback plan confirmed

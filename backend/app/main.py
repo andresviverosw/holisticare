@@ -1,9 +1,20 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401 — register ORM metadata
 from app.api import auth, rag
 from app.core.config import get_settings
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Validate config that must be sound before serving RAG (US-RAG-004)."""
+    from app.rag.nutrition_safety_config import get_nutrition_synonym_groups
+
+    get_nutrition_synonym_groups()
+    yield
 
 
 def create_app() -> FastAPI:
@@ -13,6 +24,7 @@ def create_app() -> FastAPI:
         description="AI-powered holistic rehabilitation clinical decision support",
         version="0.1.0",
         docs_url="/docs" if settings.debug else None,
+        lifespan=_lifespan,
     )
 
     app.add_middleware(

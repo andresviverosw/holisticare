@@ -12,14 +12,13 @@ Wires together all phases:
 """
 
 import uuid
-import re
-import unicodedata
 from datetime import datetime, timezone
 
 from app.rag.generation.query_builder import QueryBuilder
 from app.rag.retrieval.vector_search import VectorRetriever, RetrievalConfig
 from app.rag.retrieval.reranker import get_reranker
 from app.rag.generation.generator import PlanGenerator
+from app.rag.nutrition_safety_config import get_nutrition_synonym_groups, normalize_nutrition_text
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -66,41 +65,28 @@ def _as_lowered_terms(values: object) -> list[str]:
     return terms
 
 
-def _normalize_text(value: str) -> str:
-    normalized = unicodedata.normalize("NFKD", value)
-    no_accents = "".join(ch for ch in normalized if not unicodedata.combining(ch))
-    lowered = no_accents.lower()
-    return re.sub(r"[^a-z0-9]+", " ", lowered).strip()
-
-
 def _token_set(value: str) -> set[str]:
-    normalized = _normalize_text(value)
+    normalized = normalize_nutrition_text(value)
     return {tok for tok in normalized.split(" ") if tok}
 
 
-NUTRITION_TERM_SYNONYMS: dict[str, set[str]] = {
-    "pescado": {"pescado", "atun", "atún", "salmon", "salmón", "mariscos"},
-    "frutas": {"fruta", "frutas"},
-    "lacteos": {"lacteos", "lácteos", "leche", "queso", "yogurt", "yoghurt"},
-    "gluten": {"gluten", "trigo", "cebada", "centeno"},
-    "nueces": {"nuez", "nueces", "almendra", "almendras", "cacahuate", "mani", "mani"},
-}
-
-
-def _expand_term_tokens(term: str) -> set[str]:
+def _expand_term_tokens(term: str, synonym_groups: dict[str, set[str]]) -> set[str]:
     tokens = _token_set(term)
     expanded: set[str] = set(tokens)
     for token in list(tokens):
-        for key, synonyms in NUTRITION_TERM_SYNONYMS.items():
-            normalized_key = _normalize_text(key)
-            normalized_synonyms = {_normalize_text(s) for s in synonyms}
-            if token == normalized_key or token in normalized_synonyms:
+        for normalized_key, synonym_tokens in synonym_groups.items():
+            if token == normalized_key or token in synonym_tokens:
                 expanded.add(normalized_key)
-                expanded.update(normalized_synonyms)
+                expanded.update(synonym_tokens)
     return expanded
 
 
-def apply_nutrition_safety_guards(plan: dict, intake_json: dict) -> dict:
+def apply_nutrition_safety_guards(
+    plan: dict,
+    intake_json: dict,
+    *,
+    synonym_groups: dict[str, set[str]] | None = None,
+) -> dict:
     """
     Flag and block obvious dietary conflicts against contraindications/allergies.
 
@@ -118,7 +104,8 @@ def apply_nutrition_safety_guards(plan: dict, intake_json: dict) -> dict:
     blocked_terms = list(dict.fromkeys(contraindications + allergies))
     if not blocked_terms:
         return plan
-    blocked_term_tokens = {term: _expand_term_tokens(term) for term in blocked_terms}
+    groups = synonym_groups if synonym_groups is not None else get_nutrition_synonym_groups()
+    blocked_term_tokens = {term: _expand_term_tokens(term, groups) for term in blocked_terms}
 
     safety_flags: list[dict] = plan.setdefault("nutrition_safety_flags", [])
     for section in ("eat", "avoid"):

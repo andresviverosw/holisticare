@@ -101,6 +101,11 @@ export default function PlanReview() {
   const [notes, setNotes] = useState("");
   const [actionDone, setActionDone] = useState(null);
   const [error, setError] = useState(null);
+  const [bankTitle, setBankTitle] = useState("");
+  const [bankTags, setBankTags] = useState("");
+  const [bankSaving, setBankSaving] = useState(false);
+  const [bankMsg, setBankMsg] = useState(null);
+  const [bankError, setBankError] = useState(null);
 
   useEffect(() => {
     ragApi.getPlan(planId)
@@ -108,6 +113,34 @@ export default function PlanReview() {
       .catch((err) => setError(formatApiError(err, { fallback: "No se pudo cargar el plan." })))
       .finally(() => setLoading(false));
   }, [planId]);
+
+  async function handleAddToMemoryBank() {
+    setBankSaving(true);
+    setBankMsg(null);
+    setBankError(null);
+    try {
+      const tags = bankTags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      await ragApi.addPlanToMemoryBank({
+        source_plan_id: planId,
+        title: bankTitle.trim(),
+        tags,
+      });
+      setBankMsg("Plantilla guardada. En el tablero puedes usar «Usar como borrador» para otro paciente.");
+      setBankTitle("");
+      setBankTags("");
+    } catch (err) {
+      setBankError(
+        formatApiError(err, {
+          fallback: "No se pudo guardar la plantilla.",
+        }),
+      );
+    } finally {
+      setBankSaving(false);
+    }
+  }
 
   async function handleDecision(action) {
     setApproving(true);
@@ -296,6 +329,57 @@ export default function PlanReview() {
           {actionDone === "approve"
             ? "✓ Plan aprobado y vinculado al expediente del paciente."
             : "✕ Plan rechazado. No será activado."}
+        </div>
+      )}
+
+      {(plan?.status === "approved" || actionDone === "approve") && (
+        <div className="card border-brand-200 bg-brand-50/40 space-y-3">
+          <p className="text-sm font-semibold text-neutral-800">Biblioteca de plantillas</p>
+          <p className="text-xs text-neutral-600">
+            Guarda una copia <strong>sin identificadores de paciente</strong> de este plan aprobado para reutilizarla
+            como <strong>borrador</strong> (nuevo plan en revisión) desde el tablero.
+          </p>
+          <div>
+            <label className="label">Título de la plantilla *</label>
+            <input
+              type="text"
+              className="input"
+              value={bankTitle}
+              onChange={(e) => {
+                setBankTitle(e.target.value);
+                setBankError(null);
+              }}
+              placeholder="Ej. Programa lumbalgia 4 semanas"
+              aria-required="true"
+            />
+          </div>
+          <div>
+            <label className="label">Etiquetas (opcional, separadas por coma)</label>
+            <input
+              type="text"
+              className="input"
+              value={bankTags}
+              onChange={(e) => {
+                setBankTags(e.target.value);
+                setBankError(null);
+              }}
+              placeholder="lumbalgia, evidencia B"
+            />
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={bankSaving || !bankTitle.trim()}
+            onClick={handleAddToMemoryBank}
+          >
+            {bankSaving ? "Guardando…" : "Guardar en biblioteca"}
+          </button>
+          {bankError && (
+            <p className="text-sm text-red-700" role="alert">
+              {bankError}
+            </p>
+          )}
+          {bankMsg && <p className="text-sm text-emerald-800">{bankMsg}</p>}
         </div>
       )}
     </div>

@@ -72,14 +72,15 @@ Translate requirements into implementable product specifications, user stories, 
 | US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
 | US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
-| US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Planned |
+| US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Done (Sprint 9) |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
 | US-PLAN-002 | AI treatment planning | Clinician | to see source citations (REF-IDs) attached to each recommendation | I can trust and verify recommendations | Must | M | Done (backend Sprint 1) |
 | US-PLAN-003 | AI treatment planning | Clinician | to approve or reject AI plans before activation | treatment remains practitioner-controlled | Must | S | Done (backend Sprint 1) |
-| US-PLAN-004 | AI treatment planning | Clinician | a memory bank of **approved** treatment plans that I can search and reuse as a starting point for a new patient | I spend less time drafting similar plans and stay aligned with evidence-backed patterns the team already validated | Should | L | Planned |
+| US-PLAN-004 | AI treatment planning | Clinician | a memory bank of **approved** treatment plans that I can search and reuse as a starting point for a new patient | I spend less time drafting similar plans and stay aligned with evidence-backed patterns the team already validated | Should | L | Done (Sprint 10) |
 | US-RAG-001 | Knowledge base (RAG) | Admin | to ingest PDF and HTML sources into the vector index | clinical references are searchable for retrieval and citations | Must | S | Done (backend) |
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-RAG-003 | Knowledge base (RAG) | Clinician | to include nutrition evidence in the corpus and retrieve profile-aware dietary guidance | generated plans include what to eat and what to avoid based on patient profile and contraindications | Must | M | Done (backend + ops + UI review) |
+| US-RAG-004 | Knowledge base (RAG) | Clinician | to manage nutrition safety synonym dictionaries via configuration | safety matching can be updated quickly without code changes and remains clinically aligned | Should | M | Done (Sprint 8) |
 | US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
 | US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
 | US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
@@ -175,6 +176,12 @@ Implementation notes:
 - **Existing patients without a new API:** reuse **patient_id** field + **Cargar intake guardado**; optional “recientes” storing last N `(id, label, date)` in `localStorage`.
 - **Richer slice (backend):** add listing/search endpoints over `intake_profiles` / patients (scoped by clinic/practitioner) — requires authz design and possibly pagination; follow-on task.
 
+Implementation evidence (frontend, Sprint 9):
+
+- `frontend/src/utils/uuidV4.js` — `isValidUuidV4`, `newPatientUuid` (`crypto.randomUUID`).
+- `frontend/src/utils/recentPatients.js` — `listRecentPatients`, `addRecentPatient`, `mergeRecentPatientList` (max 10, `localStorage` key `holisticare_recent_patients_v1`).
+- `frontend/src/pages/Dashboard.jsx` — **Nuevo paciente**, **Copiar ID**, validation before save/load/generate, **Pacientes recientes** chips; Vitest coverage in `uuidV4.test.js` and `recentPatients.test.js`.
+
 ### US-SESS-001 - Structured session logging
 
 - Given a clinical encounter, when the clinician submits a session log, then interventions and observations are stored in a structured, validated payload.
@@ -269,6 +276,13 @@ Implementation notes:
 - **Reuse flow:** copy structure/weeks into new row; strip or replace `patient_id`; reset `status`, `plan_id`, `generated_at`; preserve or refresh `citations_used` consistency with current RAG corpus (warn if REF-IDs no longer exist).
 - **Privacy:** default bank entries should be **de-identified** at template level; document consent/retention in ops appendix.
 - **Dependencies:** **US-PLAN-003** (approval gate) must be reliable before bank eligibility.
+
+Implementation evidence (Sprint 10):
+
+- Table **`plan_memory_bank`** (`infra/init.sql`, `infra/patch_plan_memory_bank.sql`); model `PlanMemoryBankEntry`; service `app/services/plan_memory_bank_service.py`.
+- API: `POST /rag/plan/memory-bank`, `GET /rag/plan/memory-bank`, `POST /rag/plan/memory-bank/{template_id}/instantiate` (clinician/admin JWT).
+- UI: **Biblioteca de plantillas** on Dashboard (search + «Usar como borrador»); **Guardar en biblioteca** on plan review when status is approved.
+- Tests: `backend/tests/test_plan_memory_bank_service.py`, `backend/tests/test_plan_memory_bank_api.py`.
 
 ### US-DIARY-001 - Daily patient diary
 
@@ -397,6 +411,26 @@ Implementation notes:
 - Safety: add a lightweight rule-based post-check against profile contraindications/allergies before returning final draft.
 - Dependency: relies on **US-RAG-002** corpus operations and **US-PLAN-002** citation traceability behavior.
 
+### US-RAG-004 - Config-driven nutrition safety dictionaries
+
+- Given nutrition safety matching is active, when clinic/product owners need to add or adjust dietary synonym terms (for allergies/contraindications), then they can update a configuration file (or equivalent runtime-safe config source) without changing Python code.
+- Given the configuration is loaded at startup, when malformed or missing dictionary entries are detected, then the system fails fast with a clear startup/validation error instead of silently degrading safety behavior.
+- Given synonym configuration updates, when nutrition safety guards evaluate generated recommendations, then matching behavior reflects the updated dictionary and remains accent/case-insensitive.
+- Given CI runs, when synonym config changes are introduced, then automated tests verify expected block/non-block cases for representative Spanish and English terms.
+
+Test intent:
+
+- Unit: config loader/validator for synonym dictionary schema and normalization.
+- Unit: nutrition safety matcher respects configured terms (positive and negative examples).
+- Integration: plan generation flow still emits `nutrition_safety_flags` using configured dictionary values.
+
+Implementation notes:
+
+- Store dictionary in a versioned file under backend config (example: `backend/app/config/nutrition_safety_terms.json`).
+- Keep a default baseline map in repo; allow environment override path if needed for deployments.
+- Add schema validation and deterministic error messages to avoid ambiguous runtime state.
+- Preserve backward compatibility: if no override is provided, default dictionary behavior must remain stable.
+
 ## 6. Non-functional acceptance criteria
 
 - Performance: 95th percentile API response <= 800 ms for non-AI endpoints in staging baseline load.
@@ -414,9 +448,10 @@ Implementation notes:
 | US-RAG-001 | Must | R1 | None | Multi-format ingestion (PDF, HTML); enables retrieval corpus |
 | US-RAG-002 | Must | R2 | US-RAG-001 | Load curated corpus + verify retrieval (ops slice) |
 | US-RAG-003 | Must | R2 | US-RAG-002, US-PLAN-002 | Add nutrition corpus and profile-aware eat/avoid recommendations with citations |
+| US-RAG-004 | Should | R3 | US-RAG-003 | **Done (Sprint 8).** Configurable dictionary + `NUTRITION_SAFETY_TERMS_PATH`; see `sprint-08.md` |
 | US-PLAN-002 | Must | R1 | US-PLAN-001 | Required trust control |
 | US-PLAN-003 | Must | R1 | US-PLAN-001 | Required safety gate |
-| US-PLAN-004 | Should | R3 | US-PLAN-003 | Memory bank: reuse approved plans as new drafts |
+| US-PLAN-004 | Should | R3 | US-PLAN-003 | **Done (Sprint 10).** `plan_memory_bank` + `/rag/plan/memory-bank*`; see `sprint-10.md` |
 | US-SESS-001 | Must | R1 | US-INT-001 | Longitudinal tracking base |
 | US-DIARY-001 | Must | R1 | US-INT-001 | Between-session continuity |
 | US-ANLY-001 | Must | R1 | US-SESS-001, US-DIARY-001 | Outcome visibility |
@@ -425,14 +460,14 @@ Implementation notes:
 | US-SESS-002 | Should | R2 | US-SESS-001 | Productivity enhancement |
 | US-DIARY-002 | Should | R2 | US-DIARY-001 | Patient engagement |
 | US-INT-004 | Should | R2 | US-PLAN-001 | Clinician UX: structured intake on plan generator |
-| US-INT-005 | Should | R2 | US-INT-004 | Auto UUID for new patients; retrieve/select existing id |
+| US-INT-005 | Should | R2 | US-INT-004 | **Done (Sprint 9).** Dashboard: Nuevo paciente, Copiar ID, validación v4, recientes en `localStorage` — see `sprint-09.md` |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | Predictive model maturity |
 | US-PRED-002 | Should | R3 | US-PRED-001 | Recommendation layer |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**); **US-INT-005** (auto patient UUID + retrieve existing) is the next intake UX slice.
-- R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft).
+- R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
+- R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 
 ## 8. Definition of ready / done
 
