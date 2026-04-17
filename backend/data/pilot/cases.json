@@ -1,0 +1,131 @@
+[
+  {
+    "case_id": "pilot-001-lumbar-pain",
+    "description": "Chronic low-back pain with stress and sleep disturbance.",
+    "request": {
+      "patient_id": "a1111111-1111-4111-8111-111111111111",
+      "intake_json": {
+        "profile_version": "generic_holistic_v0",
+        "demographics": {
+          "age_range": "40-50",
+          "sex_at_birth": "F"
+        },
+        "chief_complaint": "Dolor lumbar cronico, peor al final del dia.",
+        "conditions": [
+          "lumbalgia cronica"
+        ],
+        "goals": [
+          "Reducir dolor",
+          "Mejorar movilidad",
+          "Dormir mejor"
+        ],
+        "contraindications": [],
+        "current_medications": [
+          "ibuprofeno 400 mg"
+        ],
+        "allergies": [],
+        "baseline_outcomes": {
+          "pain_nrs_0_10": 7
+        },
+        "psychosocial_summary": "Estres laboral alto.",
+        "prior_interventions_tried": [
+          "fisioterapia convencional"
+        ]
+      },
+      "available_therapies": [
+        "fisioterapia",
+        "acupuntura",
+        "hidroterapia"
+      ],
+      "preferred_language": "es"
+    }
+  },
+  {
+    "case_id": "pilot-002-ibs-anxiety",
+    "description": "Digestive discomfort with anxiety and food triggers.",
+    "request": {
+      "patient_id": "a2222222-2222-4222-8222-222222222222",
+      "intake_json": {
+        "profile_version": "generic_holistic_v0",
+        "demographics": {
+          "age_range": "30-40",
+          "sex_at_birth": "M"
+        },
+        "chief_complaint": "Distension abdominal y dolor postprandial.",
+        "conditions": [
+          "sindrome de intestino irritable"
+        ],
+        "goals": [
+          "Reducir dolor abdominal",
+          "Mejorar tolerancia digestiva",
+          "Disminuir ansiedad"
+        ],
+        "contraindications": [
+          "lactosa"
+        ],
+        "current_medications": [
+          "probio tico diario"
+        ],
+        "allergies": [
+          "mariscos"
+        ],
+        "baseline_outcomes": {
+          "pain_nrs_0_10": 6
+        },
+        "psychosocial_summary": "Ansiedad relacionada al trabajo.",
+        "prior_interventions_tried": [
+          "dieta baja en FODMAP parcial"
+        ]
+      },
+      "available_therapies": [
+        "nutricion funcional",
+        "mindfulness",
+        "acupuntura"
+      ],
+      "preferred_language": "es"
+    }
+  },
+  {
+    "case_id": "pilot-003-fatigue-sleep",
+    "description": "Fatigue, poor sleep quality and low physical activity.",
+    "request": {
+      "patient_id": "a3333333-3333-4333-8333-333333333333",
+      "intake_json": {
+        "profile_version": "generic_holistic_v0",
+        "demographics": {
+          "age_range": "50-60",
+          "sex_at_birth": "F"
+        },
+        "chief_complaint": "Fatiga persistente y sueno no reparador.",
+        "conditions": [
+          "fatiga cronica no especificada"
+        ],
+        "goals": [
+          "Aumentar energia diaria",
+          "Mejorar sueno",
+          "Retomar actividad fisica"
+        ],
+        "contraindications": [
+          "entrenamiento de alta intensidad"
+        ],
+        "current_medications": [],
+        "allergies": [
+          "nueces"
+        ],
+        "baseline_outcomes": {
+          "energy_level_0_10": 3
+        },
+        "psychosocial_summary": "Cansancio por carga de cuidados familiares.",
+        "prior_interventions_tried": [
+          "suplementos de magnesio"
+        ]
+      },
+      "available_therapies": [
+        "higiene del sueno",
+        "yoga terapeutico",
+        "coaching de habitos"
+      ],
+      "preferred_language": "es"
+    }
+  }
+]

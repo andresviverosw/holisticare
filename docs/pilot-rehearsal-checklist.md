@@ -1,0 +1,58 @@
+# Pilot Rehearsal Checklist (Pre-Clinician)
+
+Use this checklist to validate pilot readiness with synthetic cases before clinician handoff.
+
+## 1) Preconditions
+
+- Docker Desktop is running.
+- `.env` exists and has at least one valid AI key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`).
+- Backend, DB, and frontend containers can start.
+
+## 2) Baseline health
+
+Run:
+
+`scripts\health-check-clinician.bat`
+
+Expected:
+- `holisticare_db`, `holisticare_backend`, `holisticare_frontend` are `Up`.
+- `http://localhost:8000/health`, `/docs`, and `http://localhost:5173` return `200`.
+- API smoke script completes without errors.
+
+## 3) Synthetic pilot cases
+
+Dataset file:
+
+`backend/data/pilot/cases.json`
+
+Current target set:
+- `pilot-001-lumbar-pain`
+- `pilot-002-ibs-anxiety`
+- `pilot-003-fatigue-sleep`
+
+## 4) Rehearsal run
+
+Run:
+
+`scripts\run-pilot-rehearsal.bat`
+
+The runner executes each case against `POST /rag/plan/generate` and validates:
+- HTTP `200`
+- `status = pending_review`
+- at least one generated week
+- `insufficient_evidence = false`
+
+## 5) Manual UX verification
+
+For at least one case:
+- Open frontend at `http://localhost:5173`.
+- Confirm intake data can be entered without confusion.
+- Generate and review plan.
+- Confirm plan status and content are understandable for practitioner review.
+
+## 6) Exit criteria for next-week pilot
+
+- All synthetic cases pass in the rehearsal runner.
+- No blocking startup or plan-generation errors.
+- No critical UX confusion in intake + plan review flow.
+- Known limitations documented and shared with clinician.
