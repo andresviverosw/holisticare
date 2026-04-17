@@ -15,6 +15,7 @@ import argparse
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 import httpx
@@ -122,6 +123,18 @@ def main() -> int:
     parser.add_argument("--cases", default="/app/data/pilot/cases.json")
     parser.add_argument("--timeout-seconds", type=float, default=300.0)
     parser.add_argument(
+        "--connect-retries",
+        type=int,
+        default=12,
+        help="Number of retries for transient connection errors before failing",
+    )
+    parser.add_argument(
+        "--retry-delay-seconds",
+        type=float,
+        default=5.0,
+        help="Delay between connection retry attempts",
+    )
+    parser.add_argument(
         "--require-case-citations",
         action="store_true",
         help="Fail each case if citations_used is empty",
@@ -157,7 +170,30 @@ def main() -> int:
             exp = case.get("ai_expectations") or {}
             min_weeks = int(exp.get("min_weeks", 1))
             min_citations = int(exp.get("min_citations", 0))
-            resp = client.post(f"{base}/rag/plan/generate", headers=headers, json=payload)
+            resp = None
+            last_exc: Exception | None = None
+            for attempt in range(1, args.connect_retries + 1):
+                try:
+                    resp = client.post(f"{base}/rag/plan/generate", headers=headers, json=payload)
+                    last_exc = None
+                    break
+                except httpx.ConnectError as exc:
+                    last_exc = exc
+                    print(
+                        f"WARN  [{case_id}] connect attempt {attempt}/{args.connect_retries} failed: {exc}",
+                        file=sys.stderr,
+                    )
+                    if attempt < args.connect_retries:
+                        time.sleep(args.retry_delay_seconds)
+
+            if resp is None:
+                error_count += 1
+                print(
+                    f"ERROR [{case_id}] connection failed after {args.connect_retries} attempts: {last_exc}",
+                    file=sys.stderr,
+                )
+                continue
+
             print(f"\n[{case_id}] POST /rag/plan/generate -> {resp.status_code}")
             if resp.status_code != 200:
                 error_count += 1
