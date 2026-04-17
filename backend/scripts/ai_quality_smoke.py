@@ -59,7 +59,13 @@ def _load_cases(path: Path) -> list[dict]:
     return validated
 
 
-def _validate_plan_contract(case_id: str, data: dict, require_case_citations: bool) -> list[str]:
+def _validate_plan_contract(
+    case_id: str,
+    data: dict,
+    require_case_citations: bool,
+    min_weeks: int,
+    min_citations: int,
+) -> list[str]:
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -72,8 +78,11 @@ def _validate_plan_contract(case_id: str, data: dict, require_case_citations: bo
         errors.append(f"unexpected status={status!r} (expected 'pending_review')")
 
     weeks = data.get("weeks")
-    if not isinstance(weeks, list) or not weeks:
-        errors.append("weeks missing or empty")
+    if not isinstance(weeks, list):
+        errors.append("weeks missing or invalid type")
+        weeks = []
+    elif len(weeks) < min_weeks:
+        errors.append(f"weeks count {len(weeks)} below minimum {min_weeks}")
 
     insufficient = data.get("insufficient_evidence")
     if insufficient not in (False, 0):
@@ -85,6 +94,8 @@ def _validate_plan_contract(case_id: str, data: dict, require_case_citations: bo
     else:
         if require_case_citations and len(citations) == 0:
             errors.append("citations_used empty (case requires citations)")
+        if len(citations) < min_citations:
+            errors.append(f"citations_used count {len(citations)} below minimum {min_citations}")
         if len(citations) == 0:
             warnings.append("citations_used empty")
         for ref in citations:
@@ -143,6 +154,9 @@ def main() -> int:
         for case in cases:
             case_id = case["case_id"]
             payload = case["request"]
+            exp = case.get("ai_expectations") or {}
+            min_weeks = int(exp.get("min_weeks", 1))
+            min_citations = int(exp.get("min_citations", 0))
             resp = client.post(f"{base}/rag/plan/generate", headers=headers, json=payload)
             print(f"\n[{case_id}] POST /rag/plan/generate -> {resp.status_code}")
             if resp.status_code != 200:
@@ -155,7 +169,13 @@ def main() -> int:
             citations = data.get("citations_used") or []
             if isinstance(citations, list):
                 total_citations += len(citations)
-            messages = _validate_plan_contract(case_id, data, args.require_case_citations)
+            messages = _validate_plan_contract(
+                case_id=case_id,
+                data=data,
+                require_case_citations=args.require_case_citations,
+                min_weeks=min_weeks,
+                min_citations=min_citations,
+            )
             for msg in messages:
                 print(msg)
                 if msg.startswith("ERROR"):

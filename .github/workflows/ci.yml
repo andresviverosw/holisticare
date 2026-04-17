@@ -103,8 +103,9 @@ jobs:
 
   ai-quality-smoke:
     runs-on: ubuntu-latest
-    # Advisory by default while stabilizing deterministic AI quality checks.
-    continue-on-error: true
+    # Blocking by default. Set repository variable AI_QUALITY_SMOKE_ADVISORY=true
+    # to keep this job non-blocking while tuning thresholds.
+    continue-on-error: ${{ vars.AI_QUALITY_SMOKE_ADVISORY == 'true' }}
     steps:
       - uses: actions/checkout@v4
 

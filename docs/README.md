@@ -64,6 +64,10 @@ This directory contains the six core documentation phases for the AI4devs master
 
 GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audit` job (see `.github/workflows/ci.yml`). By default this job is **blocking**: if any scanner fails, the workflow fails. To temporarily make it **advisory** (non-blocking) while triaging findings, set the repository variable **`SECURITY_AUDIT_ADVISORY=true`** (GitHub: repo **Settings → Secrets and variables → Actions → Variables**). Unset or set to anything other than `true` to restore strict behavior. Details and context live in `09-security-audit-and-todos.md`.
 
+### CI AI quality smoke (advisory vs blocking)
+
+GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smoke` job. By default this job is **blocking**. To temporarily make it **advisory** while tuning thresholds, set repository variable **`AI_QUALITY_SMOKE_ADVISORY=true`**. Unset or set to any other value to keep it blocking.
+
 ## Active sprint
 
 - **Current:** _TBD (Planning Agent)_ — next candidate: **US-PRED-001** / **US-PRED-002** or hardening (migrations, E2E).
