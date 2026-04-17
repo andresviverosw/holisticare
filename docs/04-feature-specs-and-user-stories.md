@@ -20,6 +20,7 @@ Translate requirements into implementable product specifications, user stories, 
 4. Patient diary
 5. Progress analytics
 6. Outcome prediction
+7. Mobile clinician access
 
 ## 2.1 Backlog governance (Planning Agent ownership)
 
@@ -89,6 +90,9 @@ Translate requirements into implementable product specifications, user stories, 
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Planned |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Planned |
+| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
+| US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned |
+| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned |
 
 ## 5. Story-level acceptance criteria
 
@@ -431,6 +435,37 @@ Implementation notes:
 - Add schema validation and deterministic error messages to avoid ambiguous runtime state.
 - Preserve backward compatibility: if no override is provided, default dictionary behavior must remain stable.
 
+### US-MOB-001 - Mobile-friendly Dashboard and Plan Review
+
+- Given viewport widths between 360px and 1024px, when a clinician uses Dashboard and Plan Review, then critical controls are visible and usable without horizontal scrolling.
+- Given touch interaction, when selecting recent patients and generating plans, then controls can be operated reliably without precise mouse input.
+- Given a recoverable API failure, when shown on mobile, then the error copy is brief and actionable.
+
+Test intent:
+- Unit: responsive helper utilities and conditional layout rules.
+- Integration: mobile viewport component behavior for `Dashboard` and `PlanReview`.
+- E2E: clinician mobile flow from patient selection to plan review.
+
+### US-MOB-002 - Installable PWA shell for clinicians
+
+- Given a supported mobile browser, when the clinician installs the app, then HolistiCare launches from home screen with icon and app name.
+- Given temporary network unavailability, when opening the app shell, then user sees deterministic offline/unavailable messaging.
+- Given an existing authenticated session within timeout policy, when reopening from home screen, then session behavior remains predictable and secure.
+
+Test intent:
+- Integration: PWA manifest + service worker registration + installability checks.
+- E2E: install/open/reopen behavior on Android and iOS browser targets.
+
+### US-MOB-003 - Fast mobile approve/reject workflow
+
+- Given a generated plan draft, when opened on mobile, then summary, status, and citations are readable without layout breakage.
+- Given an approve or reject action, when submitted, then status updates are confirmed with clear success/failure feedback.
+- Given optional practitioner notes, when saved from mobile, then notes persist and are retrievable in standard plan workflow.
+
+Test intent:
+- Integration: approve/reject and notes persistence from mobile UI path.
+- E2E: complete review decision in under 2 minutes in target mobile viewport.
+
 ## 6. Non-functional acceptance criteria
 
 - Performance: 95th percentile API response <= 800 ms for non-AI endpoints in staging baseline load.
@@ -463,11 +498,15 @@ Implementation notes:
 | US-INT-005 | Should | R2 | US-INT-004 | **Done (Sprint 9).** Dashboard: Nuevo paciente, Copiar ID, validación v4, recientes en `localStorage` — see `sprint-09.md` |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | Predictive model maturity |
 | US-PRED-002 | Should | R3 | US-PRED-001 | Recommendation layer |
+| US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
+| US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
+| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
+- R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
 
 ## 8. Definition of ready / done
 
