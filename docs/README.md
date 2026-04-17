@@ -55,6 +55,7 @@ This directory contains the six core documentation phases for the AI4devs master
 - `pilot-clinician-feedback-form.md` - structured clinician questionnaire for pilot sessions
 - `mobile-strategy-v0.md` - phased mobile strategy, options, and starter US-MOB backlog
 - `demo-smoke-checklist.md` - demo-day command checklist with expected outputs
+- `scripts/run-ai-quality-smoke.bat` + `backend/scripts/ai_quality_smoke.py` - deterministic AI quality smoke gate for plan outputs
 - `07-user-guide.md` - clinician-facing usage guide for current MVP UI
 - `08-developer-guide-and-architecture.md` - developer setup, module map, and mermaid diagrams
 - `09-security-audit-and-todos.md` - security posture, scanner commands, completed remediation, and CI strict vs advisory mode

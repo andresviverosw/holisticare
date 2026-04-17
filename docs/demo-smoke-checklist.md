@@ -92,3 +92,14 @@ Expected:
 
 Expected:
 - full suite passes.
+
+## 9) AI quality smoke (deterministic contract checks)
+
+```powershell
+scripts\run-ai-quality-smoke.bat
+```
+
+Expected:
+- Script exits `0`.
+- For each pilot case, generation returns `200`, `status = pending_review`, non-empty `weeks`, and `insufficient_evidence = false`.
+- At least one citation is produced across all evaluated cases (`--require-any-citations` gate).

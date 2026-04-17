@@ -100,3 +100,16 @@ jobs:
       - name: Run npm audit
         run: npm audit --audit-level=moderate
         working-directory: frontend
+
+  ai-quality-smoke:
+    runs-on: ubuntu-latest
+    # Advisory by default while stabilizing deterministic AI quality checks.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up -d --build
+
+      - name: Run AI quality smoke
+        run: docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations

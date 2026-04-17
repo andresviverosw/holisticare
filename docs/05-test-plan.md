@@ -51,9 +51,9 @@ Define how HolistiCare will be verified for functional correctness, AI quality, 
 
 ### 6.1 RAG quality
 
-- Retrieval precision@k:
-- Groundedness check:
-- Citation correctness:
+- Retrieval precision@k: tracked operationally via `retrieval_metadata` in generated plans (`candidates_retrieved`, `chunks_passed_to_llm`), reviewed in smoke output.
+- Groundedness check: baseline deterministic gate in `backend/scripts/ai_quality_smoke.py` (fails when `insufficient_evidence=true` or plan contract is broken).
+- Citation correctness: deterministic checks ensure `citations_used` is list-typed and non-empty at suite level (`--require-any-citations`), with optional strict per-case enforcement (`--require-case-citations`).
 
 ### 6.2 Clinical safety checks
 
@@ -63,9 +63,9 @@ Define how HolistiCare will be verified for functional correctness, AI quality, 
 
 ### 6.3 Prompt and output contract tests
 
-- JSON schema compliance:
-- Required fields presence:
-- Deterministic validation where possible:
+- JSON schema compliance: validated through backend response contract checks in `ai_quality_smoke.py` and API tests.
+- Required fields presence: `plan_id`, `status`, `weeks`, `insufficient_evidence`, and `citations_used` are verified by smoke runner.
+- Deterministic validation where possible: `scripts/run-ai-quality-smoke.bat` executes repeatable AI quality gates against synthetic pilot cases.
 
 ## 7. Non-functional testing
 
