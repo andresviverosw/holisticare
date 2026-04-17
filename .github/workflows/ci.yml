@@ -109,6 +109,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare .env for docker compose
+        run: cp .env.example .env
+
       - name: Start stack
         run: docker compose up -d --build
 
