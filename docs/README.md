@@ -9,6 +9,8 @@ This directory contains the six core documentation phases for the AI4devs master
 | Run the app locally, tests, Docker | `setup.md` |
 | Clinician quick trial on Windows | `quickstart-clinician.md` |
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
+| Pilot go/no-go decision gate | `pilot-go-no-go.md` |
+| Pilot rehearsal run history template | `pilot-rehearsal-log.md` |
 | Release notes (high-level) | `CHANGELOG.md` (repository root) |
 | Clinician / demo usage of the MVP UI | `07-user-guide.md` |
 | Architecture, modules, env vars, diagrams | `08-developer-guide-and-architecture.md` |
@@ -46,6 +48,8 @@ This directory contains the six core documentation phases for the AI4devs master
 - `setup.md` - local environment setup, Docker startup, and health verification
 - `quickstart-clinician.md` - clinician trial setup on Windows with Docker Desktop
 - `pilot-rehearsal-checklist.md` - synthetic pilot runbook and pass/fail gate before clinician handoff
+- `pilot-go-no-go.md` - explicit pre-pilot release criteria and no-go triggers
+- `pilot-rehearsal-log.md` - reusable run log template with example entry
 - `demo-smoke-checklist.md` - demo-day command checklist with expected outputs
 - `07-user-guide.md` - clinician-facing usage guide for current MVP UI
 - `08-developer-guide-and-architecture.md` - developer setup, module map, and mermaid diagrams
