@@ -26,6 +26,17 @@ if not exist ".env" (
   )
 )
 
+set "HAS_ANTHROPIC="
+set "HAS_OPENAI="
+for /f "usebackq tokens=1,* delims==" %%A in (".env") do (
+  if /I "%%A"=="ANTHROPIC_API_KEY" if not "%%B"=="" set "HAS_ANTHROPIC=1"
+  if /I "%%A"=="OPENAI_API_KEY" if not "%%B"=="" set "HAS_OPENAI=1"
+)
+if not defined HAS_ANTHROPIC if not defined HAS_OPENAI (
+  echo [WARN] No API keys found in .env ^(ANTHROPIC_API_KEY or OPENAI_API_KEY^).
+  echo [WARN] The app will start, but AI plan generation will fail until a key is configured.
+)
+
 echo [INFO] Building and starting HolistiCare...
 docker compose up -d --build
 if errorlevel 1 (
@@ -36,4 +47,6 @@ if errorlevel 1 (
 echo [OK] HolistiCare is running.
 echo [INFO] Frontend: http://localhost:5173
 echo [INFO] Backend API: http://localhost:8000/docs
+echo [INFO] Running quick health checks...
+call scripts\health-check-clinician.bat
 endlocal

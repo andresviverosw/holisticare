@@ -27,6 +27,11 @@ From the project root, run:
 
 `scripts\start-clinician.bat`
 
+The script now:
+- warns if no `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` is configured in `.env`,
+- starts containers,
+- runs a quick health check automatically.
+
 Open:
 - Frontend: http://localhost:5173
 - Backend docs: http://localhost:8000/docs
@@ -45,8 +50,15 @@ If the install was cloned with Git, run:
 
 If it was provided as a zip package, replace with a new package version from the team.
 
-## 6) Troubleshooting
+## 6) Run health check manually
+
+If you want to verify readiness without restarting containers:
+
+`scripts\health-check-clinician.bat`
+
+## 7) Troubleshooting
 
 - If startup fails with Docker errors, make sure Docker Desktop is running.
+- If startup warns about missing keys, add `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in `.env`.
 - If AI plan generation fails, verify `.env` API keys are valid and have quota.
 - If port conflicts occur (5432, 8000, 5173), close apps using those ports or edit `docker-compose.yml` port mappings.
