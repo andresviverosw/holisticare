@@ -111,6 +111,7 @@ jobs:
       - name: Prepare .env for docker compose
         run: |
           cp .env.example .env
+          sed -i "s|^MIN_EVIDENCE_LEVEL=.*|MIN_EVIDENCE_LEVEL=expert_opinion|" .env
           if [ -n "${OPENAI_API_KEY}" ]; then
             sed -i "s|^OPENAI_API_KEY=.*|OPENAI_API_KEY=${OPENAI_API_KEY}|" .env
           fi
