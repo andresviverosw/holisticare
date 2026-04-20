@@ -79,13 +79,6 @@ def _validate_plan_contract(
     if status != "pending_review":
         errors.append(f"unexpected status={status!r} (expected 'pending_review')")
 
-    weeks = data.get("weeks")
-    if not isinstance(weeks, list):
-        errors.append("weeks missing or invalid type")
-        weeks = []
-    elif len(weeks) < min_weeks and not insufficient_true:
-        errors.append(f"weeks count {len(weeks)} below minimum {min_weeks}")
-
     insufficient = data.get("insufficient_evidence")
     insufficient_true = insufficient not in (False, 0)
     if insufficient_true:
@@ -93,6 +86,13 @@ def _validate_plan_contract(
             warnings.append("insufficient_evidence is true (allowed by flag)")
         else:
             errors.append("insufficient_evidence is true")
+
+    weeks = data.get("weeks")
+    if not isinstance(weeks, list):
+        errors.append("weeks missing or invalid type")
+        weeks = []
+    elif len(weeks) < min_weeks and not insufficient_true:
+        errors.append(f"weeks count {len(weeks)} below minimum {min_weeks}")
 
     citations = data.get("citations_used")
     if not isinstance(citations, list):
