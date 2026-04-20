@@ -105,6 +105,8 @@ jobs:
     runs-on: ubuntu-latest
     # Blocking by default. Set AI_QUALITY_SMOKE_ADVISORY=true to make advisory.
     continue-on-error: ${{ vars.AI_QUALITY_SMOKE_ADVISORY == 'true' }}
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -115,20 +117,18 @@ jobs:
           if [ -n "${OPENAI_API_KEY}" ]; then
             sed -i "s|^OPENAI_API_KEY=.*|OPENAI_API_KEY=${OPENAI_API_KEY}|" .env
           fi
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Start stack
         run: docker compose up -d --build
 
       - name: Ingest CI smoke corpus
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' }}
         run: docker compose exec -T backend env PYTHONPATH=/app python scripts/run_corpus_ingest.py --source-dir data/ci_smoke --force-reindex
 
       - name: Run AI quality smoke
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' }}
         run: docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations --allow-insufficient-evidence
 
       - name: OPENAI_API_KEY not configured
-        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        if: ${{ env.OPENAI_API_KEY == '' }}
         run: echo "OPENAI_API_KEY missing; ai-quality-smoke ingestion and checks skipped."
