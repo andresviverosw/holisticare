@@ -13,6 +13,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Pilot rehearsal run history template | `pilot-rehearsal-log.md` |
 | Clinician pilot feedback template | `pilot-clinician-feedback-form.md` |
 | Mobile app planning draft | `mobile-strategy-v0.md` |
+| Stability snapshot (2026-04-17) | `stability-snapshot-2026-04-17.md` |
 | Release notes (high-level) | `CHANGELOG.md` (repository root) |
 | Clinician / demo usage of the MVP UI | `07-user-guide.md` |
 | Architecture, modules, env vars, diagrams | `08-developer-guide-and-architecture.md` |
@@ -54,6 +55,7 @@ This directory contains the six core documentation phases for the AI4devs master
 - `pilot-rehearsal-log.md` - reusable run log template with example entry
 - `pilot-clinician-feedback-form.md` - structured clinician questionnaire for pilot sessions
 - `mobile-strategy-v0.md` - phased mobile strategy, options, and starter US-MOB backlog
+- `stability-snapshot-2026-04-17.md` - CI/test hardening summary and known caveats
 - `demo-smoke-checklist.md` - demo-day command checklist with expected outputs
 - `scripts/run-ai-quality-smoke.bat` + `backend/scripts/ai_quality_smoke.py` - deterministic AI quality smoke gate for plan outputs
 - `07-user-guide.md` - clinician-facing usage guide for current MVP UI
