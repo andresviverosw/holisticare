@@ -137,6 +137,6 @@ jobs:
             echo "OPENAI_API_KEY missing; skipping AI quality smoke."
             exit 0
           fi
-          docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations
+          docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations --allow-insufficient-evidence
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

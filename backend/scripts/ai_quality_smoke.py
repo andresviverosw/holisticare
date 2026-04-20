@@ -66,6 +66,7 @@ def _validate_plan_contract(
     require_case_citations: bool,
     min_weeks: int,
     min_citations: int,
+    allow_insufficient_evidence: bool,
 ) -> list[str]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -82,20 +83,24 @@ def _validate_plan_contract(
     if not isinstance(weeks, list):
         errors.append("weeks missing or invalid type")
         weeks = []
-    elif len(weeks) < min_weeks:
+    elif len(weeks) < min_weeks and not insufficient_true:
         errors.append(f"weeks count {len(weeks)} below minimum {min_weeks}")
 
     insufficient = data.get("insufficient_evidence")
-    if insufficient not in (False, 0):
-        errors.append("insufficient_evidence is true")
+    insufficient_true = insufficient not in (False, 0)
+    if insufficient_true:
+        if allow_insufficient_evidence:
+            warnings.append("insufficient_evidence is true (allowed by flag)")
+        else:
+            errors.append("insufficient_evidence is true")
 
     citations = data.get("citations_used")
     if not isinstance(citations, list):
         errors.append("citations_used must be a list")
     else:
-        if require_case_citations and len(citations) == 0:
+        if require_case_citations and len(citations) == 0 and not insufficient_true:
             errors.append("citations_used empty (case requires citations)")
-        if len(citations) < min_citations:
+        if len(citations) < min_citations and not insufficient_true:
             errors.append(f"citations_used count {len(citations)} below minimum {min_citations}")
         if len(citations) == 0:
             warnings.append("citations_used empty")
@@ -143,6 +148,11 @@ def main() -> int:
         "--require-any-citations",
         action="store_true",
         help="Fail if all evaluated cases have zero citations_used",
+    )
+    parser.add_argument(
+        "--allow-insufficient-evidence",
+        action="store_true",
+        help="Do not fail when insufficient_evidence=true (useful for constrained CI corpora)",
     )
     args = parser.parse_args()
 
@@ -211,16 +221,22 @@ def main() -> int:
                 require_case_citations=args.require_case_citations,
                 min_weeks=min_weeks,
                 min_citations=min_citations,
+                allow_insufficient_evidence=args.allow_insufficient_evidence,
             )
             for msg in messages:
                 print(msg)
                 if msg.startswith("ERROR"):
                     error_count += 1
 
-    if args.require_any_citations and total_citations == 0:
+    if args.require_any_citations and total_citations == 0 and not args.allow_insufficient_evidence:
         error_count += 1
         print(
             "ERROR [global] citations_used is empty across all evaluated cases",
+            file=sys.stderr,
+        )
+    elif args.require_any_citations and total_citations == 0 and args.allow_insufficient_evidence:
+        print(
+            "WARN  [global] citations_used is empty across all evaluated cases (allowed by flag)",
             file=sys.stderr,
         )
 

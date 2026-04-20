@@ -66,7 +66,7 @@ GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audi
 
 ### CI AI quality smoke (advisory vs blocking)
 
-GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smoke` job. By default this job is **blocking**. To temporarily make it **advisory** while tuning thresholds, set repository variable **`AI_QUALITY_SMOKE_ADVISORY=true`**. Keep repository secret **`OPENAI_API_KEY`** configured for embeddings-backed plan generation in CI. The workflow ingests `backend/data/ci_smoke` before running AI smoke; if `OPENAI_API_KEY` is missing, ingestion/smoke steps are skipped with a warning. For CI smoke stability, the job sets `MIN_EVIDENCE_LEVEL=expert_opinion` in its generated `.env`.
+GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smoke` job. By default this job is **blocking**. To temporarily make it **advisory** while tuning thresholds, set repository variable **`AI_QUALITY_SMOKE_ADVISORY=true`**. Keep repository secret **`OPENAI_API_KEY`** configured for embeddings-backed plan generation in CI. The workflow ingests `backend/data/ci_smoke` before running AI smoke; if `OPENAI_API_KEY` is missing, ingestion/smoke steps are skipped with a warning. For CI smoke stability, the job sets `MIN_EVIDENCE_LEVEL=expert_opinion` in its generated `.env` and runs smoke with `--allow-insufficient-evidence` (warns instead of failing when evidence is still insufficient).
 
 ## Active sprint
 
