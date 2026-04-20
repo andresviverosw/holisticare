@@ -66,7 +66,7 @@ GitHub Actions runs `pip-audit`, `bandit`, and `npm audit` in the `security-audi
 
 ### CI AI quality smoke (advisory vs blocking)
 
-GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smoke` job. By default this job is **blocking**. To temporarily make it **advisory** while tuning thresholds, set repository variable **`AI_QUALITY_SMOKE_ADVISORY=true`**. Unset or set to any other value to keep it blocking.
+GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smoke` job. By default this job is **blocking**. To temporarily make it **advisory** while tuning thresholds, set repository variable **`AI_QUALITY_SMOKE_ADVISORY=true`**. The job also runs advisory when repository secret **`OPENAI_API_KEY`** is missing (required for embeddings-backed plan generation in CI). Unset advisory variable and configure `OPENAI_API_KEY` to keep it strictly blocking.
 
 ## Active sprint
 
