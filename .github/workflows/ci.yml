@@ -122,21 +122,13 @@ jobs:
         run: docker compose up -d --build
 
       - name: Ingest CI smoke corpus
-        run: |
-          if [ -z "${OPENAI_API_KEY}" ]; then
-            echo "OPENAI_API_KEY missing; skipping ingestion and AI quality smoke."
-            exit 0
-          fi
-          docker compose exec -T backend env PYTHONPATH=/app python scripts/run_corpus_ingest.py --source-dir data/ci_smoke --force-reindex
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: docker compose exec -T backend env PYTHONPATH=/app python scripts/run_corpus_ingest.py --source-dir data/ci_smoke --force-reindex
 
       - name: Run AI quality smoke
-        run: |
-          if [ -z "${OPENAI_API_KEY}" ]; then
-            echo "OPENAI_API_KEY missing; skipping AI quality smoke."
-            exit 0
-          fi
-          docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations --allow-insufficient-evidence
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: docker compose exec -T backend env PYTHONPATH=/app python scripts/ai_quality_smoke.py --require-any-citations --allow-insufficient-evidence
+
+      - name: OPENAI_API_KEY not configured
+        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        run: echo "OPENAI_API_KEY missing; ai-quality-smoke ingestion and checks skipped."
