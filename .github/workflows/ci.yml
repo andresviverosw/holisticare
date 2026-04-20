@@ -103,10 +103,8 @@ jobs:
 
   ai-quality-smoke:
     runs-on: ubuntu-latest
-    # Blocking by default. Becomes advisory when:
-    # - AI_QUALITY_SMOKE_ADVISORY=true, or
-    # - OPENAI_API_KEY secret is not configured in repository settings.
-    continue-on-error: ${{ vars.AI_QUALITY_SMOKE_ADVISORY == 'true' || secrets.OPENAI_API_KEY == '' }}
+    # Blocking by default. Set AI_QUALITY_SMOKE_ADVISORY=true to make advisory.
+    continue-on-error: ${{ vars.AI_QUALITY_SMOKE_ADVISORY == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
