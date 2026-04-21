@@ -72,8 +72,8 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** _TBD (Planning Agent)_ — next candidate: **US-PRED-001** / **US-PRED-002** or hardening (migrations, E2E).
-- **Recently completed:** [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
+- **Current:** Pilot readiness hardening + clinician dry-runs (post `US-PRED-001` / `US-PRED-002` delivery).
+- **Recently completed:** `US-PRED-001` (recovery trajectory) and `US-PRED-002` (recommendation layer) on backend + dashboard + E2E; [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
 
 ### Sprint history (reference)
 

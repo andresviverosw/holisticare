@@ -56,7 +56,26 @@ If you want to verify readiness without restarting containers:
 
 `scripts\health-check-clinician.bat`
 
-## 7) Troubleshooting
+## 7) Use prediction and recommendations (new)
+
+In Dashboard:
+
+1. Select or generate a valid patient UUID.
+2. Click **Calcular trayectoria** in the "Predicción de recuperación (US-PRED-001)" panel.
+3. Click **Cargar recomendaciones** in the "Recomendaciones clínicas (US-PRED-002)" panel.
+4. Use results as clinician support, not as autonomous decisions.
+
+What to expect:
+- **Trajectory status**: available or insufficient data.
+- **Recommendation status**: recommendations available or insufficient data.
+- **Safety notes**: highlighted when projected pain suggests higher clinical risk.
+
+Pilot validation points for next week:
+- Confirm trajectory label matches clinician judgment on at least 3 real cases.
+- Confirm recommendations are actionable and safe in real workflow.
+- Record mismatches or unclear rationale in the pilot feedback form.
+
+## 8) Troubleshooting
 
 - If startup fails with Docker errors, make sure Docker Desktop is running.
 - If startup warns about missing keys, add `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in `.env`.

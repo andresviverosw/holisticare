@@ -88,8 +88,8 @@ Translate requirements into implementable product specifications, user stories, 
 | US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Done (backend API slice) |
 | US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
-| US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Planned |
-| US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Planned |
+| US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Done (backend + dashboard + E2E) |
+| US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Done (backend + dashboard + E2E) |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned |
 | US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned |
@@ -496,8 +496,8 @@ Test intent:
 | US-DIARY-002 | Should | R2 | US-DIARY-001 | Patient engagement |
 | US-INT-004 | Should | R2 | US-PLAN-001 | Clinician UX: structured intake on plan generator |
 | US-INT-005 | Should | R2 | US-INT-004 | **Done (Sprint 9).** Dashboard: Nuevo paciente, Copiar ID, validación v4, recientes en `localStorage` — see `sprint-09.md` |
-| US-PRED-001 | Should | R3 | US-ANLY-001 | Predictive model maturity |
-| US-PRED-002 | Should | R3 | US-PRED-001 | Recommendation layer |
+| US-PRED-001 | Should | R3 | US-ANLY-001 | **Done.** Recovery trajectory endpoint + dashboard panel + tests |
+| US-PRED-002 | Should | R3 | US-PRED-001 | **Done.** Recommendation layer endpoint + dashboard panel + tests |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
@@ -505,7 +505,7 @@ Test intent:
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
-- R3 (advanced): trajectory prediction and adjustment suggestions; **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
+- R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
 
 ## 8. Definition of ready / done
