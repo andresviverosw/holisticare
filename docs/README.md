@@ -50,6 +50,8 @@ This directory contains the six core documentation phases for the AI4devs master
 
 - `setup.md` - local environment setup, Docker startup, and health verification
 - `quickstart-clinician.md` - clinician trial setup on Windows with Docker Desktop
+- `../holisticare_deployment_analysis.md` - deployment option analysis and recommended MVP topology
+- `../holisticare_deployment_quickstart.md` - step-by-step hybrid deployment quickstart (Hetzner + Neon + Cloudflare)
 - `pilot-rehearsal-checklist.md` - synthetic pilot runbook and pass/fail gate before clinician handoff
 - `pilot-go-no-go.md` - explicit pre-pilot release criteria and no-go triggers
 - `pilot-rehearsal-log.md` - reusable run log template with example entry
@@ -74,6 +76,11 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 - **Current:** Pilot readiness hardening + clinician dry-runs (post `US-PRED-001` / `US-PRED-002` delivery).
 - **Recently completed:** `US-PRED-001` (recovery trajectory) and `US-PRED-002` (recommendation layer) on backend + dashboard + E2E; [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
+- **Next planned (post-pilot):**
+  - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth)
+  - Hybrid stack baseline (compute + managed Postgres with pgvector + Cloudflare frontend)
+  - Ops hardening (`pg_dump` backups, UptimeRobot/Sentry, restore drill)
+  - Compliance hardening (cross-border consent text, DPA checklist, audit logging validation)
 
 ### Sprint history (reference)
 

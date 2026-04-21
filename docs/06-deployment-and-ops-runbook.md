@@ -105,6 +105,32 @@ Define repeatable deployment, monitoring, incident response, backup, and mainten
 - Monthly cost tracking:
 - Optimization actions:
 
+### HolistiCare future deployment plan (post-pilot)
+
+Source notes:
+- `../holisticare_deployment_analysis.md`
+- `../holisticare_deployment_quickstart.md`
+
+Planned implementation slices:
+1. Production runtime split:
+   - Add `docker-compose.prod.yml` with backend + reverse proxy only.
+   - Keep frontend on static hosting and move database to managed Postgres with pgvector.
+2. Security and auth hardening:
+   - Enforce `ALLOW_DEV_AUTH=false` in production.
+   - Lock `CORS_ORIGINS` to production frontend domain.
+   - Confirm TLS-only DB connectivity (`sslmode=require`).
+3. Operability baseline:
+   - Add independent daily `pg_dump` backup to object storage.
+   - Add uptime probe and error monitoring.
+   - Document and run restore drill.
+4. Compliance readiness:
+   - Add explicit cross-border data-transfer consent in intake flow.
+   - Maintain vendor DPA checklist and status.
+   - Validate durable audit logs for generation and approval actions.
+5. Cost/scale gates:
+   - Track monthly infrastructure and model API spend.
+   - Define triggers to scale compute or migrate to stricter managed cloud footprint.
+
 ## 11. Maintenance calendar
 
 - Dependency updates:
