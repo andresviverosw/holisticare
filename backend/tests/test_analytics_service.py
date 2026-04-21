@@ -8,6 +8,7 @@ import pytest
 
 from app.services.analytics_service import (
     MAX_RANGE_DAYS,
+    derive_recovery_recommendations,
     estimate_recovery_trajectory_from_series,
     resolve_analytics_date_window,
 )
@@ -69,3 +70,46 @@ def test_recovery_trajectory_stable_with_noise_and_irregular_dates():
     out = estimate_recovery_trajectory_from_series(series)
     assert out["analysis_status"] == "ok"
     assert out["trajectory"]["label"] == "stable"
+
+
+def test_recovery_recommendations_for_improving_trajectory():
+    prediction = {
+        "analysis_status": "ok",
+        "reason": None,
+        "trajectory": {
+            "label": "improving",
+            "projected_pain_nrs_in_4_weeks": 3.1,
+        },
+    }
+    out = derive_recovery_recommendations(prediction)
+    assert out["recommendation_status"] == "ok"
+    assert len(out["recommendations"]) >= 2
+    assert out["recommendations"][0]["code"] == "maintain_plan_adherence"
+    assert out["safety_notes"] == []
+
+
+def test_recovery_recommendations_for_worsening_trajectory_has_safety_note():
+    prediction = {
+        "analysis_status": "ok",
+        "reason": None,
+        "trajectory": {
+            "label": "worsening",
+            "projected_pain_nrs_in_4_weeks": 7.4,
+        },
+    }
+    out = derive_recovery_recommendations(prediction)
+    assert out["recommendation_status"] == "ok"
+    assert any(item["code"] == "reassess_diagnosis_and_plan" for item in out["recommendations"])
+    assert "Escalada de dolor proyectada" in out["safety_notes"][0]
+
+
+def test_recovery_recommendations_insufficient_when_prediction_insufficient():
+    prediction = {
+        "analysis_status": "insufficient_data",
+        "reason": "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+        "trajectory": None,
+    }
+    out = derive_recovery_recommendations(prediction)
+    assert out["recommendation_status"] == "insufficient_data"
+    assert out["recommendations"] == []
+    assert "Se requieren al menos 5 registros" in out["reason"]

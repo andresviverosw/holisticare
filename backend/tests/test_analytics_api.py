@@ -165,3 +165,37 @@ def test_recovery_trajectory_200_insufficient_data_when_few_points(client: TestC
     payload = r.json()
     assert payload["analysis_status"] == "insufficient_data"
     assert payload["trajectory"] is None
+
+
+def test_recovery_recommendations_200_returns_structured_recommendations(client: TestClient):
+    pid = uuid.UUID(PATIENT_ID)
+    rows = [
+        _diary_row(pid, date(2026, 4, 1), pain=8),
+        _diary_row(pid, date(2026, 4, 3), pain=8),
+        _diary_row(pid, date(2026, 4, 5), pain=9),
+        _diary_row(pid, date(2026, 4, 8), pain=9),
+        _diary_row(pid, date(2026, 4, 10), pain=9),
+    ]
+    db_session = AsyncMock()
+    exec_result = MagicMock()
+    exec_result.scalars.return_value.all.return_value = rows
+    db_session.execute = AsyncMock(return_value=exec_result)
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(
+            f"/rag/analytics/patient/{PATIENT_ID}/recovery-recommendations",
+            params={"date_from": "2026-04-01", "date_to": "2026-04-10"},
+        )
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["patient_id"] == PATIENT_ID
+    assert payload["prediction"]["analysis_status"] == "ok"
+    assert payload["recommendation_status"] == "ok"
+    assert len(payload["recommendations"]) >= 1

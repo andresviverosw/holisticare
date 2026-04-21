@@ -199,6 +199,32 @@ test("dashboard shows recovery trajectory prediction (ok)", async ({ page }) => 
     });
   });
 
+  await page.route("**/api/rag/analytics/patient/**/recovery-recommendations**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        recommendation_status: "ok",
+        prediction: {
+          analysis_status: "ok",
+          trajectory: {
+            label: "improving",
+            rationale: "El dolor muestra tendencia descendente sostenida en el periodo evaluado.",
+            projected_pain_nrs_in_4_weeks: 3.2,
+          },
+        },
+        recommendations: [
+          {
+            code: "maintain_plan_adherence",
+            title: "Mantener adherencia al plan actual",
+            description: "Refuerce la continuidad de intervenciones que ya muestran respuesta positiva.",
+          },
+        ],
+        safety_notes: [],
+      }),
+    });
+  });
+
   await page.goto("/login");
   await page.getByRole("button", { name: "Entrar (desarrollo — clínico)" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -209,6 +235,9 @@ test("dashboard shows recovery trajectory prediction (ok)", async ({ page }) => 
   await expect(page.getByText("Trayectoria:")).toBeVisible();
   await expect(page.getByText("improving")).toBeVisible();
   await expect(page.getByText("Proyección dolor en 4 semanas:")).toBeVisible();
+  await page.getByRole("button", { name: "Cargar recomendaciones" }).click();
+  await expect(page.getByText("recomendaciones disponibles")).toBeVisible();
+  await expect(page.getByText("Mantener adherencia al plan actual:")).toBeVisible();
 });
 
 test("dashboard shows recovery trajectory insufficient-data state", async ({ page }) => {

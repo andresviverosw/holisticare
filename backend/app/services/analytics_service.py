@@ -109,6 +109,80 @@ def estimate_recovery_trajectory_from_series(series: list[dict[str, Any]]) -> di
     }
 
 
+def derive_recovery_recommendations(prediction: dict[str, Any]) -> dict[str, Any]:
+    if prediction.get("analysis_status") != "ok" or not isinstance(prediction.get("trajectory"), dict):
+        return {
+            "recommendation_status": "insufficient_data",
+            "reason": prediction.get("reason")
+            or "No hay datos suficientes para recomendar ajustes de plan.",
+            "recommendations": [],
+            "safety_notes": [],
+        }
+
+    trajectory = prediction["trajectory"]
+    label = trajectory.get("label")
+    projected_pain = trajectory.get("projected_pain_nrs_in_4_weeks")
+    recommendations: list[dict[str, str]] = []
+    safety_notes: list[str] = []
+
+    if label == "improving":
+        recommendations.extend(
+            [
+                {
+                    "code": "maintain_plan_adherence",
+                    "title": "Mantener adherencia al plan actual",
+                    "description": "Refuerce la continuidad de intervenciones que ya muestran respuesta positiva.",
+                },
+                {
+                    "code": "progressive_load_if_tolerated",
+                    "title": "Escalar carga de forma progresiva",
+                    "description": "Si la tolerancia lo permite, incremente gradualmente actividad terapéutica.",
+                },
+            ]
+        )
+    elif label == "worsening":
+        recommendations.extend(
+            [
+                {
+                    "code": "reassess_diagnosis_and_plan",
+                    "title": "Reevaluar diagnóstico funcional y plan",
+                    "description": "Revise factores desencadenantes, adherencia real y necesidad de ajuste de terapias.",
+                },
+                {
+                    "code": "short_interval_followup",
+                    "title": "Acortar intervalo de seguimiento",
+                    "description": "Programe control cercano para validar respuesta a cambios y prevenir escalada.",
+                },
+            ]
+        )
+        safety_notes.append("Escalada de dolor proyectada: considere descartar banderas rojas clínicas.")
+    else:
+        recommendations.extend(
+            [
+                {
+                    "code": "reinforce_adherence_and_habits",
+                    "title": "Reforzar adherencia y hábitos",
+                    "description": "Cuando la evolución es estable, priorice consistencia en autocuidado y plan terapéutico.",
+                },
+                {
+                    "code": "review_goal_alignment",
+                    "title": "Revisar metas funcionales",
+                    "description": "Alinee objetivos clínicos y del paciente para buscar progreso incremental medible.",
+                },
+            ]
+        )
+
+    if isinstance(projected_pain, (int, float)) and projected_pain >= 7:
+        safety_notes.append("Dolor proyectado alto a 4 semanas: priorice evaluación clínica integral.")
+
+    return {
+        "recommendation_status": "ok",
+        "reason": None,
+        "recommendations": recommendations,
+        "safety_notes": safety_notes,
+    }
+
+
 async def get_patient_outcomes_trend_payload(
     db: AsyncSession,
     *,
@@ -182,4 +256,33 @@ async def get_patient_recovery_trajectory_payload(
         "date_to": d1.isoformat(),
         "data_points_used": len(rows),
         **prediction,
+    }
+
+
+async def get_patient_recovery_recommendations_payload(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+    date_from: date | None,
+    date_to: date | None,
+) -> dict[str, Any]:
+    prediction_payload = await get_patient_recovery_trajectory_payload(
+        db,
+        patient_id=patient_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    recommendation_payload = derive_recovery_recommendations(prediction_payload)
+    return {
+        "patient_id": prediction_payload["patient_id"],
+        "source": prediction_payload["source"],
+        "date_from": prediction_payload["date_from"],
+        "date_to": prediction_payload["date_to"],
+        "data_points_used": prediction_payload["data_points_used"],
+        "prediction": {
+            "analysis_status": prediction_payload["analysis_status"],
+            "reason": prediction_payload["reason"],
+            "trajectory": prediction_payload["trajectory"],
+        },
+        **recommendation_payload,
     }

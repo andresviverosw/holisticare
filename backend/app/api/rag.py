@@ -38,6 +38,7 @@ from app.services.intake_risk_service import analyze_intake_risk_flags
 from app.services.analytics_service import (
     get_patient_outcomes_trend_payload,
     get_patient_plateau_flags_payload,
+    get_patient_recovery_recommendations_payload,
     get_patient_recovery_trajectory_payload,
 )
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
@@ -431,6 +432,26 @@ async def get_recovery_trajectory(
     """US-PRED-001: estimate short-term recovery trajectory from diary history."""
     try:
         return await get_patient_recovery_trajectory_payload(
+            db,
+            patient_id=patient_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/analytics/patient/{patient_id}/recovery-recommendations")
+async def get_recovery_recommendations(
+    patient_id: UUID4,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """US-PRED-002: suggest next-step recommendations from recovery trajectory."""
+    try:
+        return await get_patient_recovery_recommendations_payload(
             db,
             patient_id=patient_id,
             date_from=date_from,

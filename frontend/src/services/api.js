@@ -70,6 +70,10 @@ export const ragApi = {
   getRecoveryTrajectory: (patientId, params = {}) =>
     api.get(`/rag/analytics/patient/${patientId}/recovery-trajectory`, { params }),
 
+  /** US-PRED-002 — derive clinical recommendations from recovery trajectory */
+  getRecoveryRecommendations: (patientId, params = {}) =>
+    api.get(`/rag/analytics/patient/${patientId}/recovery-recommendations`, { params }),
+
   /** Approve or reject a plan */
   approvePlan: (planId, action, notes = null, editedPlan = null) =>
     api.patch(`/rag/plan/${planId}/approve`, {

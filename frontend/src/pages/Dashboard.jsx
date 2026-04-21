@@ -43,6 +43,9 @@ export default function Dashboard() {
   const [predictionLoading, setPredictionLoading] = useState(false);
   const [predictionError, setPredictionError] = useState(null);
   const [predictionResult, setPredictionResult] = useState(null);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState(null);
+  const [recommendationResult, setRecommendationResult] = useState(null);
   const memoryBankQueryRef = useRef(memoryBankQuery);
   memoryBankQueryRef.current = memoryBankQuery;
 
@@ -248,6 +251,8 @@ export default function Dashboard() {
   async function handleLoadRecoveryPrediction() {
     setPredictionError(null);
     setPredictionResult(null);
+    setRecommendationError(null);
+    setRecommendationResult(null);
     setError(null);
     if (!requirePatientUuidForAction()) return;
     setPredictionLoading(true);
@@ -262,6 +267,29 @@ export default function Dashboard() {
       );
     } finally {
       setPredictionLoading(false);
+    }
+  }
+
+  async function handleLoadRecoveryRecommendations() {
+    setRecommendationError(null);
+    setRecommendationResult(null);
+    setError(null);
+    if (!requirePatientUuidForAction()) return;
+    setRecommendationLoading(true);
+    try {
+      const res = await ragApi.getRecoveryRecommendations(trimmedPatientId);
+      setRecommendationResult(res.data);
+      if (!predictionResult && res.data?.prediction) {
+        setPredictionResult(res.data.prediction);
+      }
+    } catch (err) {
+      setRecommendationError(
+        formatApiError(err, {
+          fallback: "No se pudieron cargar recomendaciones de recuperación.",
+        }),
+      );
+    } finally {
+      setRecommendationLoading(false);
     }
   }
 
@@ -479,6 +507,74 @@ export default function Dashboard() {
               ) : (
                 <p className="text-xs text-neutral-500">
                   {predictionResult.reason || "No hay datos suficientes para estimar trayectoria."}
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">Recomendaciones clínicas (US-PRED-002)</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Sugerencias orientativas derivadas de la trayectoria para apoyar la siguiente decisión clínica.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleLoadRecoveryRecommendations}
+              disabled={recommendationLoading || !patientIdReady}
+              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+            >
+              {recommendationLoading ? "Cargando…" : "Cargar recomendaciones"}
+            </button>
+          </div>
+          {recommendationError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {recommendationError}
+            </div>
+          )}
+          {recommendationResult && (
+            <div className="rounded-lg border border-neutral-200 bg-white p-3 text-sm text-neutral-700 space-y-2">
+              <p>
+                <span className="font-medium">Estado:</span>{" "}
+                {recommendationResult.recommendation_status === "ok"
+                  ? "recomendaciones disponibles"
+                  : "datos insuficientes"}
+              </p>
+              {recommendationResult.recommendation_status === "ok" ? (
+                <>
+                  {Array.isArray(recommendationResult.recommendations) &&
+                  recommendationResult.recommendations.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1">
+                      {recommendationResult.recommendations.map((item) => (
+                        <li key={item.code}>
+                          <span className="font-medium">{item.title}:</span> {item.description}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-neutral-500">
+                      No hay recomendaciones disponibles para esta estimación.
+                    </p>
+                  )}
+                  {Array.isArray(recommendationResult.safety_notes) &&
+                    recommendationResult.safety_notes.length > 0 && (
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                        <p className="font-medium">Notas de seguridad</p>
+                        <ul className="list-disc pl-5 mt-1 space-y-1">
+                          {recommendationResult.safety_notes.map((note, idx) => (
+                            <li key={`${idx}-${note}`}>{note}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                </>
+              ) : (
+                <p className="text-xs text-neutral-500">
+                  {recommendationResult.reason || "No hay datos suficientes para sugerir ajustes del plan."}
                 </p>
               )}
             </div>
