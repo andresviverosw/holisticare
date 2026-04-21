@@ -66,6 +66,10 @@ export const ragApi = {
   /** Get source chunks for a plan */
   getPlanSources: (planId) => api.get(`/rag/plan/${planId}/sources`),
 
+  /** US-PRED-001 — estimate short-term recovery trajectory from diary */
+  getRecoveryTrajectory: (patientId, params = {}) =>
+    api.get(`/rag/analytics/patient/${patientId}/recovery-trajectory`, { params }),
+
   /** Approve or reject a plan */
   approvePlan: (planId, action, notes = null, editedPlan = null) =>
     api.patch(`/rag/plan/${planId}/approve`, {

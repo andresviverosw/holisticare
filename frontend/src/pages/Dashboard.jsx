@@ -40,6 +40,9 @@ export default function Dashboard() {
   const [memoryBankQuery, setMemoryBankQuery] = useState("");
   const [memoryBankLoading, setMemoryBankLoading] = useState(false);
   const [memoryBankError, setMemoryBankError] = useState(null);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  const [predictionError, setPredictionError] = useState(null);
+  const [predictionResult, setPredictionResult] = useState(null);
   const memoryBankQueryRef = useRef(memoryBankQuery);
   memoryBankQueryRef.current = memoryBankQuery;
 
@@ -242,6 +245,26 @@ export default function Dashboard() {
     }
   }
 
+  async function handleLoadRecoveryPrediction() {
+    setPredictionError(null);
+    setPredictionResult(null);
+    setError(null);
+    if (!requirePatientUuidForAction()) return;
+    setPredictionLoading(true);
+    try {
+      const res = await ragApi.getRecoveryTrajectory(trimmedPatientId);
+      setPredictionResult(res.data);
+    } catch (err) {
+      setPredictionError(
+        formatApiError(err, {
+          fallback: "No se pudo estimar la trayectoria de recuperación.",
+        }),
+      );
+    } finally {
+      setPredictionLoading(false);
+    }
+  }
+
   function updateIntakeField(name, value) {
     setIntakeForm((prev) => ({ ...prev, [name]: value }));
   }
@@ -410,6 +433,55 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">Predicción de recuperación (US-PRED-001)</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Estimación orientativa basada en tendencia de dolor del diario del paciente.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleLoadRecoveryPrediction}
+              disabled={predictionLoading || !patientIdReady}
+              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+            >
+              {predictionLoading ? "Calculando…" : "Calcular trayectoria"}
+            </button>
+          </div>
+          {predictionError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {predictionError}
+            </div>
+          )}
+          {predictionResult && (
+            <div className="rounded-lg border border-neutral-200 bg-white p-3 text-sm text-neutral-700 space-y-1">
+              <p>
+                <span className="font-medium">Estado:</span>{" "}
+                {predictionResult.analysis_status === "ok" ? "estimación disponible" : "datos insuficientes"}
+              </p>
+              {predictionResult.analysis_status === "ok" && predictionResult.trajectory ? (
+                <>
+                  <p>
+                    <span className="font-medium">Trayectoria:</span> {predictionResult.trajectory.label}
+                  </p>
+                  <p>
+                    <span className="font-medium">Proyección dolor en 4 semanas:</span>{" "}
+                    {predictionResult.trajectory.projected_pain_nrs_in_4_weeks}
+                  </p>
+                  <p className="text-xs text-neutral-500">{predictionResult.trajectory.rationale}</p>
+                </>
+              ) : (
+                <p className="text-xs text-neutral-500">
+                  {predictionResult.reason || "No hay datos suficientes para estimar trayectoria."}
+                </p>
+              )}
+            </div>
           )}
         </section>
 
