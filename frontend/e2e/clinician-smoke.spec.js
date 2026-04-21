@@ -159,3 +159,101 @@ test("dashboard shows error when plan generation fails", async ({ page }) => {
   await expect(page.getByText("Request failed with status code 500")).toBeVisible();
   await expect(page).toHaveURL(/\/dashboard$/);
 });
+
+test("dashboard shows recovery trajectory prediction (ok)", async ({ page }) => {
+  await page.route("**/api/auth/dev-login", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        access_token: "header.eyJzdWIiOiJkZXYtY2xpbmljaWFuIiwicm9sZSI6ImNsaW5pY2lhbiJ9.signature",
+        token_type: "bearer",
+      }),
+    });
+  });
+
+  await page.route("**/api/rag/plan/memory-bank**", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ items: [] }),
+      });
+      return;
+    }
+    await route.fallback();
+  });
+
+  await page.route("**/api/rag/analytics/patient/**/recovery-trajectory**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        analysis_status: "ok",
+        trajectory: {
+          label: "improving",
+          rationale: "El dolor muestra tendencia descendente sostenida en el periodo evaluado.",
+          projected_pain_nrs_in_4_weeks: 3.2,
+        },
+      }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Entrar (desarrollo — clínico)" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.getByRole("button", { name: "Nuevo paciente" }).click();
+  await page.getByRole("button", { name: "Calcular trayectoria" }).click();
+
+  await expect(page.getByText("Trayectoria:")).toBeVisible();
+  await expect(page.getByText("improving")).toBeVisible();
+  await expect(page.getByText("Proyección dolor en 4 semanas:")).toBeVisible();
+});
+
+test("dashboard shows recovery trajectory insufficient-data state", async ({ page }) => {
+  await page.route("**/api/auth/dev-login", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        access_token: "header.eyJzdWIiOiJkZXYtY2xpbmljaWFuIiwicm9sZSI6ImNsaW5pY2lhbiJ9.signature",
+        token_type: "bearer",
+      }),
+    });
+  });
+
+  await page.route("**/api/rag/plan/memory-bank**", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ items: [] }),
+      });
+      return;
+    }
+    await route.fallback();
+  });
+
+  await page.route("**/api/rag/analytics/patient/**/recovery-trajectory**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        analysis_status: "insufficient_data",
+        reason: "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+        trajectory: null,
+      }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Entrar (desarrollo — clínico)" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.getByRole("button", { name: "Nuevo paciente" }).click();
+  await page.getByRole("button", { name: "Calcular trayectoria" }).click();
+
+  await expect(page.getByText("datos insuficientes")).toBeVisible();
+  await expect(page.getByText("Se requieren al menos 5 registros con dolor para estimar trayectoria.")).toBeVisible();
+});
