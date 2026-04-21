@@ -5,6 +5,7 @@ from typing import Any, Optional
 import anthropic
 import openai
 from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi.responses import Response
 from pydantic import BaseModel, UUID4, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,6 +50,7 @@ from app.services.plan_memory_bank_service import (
     instantiate_plan_from_template,
     list_memory_bank_entries,
 )
+from app.services.plan_pdf_service import build_approved_plan_pdf
 
 router = APIRouter()
 
@@ -688,3 +690,28 @@ async def get_plan_sources(
     if payload is None:
         raise HTTPException(status_code=404, detail="Plan not found")
     return payload
+
+
+@router.get("/plan/{plan_id}/pdf")
+async def download_approved_plan_pdf(
+    plan_id: UUID4,
+    db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+):
+    """
+    Download an approved treatment plan as a PDF document.
+    """
+    plan_row = await get_persisted_plan(db, plan_id=plan_id)
+    if plan_row is None:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    if plan_row.status != "approved":
+        raise HTTPException(
+            status_code=409,
+            detail="Solo se pueden exportar a PDF los planes aprobados.",
+        )
+
+    pdf_bytes = build_approved_plan_pdf(str(plan_id), plan_row.plan_json)
+    headers = {
+        "Content-Disposition": f'attachment; filename="plan-{plan_id}.pdf"',
+    }
+    return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)

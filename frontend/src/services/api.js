@@ -66,6 +66,12 @@ export const ragApi = {
   /** Get source chunks for a plan */
   getPlanSources: (planId) => api.get(`/rag/plan/${planId}/sources`),
 
+  /** Download approved plan as PDF */
+  downloadPlanPdf: (planId) =>
+    api.get(`/rag/plan/${planId}/pdf`, {
+      responseType: "blob",
+    }),
+
   /** US-PRED-001 — estimate short-term recovery trajectory from diary */
   getRecoveryTrajectory: (patientId, params = {}) =>
     api.get(`/rag/analytics/patient/${patientId}/recovery-trajectory`, { params }),

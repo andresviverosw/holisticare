@@ -106,6 +106,7 @@ export default function PlanReview() {
   const [bankSaving, setBankSaving] = useState(false);
   const [bankMsg, setBankMsg] = useState(null);
   const [bankError, setBankError] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     ragApi.getPlan(planId)
@@ -155,6 +156,31 @@ export default function PlanReview() {
       );
     } finally {
       setApproving(false);
+    }
+  }
+
+  async function handleDownloadApprovedPdf() {
+    setError(null);
+    setPdfLoading(true);
+    try {
+      const res = await ragApi.downloadPlanPdf(planId);
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `plan-${planId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(
+        formatApiError(err, {
+          fallback: "No se pudo descargar el PDF del plan aprobado.",
+        }),
+      );
+    } finally {
+      setPdfLoading(false);
     }
   }
 
@@ -329,6 +355,23 @@ export default function PlanReview() {
           {actionDone === "approve"
             ? "✓ Plan aprobado y vinculado al expediente del paciente."
             : "✕ Plan rechazado. No será activado."}
+        </div>
+      )}
+
+      {(plan?.status === "approved" || actionDone === "approve") && (
+        <div className="card space-y-2">
+          <p className="text-sm font-semibold text-neutral-800">Exportar plan aprobado</p>
+          <p className="text-xs text-neutral-600">
+            Descarga una copia PDF para compartir o archivar en el expediente clínico.
+          </p>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={handleDownloadApprovedPdf}
+            disabled={pdfLoading}
+          >
+            {pdfLoading ? "Generando PDF…" : "Descargar PDF del plan"}
+          </button>
         </div>
       )}
 

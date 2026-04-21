@@ -513,6 +513,78 @@ def test_get_plan_sources_200_empty_when_no_citations(client: TestClient):
     assert r.json()["sources"] == []
 
 
+def test_get_plan_pdf_200_when_plan_approved(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=uuid.uuid4(),
+        status="approved",
+        plan_json={
+            "plan_id": str(plan_id),
+            "status": "approved",
+            "weeks": [
+                {
+                    "week": 1,
+                    "goals": ["Reducir dolor"],
+                    "therapies": [{"type": "fisioterapia", "frequency": "3/semana", "duration_minutes": 45}],
+                    "outcome_checkpoints": ["Dolor <= 5"],
+                }
+            ],
+            "citations_used": ["REF-A"],
+        },
+        citations_used=["REF-A"],
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = persisted
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}/pdf")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/pdf")
+    assert "attachment; filename=" in r.headers["content-disposition"]
+    assert r.content.startswith(b"%PDF")
+
+
+def test_get_plan_pdf_409_when_plan_not_approved(client: TestClient):
+    plan_id = uuid.uuid4()
+    persisted = TreatmentPlan(
+        id=plan_id,
+        patient_id=uuid.uuid4(),
+        practitioner_id=uuid.uuid4(),
+        status="pending_review",
+        plan_json={"plan_id": str(plan_id), "status": "pending_review", "weeks": []},
+        citations_used=[],
+    )
+    db_session = AsyncMock()
+    db_session.execute = AsyncMock()
+    execute_result = MagicMock()
+    execute_result.scalar_one_or_none.return_value = persisted
+    db_session.execute.return_value = execute_result
+
+    async def override_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        r = client.get(f"/rag/plan/{plan_id}/pdf")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert r.status_code == 409
+    assert "aprobados" in r.json()["detail"]
+
+
 def test_approve_plan_200_updates_status_and_notes(client: TestClient):
     plan_id = uuid.uuid4()
     persisted = TreatmentPlan(
