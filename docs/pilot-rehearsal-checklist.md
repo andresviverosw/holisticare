@@ -56,3 +56,21 @@ For at least one case:
 - No blocking startup or plan-generation errors.
 - No critical UX confusion in intake + plan review flow.
 - Known limitations documented and shared with clinician.
+
+## 7) Clinician walkthrough checklist (final GO/NO-GO evidence)
+
+Use one real-case walkthrough (or closest available non-synthetic case) and capture notes in `docs/pilot-go-no-go.md`.
+
+- Open Dashboard and complete intake fields without facilitator intervention.
+- Run **Calcular trayectoria** and confirm status/result are clinically interpretable.
+- Run **Cargar recomendaciones** and confirm suggested actions are understandable and actionable.
+- Compare trajectory/recommendations against clinician judgment:
+  - Mark `Aligned`, `Partially aligned`, or `Not aligned`.
+  - Record one reason when not fully aligned.
+- Validate safety notes:
+  - Confirm they appear when risk is perceived.
+  - Confirm wording is clear and non-ambiguous.
+- Review plan output and confirm practitioner control is preserved (`pending_review`, manual approve/reject).
+- Log final verdict:
+  - `Ready for pilot with accepted risks`, or
+  - `Not ready` with explicit blocker and owner.

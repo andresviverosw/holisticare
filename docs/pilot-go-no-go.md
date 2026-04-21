@@ -46,3 +46,16 @@ Use this checklist 24-48 hours before clinician handoff to decide if the pilot c
   - Last health-check run:
   - Manual UI walkthrough notes:
 - Open risks accepted for pilot:
+
+### Current pre-handoff status (2026-04-21)
+
+- Decision date: pending (target: 24-48h pre-handoff)
+- Decision owner: Andres (Planning) + clinician lead
+- Current status: `IN_PROGRESS` (not final GO/NO-GO yet)
+- Evidence references:
+  - Last successful rehearsal run: 2026-04-21 (`scripts\run-pilot-rehearsal.bat`) - all 3 synthetic cases PASS (consecutive pass 2/2 complete).
+  - Last health-check run: 2026-04-21 (`scripts\health-check-clinician.bat`) - PASS.
+  - Manual UI walkthrough notes: pending capture with clinician-oriented walkthrough.
+- Open risks accepted for pilot:
+  - Clinical alignment of `US-PRED-001` / `US-PRED-002` outputs still needs real-case clinician validation.
+  - Technical rehearsal reliability criterion is complete (2 consecutive PASS), pending manual clinician walkthrough evidence.
