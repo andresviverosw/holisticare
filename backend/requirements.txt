@@ -3,7 +3,7 @@ fastapi==0.121.3
 uvicorn[standard]==0.30.6
 pydantic==2.12.5
 pydantic-settings==2.13.1
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 
 # ─── Database ─────────────────────────────────────────────────
 asyncpg==0.29.0
