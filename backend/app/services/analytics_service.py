@@ -13,6 +13,8 @@ from app.services.plateau_service import analyze_diary_plateau
 MAX_RANGE_DAYS = 731
 DEFAULT_DAYS = 90
 MIN_RECOVERY_POINTS = 5
+IMPROVING_SLOPE_THRESHOLD = -0.03
+WORSENING_SLOPE_THRESHOLD = 0.03
 
 
 def resolve_analytics_date_window(
@@ -83,18 +85,22 @@ def estimate_recovery_trajectory_from_series(series: list[dict[str, Any]]) -> di
     slope_per_day = (last_pain - first_pain) / elapsed_days
     projected_4w = max(0.0, min(10.0, last_pain + (slope_per_day * 28.0)))
 
-    if slope_per_day <= -0.05:
+    if slope_per_day <= IMPROVING_SLOPE_THRESHOLD:
         label = "improving"
-    elif slope_per_day >= 0.05:
+        rationale = "El dolor muestra tendencia descendente sostenida en el periodo evaluado."
+    elif slope_per_day >= WORSENING_SLOPE_THRESHOLD:
         label = "worsening"
+        rationale = "El dolor muestra tendencia ascendente, sugiere revisar y ajustar el plan."
     else:
         label = "stable"
+        rationale = "El dolor se mantiene relativamente estable; considerar refuerzo de adherencia y seguimiento."
 
     return {
         "analysis_status": "ok",
         "reason": None,
         "trajectory": {
             "label": label,
+            "rationale": rationale,
             "baseline_pain_nrs": round(first_pain, 2),
             "latest_pain_nrs": round(last_pain, 2),
             "slope_per_day": round(slope_per_day, 4),

@@ -43,6 +43,7 @@ def test_recovery_trajectory_improving_when_pain_decreases():
     out = estimate_recovery_trajectory_from_series(series)
     assert out["analysis_status"] == "ok"
     assert out["trajectory"]["label"] == "improving"
+    assert isinstance(out["trajectory"]["rationale"], str)
     assert out["trajectory"]["projected_pain_nrs_in_4_weeks"] <= out["trajectory"]["latest_pain_nrs"]
 
 
@@ -55,3 +56,16 @@ def test_recovery_trajectory_insufficient_data_with_few_points():
     out = estimate_recovery_trajectory_from_series(series)
     assert out["analysis_status"] == "insufficient_data"
     assert out["trajectory"] is None
+
+
+def test_recovery_trajectory_stable_with_noise_and_irregular_dates():
+    series = [
+        {"date": "2026-04-01", "pain_nrs_0_10": 6},
+        {"date": "2026-04-04", "pain_nrs_0_10": 6},
+        {"date": "2026-04-09", "pain_nrs_0_10": 5},
+        {"date": "2026-04-17", "pain_nrs_0_10": 6},
+        {"date": "2026-04-28", "pain_nrs_0_10": 6},
+    ]
+    out = estimate_recovery_trajectory_from_series(series)
+    assert out["analysis_status"] == "ok"
+    assert out["trajectory"]["label"] == "stable"

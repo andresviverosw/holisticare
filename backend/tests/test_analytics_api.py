@@ -133,6 +133,7 @@ def test_recovery_trajectory_200_returns_prediction_payload(client: TestClient):
     assert payload["patient_id"] == PATIENT_ID
     assert payload["analysis_status"] == "ok"
     assert payload["trajectory"]["label"] in {"improving", "stable", "worsening"}
+    assert isinstance(payload["trajectory"]["rationale"], str)
     assert payload["data_points_used"] == 5
 
 
