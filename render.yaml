@@ -1,0 +1,65 @@
+# HolistiCare — Render Blueprint (Entrega 2 demo)
+# Docs: docs/deploy-entrega2-demo.md
+
+databases:
+  - name: holisticare-db
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: holisticare-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: holisticare-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: holisticare-db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: holisticare-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: holisticare-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: holisticare-db
+          property: database
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOW_DEV_AUTH
+        value: "true"
+      - key: DEBUG
+        value: "true"
+      - key: RAG_LLM_FALLBACK_OPENAI
+        value: "true"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: holisticare-frontend
+    runtime: static
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
