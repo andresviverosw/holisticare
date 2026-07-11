@@ -135,6 +135,9 @@ class Embedder:
                 deleted = cur.rowcount
             conn.commit()
             return deleted
+        except psycopg2.errors.UndefinedTable:
+            conn.rollback()
+            return 0
         finally:
             conn.close()
 

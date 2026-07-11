@@ -57,3 +57,22 @@ def test_get_existing_refs_returns_empty_when_pgvector_table_missing(monkeypatch
     embedder = Embedder.__new__(Embedder)
     assert embedder._get_existing_refs() == set()
     mock_conn.rollback.assert_called_once()
+
+
+def test_remove_existing_for_source_noop_when_pgvector_table_missing(monkeypatch):
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_cur.execute.side_effect = psycopg2.errors.UndefinedTable(
+        'relation "data_clinical_chunks" does not exist'
+    )
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+    mock_conn.cursor.return_value.__exit__.return_value = False
+
+    monkeypatch.setattr(
+        "app.rag.ingestion.embedder.psycopg2.connect",
+        lambda *_args, **_kwargs: mock_conn,
+    )
+
+    embedder = Embedder.__new__(Embedder)
+    assert embedder.remove_existing_for_source("ci_reference.html") == 0
+    mock_conn.rollback.assert_called_once()
