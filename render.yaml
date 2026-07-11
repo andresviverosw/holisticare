@@ -45,6 +45,8 @@ services:
         value: "true"
       - key: RAG_LLM_FALLBACK_OPENAI
         value: "true"
+      - key: RERANKER_BACKEND
+        value: "passthrough"
       - key: CORS_ORIGINS
         sync: false
       - key: ANTHROPIC_API_KEY

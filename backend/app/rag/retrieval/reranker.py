@@ -29,6 +29,21 @@ class BaseReranker(ABC):
         """
 
 
+class PassthroughReranker(BaseReranker):
+    """
+    Demo / low-RAM deploy: skip cross-encoder load; keep vector retrieval order.
+    Set RERANKER_BACKEND=passthrough (e.g. Render free tier).
+    """
+
+    def rerank(self, query: str, candidates: list[dict], top_k: int) -> list[dict]:
+        if not candidates:
+            return []
+        for candidate in candidates:
+            candidate["rerank_score"] = float(candidate.get("score", 0.0))
+        reranked = sorted(candidates, key=lambda x: x["rerank_score"], reverse=True)
+        return reranked[:top_k]
+
+
 class CrossEncoderReranker(BaseReranker):
     """
     Free reranker using sentence-transformers cross-encoder.
@@ -96,4 +111,6 @@ def get_reranker() -> BaseReranker:
     backend = settings.reranker_backend.lower()
     if backend == "cohere":
         return CohereReranker()
+    if backend in ("passthrough", "none", "skip"):
+        return PassthroughReranker()
     return CrossEncoderReranker()

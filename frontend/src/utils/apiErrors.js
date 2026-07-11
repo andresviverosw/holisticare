@@ -31,5 +31,12 @@ export function formatApiError(err, options = {}) {
     return `Error interno del servidor (${status}). ${fallback}`;
   }
 
+  if (err?.code === "ECONNABORTED") {
+    return "La generación del plan tardó demasiado. En Render free el primer intento puede tardar 2–3 min; reintente.";
+  }
+  if (err?.message === "Network Error") {
+    return "Error de red: revise CORS/VITE_API_BASE_URL o si el API en Render se quedó sin memoria (Logs). Reintente tras /health.";
+  }
+
   return err?.message || fallback;
 }
