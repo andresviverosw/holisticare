@@ -61,7 +61,12 @@ def test_ingestion_service_partial_when_one_document_fails(tmp_path):
 
     result = service.ingest(str(tmp_path), force_reindex=False)
 
-    assert result == {"files_processed": 2, "chunks_created": 1, "status": "partial"}
+    assert result == {
+        "files_processed": 2,
+        "chunks_created": 1,
+        "status": "partial",
+        "errors": ["bad.pdf: boom"],
+    }
     service.embedder.log_ingestion.assert_any_call("ok.pdf", 1, "success")
     service.embedder.log_ingestion.assert_any_call("bad.pdf", 0, "failed", "boom")
 

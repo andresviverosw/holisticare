@@ -66,6 +66,7 @@ class IngestResponse(BaseModel):
     files_processed: int
     chunks_created: int
     status: str
+    errors: list[str] = Field(default_factory=list)
 
 
 class PlanGenerateRequest(BaseModel):

@@ -31,6 +31,7 @@ class IngestionService:
         files_processed = len(documents)
         chunks_created = 0
         status = "success"
+        errors: list[str] = []
         # PDFReader yields one Document per page sharing the same file_name; deleting
         # on every page would remove chunks indexed for earlier pages of the same file.
         reindexed_sources: set[str] = set()
@@ -50,10 +51,12 @@ class IngestionService:
                 chunks_created += stored
             except Exception as exc:  # keep ingest best-effort per file
                 status = "partial"
+                errors.append(f"{source_file}: {exc!s}")
                 self.embedder.log_ingestion(source_file, 0, "failed", str(exc))
 
         return {
             "files_processed": files_processed,
             "chunks_created": chunks_created,
             "status": status,
+            "errors": errors,
         }
