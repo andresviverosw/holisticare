@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+import psycopg2
 from llama_index.core.schema import TextNode
 
 from app.rag.ingestion.embedder import Embedder
@@ -37,3 +38,22 @@ def test_embedder_skips_empty_text_nodes(monkeypatch):
     args, _ = mock_model.get_text_embedding_batch.call_args
     assert args[0] == ["substantive chunk text here."]
     mock_vs.add.assert_called_once()
+
+
+def test_get_existing_refs_returns_empty_when_pgvector_table_missing(monkeypatch):
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_cur.execute.side_effect = psycopg2.errors.UndefinedTable(
+        'relation "data_clinical_chunks" does not exist'
+    )
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cur
+    mock_conn.cursor.return_value.__exit__.return_value = False
+
+    monkeypatch.setattr(
+        "app.rag.ingestion.embedder.psycopg2.connect",
+        lambda *_args, **_kwargs: mock_conn,
+    )
+
+    embedder = Embedder.__new__(Embedder)
+    assert embedder._get_existing_refs() == set()
+    mock_conn.rollback.assert_called_once()

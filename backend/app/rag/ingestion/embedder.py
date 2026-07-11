@@ -117,6 +117,10 @@ class Embedder:
                     """
                 )
                 return {row[0] for row in cur.fetchall() if row[0]}
+        except psycopg2.errors.UndefinedTable:
+            # Fresh deploy: init.sql creates clinical_chunks; LlamaIndex uses data_clinical_chunks.
+            conn.rollback()
+            return set()
         finally:
             conn.close()
 
