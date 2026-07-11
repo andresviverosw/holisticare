@@ -96,15 +96,18 @@ class Settings(BaseSettings):
         if self.database_url_override:
             url = _normalize_pg_url(self.database_url_override)
             if url.startswith("postgresql://"):
-                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+                url = url.replace("postgresql://", "postgresql+psycopg://", 1)
             return _append_sslmode(url)
         user = quote_plus(self.postgres_user)
         password = quote_plus(self.postgres_password)
         port = self.postgres_port or 5432
-        return (
-            f"postgresql+asyncpg://{user}:{password}"
+        base = (
+            f"postgresql+psycopg://{user}:{password}"
             f"@{self.postgres_host}:{port}/{self.postgres_db}"
         )
+        if self.postgres_requires_ssl:
+            return f"{base}?sslmode=require"
+        return base
 
     @property
     def database_url_sync(self) -> str:

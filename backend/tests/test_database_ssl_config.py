@@ -47,25 +47,15 @@ def test_postgres_port_none_string_defaults_to_5432():
     assert ":5432/" in s.database_url_sync
 
 
-def test_async_engine_url_strips_sslmode_query_param():
-    from app.core.database import async_engine_url
-
-    url = "postgresql+asyncpg://u:p@dpg-xxx.oregon-postgres.render.com/holisticare_db?sslmode=require"
-    assert async_engine_url(url) == (
-        "postgresql+asyncpg://u:p@dpg-xxx.oregon-postgres.render.com/holisticare_db"
+def test_database_url_async_uses_psycopg_with_sslmode_for_render():
+    s = _settings(
+        database_url_override="postgresql://user:pass@dpg-xxx.oregon-postgres.render.com/holisticare_db",
     )
+    assert s.database_url.startswith("postgresql+psycopg://user:pass@dpg-xxx")
+    assert "sslmode=require" in s.database_url
 
 
-def test_asyncpg_connect_args_uses_ssl_context_for_remote():
-    import ssl
-
-    from app.core.database import asyncpg_connect_args
-
-    args = asyncpg_connect_args(requires_ssl=True)
-    assert isinstance(args["ssl"], ssl.SSLContext)
-
-
-def test_asyncpg_connect_args_omits_ssl_for_local_compose():
-    from app.core.database import asyncpg_connect_args
-
-    assert asyncpg_connect_args(requires_ssl=False) == {}
+def test_database_url_async_omits_sslmode_for_docker_compose():
+    s = _settings(postgres_host="db")
+    assert s.database_url.startswith("postgresql+psycopg://")
+    assert "sslmode" not in s.database_url

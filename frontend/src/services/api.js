@@ -49,9 +49,9 @@ export const ragApi = {
   /** Load persisted intake for a patient */
   getIntake: (patientId) => api.get(`/rag/intake/${patientId}`),
 
-  /** Generate a treatment plan (RAG; may take 1–3 min on cold Render demo) */
+  /** Generate a treatment plan (RAG; may take 1–5 min on cold Render demo) */
   generatePlan: (payload) =>
-    api.post("/rag/plan/generate", payload, { timeout: 180000 }),
+    api.post("/rag/plan/generate", payload, { timeout: 300000 }),
 
   /** Get a plan by ID */
   getPlan: (planId) => api.get(`/rag/plan/${planId}`),

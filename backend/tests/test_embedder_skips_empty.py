@@ -89,7 +89,7 @@ def test_get_vector_store_passes_async_connection_string(monkeypatch):
     fake_settings.database_url_sync_psycopg2 = (
         "postgresql+psycopg2://u:p@host:5432/db?sslmode=require"
     )
-    fake_settings.database_url = "postgresql+asyncpg://u:p@host:5432/db"
+    fake_settings.database_url = "postgresql+psycopg://u:p@host:5432/db"
     fake_settings.embedding_dims = 1536
 
     monkeypatch.setattr(

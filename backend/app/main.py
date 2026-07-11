@@ -2,10 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 import app.models  # noqa: F401 — register ORM metadata
 from app.api import auth, rag
 from app.core.config import get_settings
+from app.core.database import AsyncSessionLocal
 
 
 @asynccontextmanager
@@ -42,6 +45,19 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health():
         return {"status": "ok", "version": "0.1.0"}
+
+    @app.get("/health/db")
+    async def health_db():
+        try:
+            async with AsyncSessionLocal() as session:
+                await session.execute(text("SELECT 1"))
+            return {"status": "ok", "db": "connected"}
+        except Exception as exc:
+            detail = str(exc) if settings.debug else "Database unavailable"
+            return JSONResponse(
+                status_code=503,
+                content={"status": "error", "db": "disconnected", "detail": detail},
+            )
 
     return app
 
