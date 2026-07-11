@@ -31,3 +31,17 @@ def test_database_url_sync_omits_sslmode_for_docker_compose():
 def test_database_url_sync_urlencodes_password():
     s = _settings(postgres_password="p@ss:word")
     assert "p%40ss%3Aword" in s.database_url_sync
+
+
+def test_database_url_sync_uses_database_url_override():
+    s = _settings(
+        database_url_override="postgresql://user:pass@dpg-xxx.oregon-postgres.render.com/holisticare_db",
+    )
+    assert s.database_url_sync.startswith("postgresql://user:pass@dpg-xxx")
+    assert "sslmode=require" in s.database_url_sync
+
+
+def test_postgres_port_none_string_defaults_to_5432():
+    s = _settings(postgres_port="None")
+    assert s.postgres_port == 5432
+    assert ":5432/" in s.database_url_sync

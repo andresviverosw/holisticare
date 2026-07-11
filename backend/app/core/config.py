@@ -1,10 +1,27 @@
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Any
 from urllib.parse import quote_plus
 
 
 def _postgres_host_requires_ssl(host: str) -> bool:
     return host not in ("db", "localhost", "127.0.0.1")
+
+
+def _normalize_pg_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql://", 1)
+    return url
+
+
+def _append_sslmode(url: str) -> str:
+    if "sslmode=" in url:
+        return url
+    if any(token in url for token in ("localhost", "@db:", "@db/")):
+        return url
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}sslmode=require"
 
 
 class Settings(BaseSettings):
@@ -14,6 +31,14 @@ class Settings(BaseSettings):
     postgres_db: str
     postgres_host: str = "db"
     postgres_port: int = 5432
+    database_url_override: str | None = Field(default=None, validation_alias="DATABASE_URL")
+
+    @field_validator("postgres_port", mode="before")
+    @classmethod
+    def normalize_postgres_port(cls, value: Any) -> Any:
+        if value is None or value == "" or str(value).lower() == "none":
+            return 5432
+        return value
 
     # LLM
     anthropic_api_key: str
@@ -61,24 +86,36 @@ class Settings(BaseSettings):
 
     @property
     def postgres_requires_ssl(self) -> bool:
+        if self.database_url_override:
+            url = self.database_url_override.lower()
+            return not any(token in url for token in ("localhost", "@db:", "@db/"))
         return _postgres_host_requires_ssl(self.postgres_host)
 
     @property
     def database_url(self) -> str:
+        if self.database_url_override:
+            url = _normalize_pg_url(self.database_url_override)
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return _append_sslmode(url)
         user = quote_plus(self.postgres_user)
         password = quote_plus(self.postgres_password)
+        port = self.postgres_port or 5432
         return (
             f"postgresql+asyncpg://{user}:{password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            f"@{self.postgres_host}:{port}/{self.postgres_db}"
         )
 
     @property
     def database_url_sync(self) -> str:
+        if self.database_url_override:
+            return _append_sslmode(_normalize_pg_url(self.database_url_override))
         user = quote_plus(self.postgres_user)
         password = quote_plus(self.postgres_password)
+        port = self.postgres_port or 5432
         base = (
             f"postgresql://{user}:{password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            f"@{self.postgres_host}:{port}/{self.postgres_db}"
         )
         if self.postgres_requires_ssl:
             return f"{base}?sslmode=require"
