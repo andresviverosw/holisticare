@@ -170,6 +170,16 @@ Commit en la rama `feature-entrega2-AVW`.
 | 500 `relation does not exist` | Schema no aplicado | Ejecutar `infra/init.sql` (paso 4) |
 | `/auth/dev-login` 404 | `ALLOW_DEV_AUTH=false` | Setear `true` solo en demo |
 | Timeout 50+ s | Cold start Render free | Reintentar; considerar plan paid para demo |
+| Ingest `partial`, `chunks_created: 0` | SSL a Postgres (Render) o `OPENAI_API_KEY` inválida | Ver `ingestion_log.error_msg`; redeploy con fix SSL en rama reciente; confirmar API key OpenAI |
+
+Para ver el error de ingesta en psql:
+
+```sql
+SELECT source_file, status, error_msg
+FROM ingestion_log
+ORDER BY run_at DESC
+LIMIT 5;
+```
 
 ---
 

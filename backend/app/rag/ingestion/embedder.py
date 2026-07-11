@@ -40,11 +40,7 @@ def get_embed_model() -> OpenAIEmbedding:
 
 def get_vector_store() -> PGVectorStore:
     return PGVectorStore.from_params(
-        database=settings.postgres_db,
-        host=settings.postgres_host,
-        port=str(settings.postgres_port),
-        user=settings.postgres_user,
-        password=settings.postgres_password,
+        connection_string=settings.database_url_sync_psycopg2,
         table_name=PGVECTOR_INDEX_TABLE,
         embed_dim=settings.embedding_dims,
     )

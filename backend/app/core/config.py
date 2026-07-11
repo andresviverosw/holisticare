@@ -1,5 +1,10 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from urllib.parse import quote_plus
+
+
+def _postgres_host_requires_ssl(host: str) -> bool:
+    return host not in ("db", "localhost", "127.0.0.1")
 
 
 class Settings(BaseSettings):
@@ -55,18 +60,37 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
 
     @property
+    def postgres_requires_ssl(self) -> bool:
+        return _postgres_host_requires_ssl(self.postgres_host)
+
+    @property
     def database_url(self) -> str:
+        user = quote_plus(self.postgres_user)
+        password = quote_plus(self.postgres_password)
         return (
-            f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+            f"postgresql+asyncpg://{user}:{password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
     @property
     def database_url_sync(self) -> str:
-        return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+        user = quote_plus(self.postgres_user)
+        password = quote_plus(self.postgres_password)
+        base = (
+            f"postgresql://{user}:{password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+        if self.postgres_requires_ssl:
+            return f"{base}?sslmode=require"
+        return base
+
+    @property
+    def database_url_sync_psycopg2(self) -> str:
+        """SQLAlchemy/psycopg2 URL for LlamaIndex PGVectorStore."""
+        url = self.database_url_sync
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return url
 
     @property
     def cors_origins_list(self) -> list[str]:
