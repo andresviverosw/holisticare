@@ -27,11 +27,17 @@ Plataforma de apoyo a la decisión clínica para clínicas de rehabilitación ho
 
 ### **0.4. URL del proyecto:**
 
-> **Entorno demo (Render):** desplegar siguiendo `docs/deploy-entrega2-demo.md` y actualizar esta URL antes de enviar el Typeform.
->
-> Ejemplo esperado:
-> - Frontend: `https://holisticare-frontend.onrender.com`
-> - API health: `https://holisticare-api.onrender.com/health`
+**Demo pública (Render — Entrega 2):**
+
+| Recurso | URL |
+|---------|-----|
+| **Frontend (aplicación)** | [https://holisticare-frontend.onrender.com](https://holisticare-frontend.onrender.com) |
+| **API — health** | [https://holisticare-api.onrender.com/health](https://holisticare-api.onrender.com/health) |
+| **API — health DB** | [https://holisticare-api.onrender.com/health/db](https://holisticare-api.onrender.com/health/db) |
+
+**Flujo demo:** Login → «Entrar (desarrollo — clínico)» → Dashboard → «Nuevo paciente» → «Generar plan IA» → Revisión del plan. La primera petición tras inactividad puede tardar ~1 min (cold start Render free); la generación del plan ~1–3 min.
+
+Guía de despliegue: `docs/deploy-entrega2-demo.md`.
 
 ### 0.5. URL o archivo comprimido del repositorio
 
