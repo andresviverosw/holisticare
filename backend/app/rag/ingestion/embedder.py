@@ -39,8 +39,11 @@ def get_embed_model() -> OpenAIEmbedding:
 
 
 def get_vector_store() -> PGVectorStore:
+    # LlamaIndex builds async_connection_string from host/port/user when omitted;
+    # with only connection_string those become literal "None" and break engine setup.
     return PGVectorStore.from_params(
         connection_string=settings.database_url_sync_psycopg2,
+        async_connection_string=settings.database_url,
         table_name=PGVECTOR_INDEX_TABLE,
         embed_dim=settings.embedding_dims,
     )

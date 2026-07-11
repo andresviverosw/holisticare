@@ -76,3 +76,32 @@ def test_remove_existing_for_source_noop_when_pgvector_table_missing(monkeypatch
     embedder = Embedder.__new__(Embedder)
     assert embedder.remove_existing_for_source("ci_reference.html") == 0
     mock_conn.rollback.assert_called_once()
+
+
+def test_get_vector_store_passes_async_connection_string(monkeypatch):
+    captured: dict = {}
+
+    def fake_from_params(**kwargs):
+        captured.update(kwargs)
+        return MagicMock()
+
+    fake_settings = MagicMock()
+    fake_settings.database_url_sync_psycopg2 = (
+        "postgresql+psycopg2://u:p@host:5432/db?sslmode=require"
+    )
+    fake_settings.database_url = "postgresql+asyncpg://u:p@host:5432/db"
+    fake_settings.embedding_dims = 1536
+
+    monkeypatch.setattr(
+        "app.rag.ingestion.embedder.PGVectorStore.from_params",
+        fake_from_params,
+    )
+    monkeypatch.setattr("app.rag.ingestion.embedder.settings", fake_settings)
+
+    from app.rag.ingestion.embedder import get_vector_store
+
+    get_vector_store()
+
+    assert captured["connection_string"].startswith("postgresql+psycopg2://")
+    assert captured["async_connection_string"] == fake_settings.database_url
+    assert "None" not in captured["async_connection_string"]
