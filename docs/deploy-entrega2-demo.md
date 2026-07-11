@@ -26,8 +26,8 @@ Guía para montar HolistiCare **desde cero** en un entorno accesible por URL pú
 3. Render detectará `render.yaml` en la raíz.
 4. Al crear, Render provisionará:
    - **PostgreSQL 16** (`holisticare-db`)
-   - **Web Service** Docker backend (`holisticare-api`)
-   - **Static Site** frontend (`holisticare-frontend`)
+   - **Web Service** Docker backend (`holisticare-api`, plan `free`)
+   - **Static Site** frontend (`holisticare-frontend`, gratis por defecto — no lleva `plan` en `render.yaml`)
 
 ---
 
