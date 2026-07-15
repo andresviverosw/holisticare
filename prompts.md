@@ -1,6 +1,6 @@
 > Prompts principales utilizados con asistentes de código (Cursor / Claude) durante el desarrollo de HolistiCare. Máximo 3 por sección. Conversaciones completas disponibles en el historial del IDE y commits del repositorio.
 >
-> Rama de entrega Typeform: `cursor/docs-typeform-submission-82c5` — checklist en `docs/typeform-submission.md`.
+> Rama de Entrega 1 (Typeform, proyecto propio): `feature-entrega1-AVW` — checklist en `docs/typeform-submission.md`.
 
 ## Índice
 

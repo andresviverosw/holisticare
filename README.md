@@ -9,8 +9,9 @@
 6. [Tickets de trabajo](#6-tickets-de-trabajo)
 7. [Pull requests](#7-pull-requests)
 
-> **Entrega Typeform (máster LIDR / AI4devs):** esta rama concentra la documentación académica del proyecto.
-> Checklist de campos a pegar en Typeform: [`docs/typeform-submission.md`](docs/typeform-submission.md).
+> **Entrega 1 Typeform (máster LIDR / AI4devs — proyecto propio / avanzado):**
+> Rama oficial de entrega: [`feature-entrega1-AVW`](https://github.com/andresviverosw/holisticare/tree/feature-entrega1-AVW).
+> Checklist Typeform: [`docs/typeform-submission.md`](docs/typeform-submission.md).
 > Documentación técnica extendida (fases 01–10, sprints, piloto): carpeta [`docs/`](docs/README.md).
 > README de producto (inglés, pre-formato LIDR): [`README-ORIGINAL.md`](README-ORIGINAL.md).
 > Registro de prompts IA: [`prompts.md`](prompts.md).
@@ -49,11 +50,11 @@ Guía de despliegue: `docs/deploy-entrega2-demo.md` (blueprint y fixes en rama `
 
 Repositorio GitHub: [https://github.com/andresviverosw/holisticare](https://github.com/andresviverosw/holisticare)
 
-**Rama de documentación completa (Typeform):** [https://github.com/andresviverosw/holisticare/tree/cursor/docs-typeform-submission-82c5](https://github.com/andresviverosw/holisticare/tree/cursor/docs-typeform-submission-82c5)
+**Rama de Entrega 1 (Typeform — proyecto propio):** [https://github.com/andresviverosw/holisticare/tree/feature-entrega1-AVW](https://github.com/andresviverosw/holisticare/tree/feature-entrega1-AVW)
 
 Rama demo + deploy Entrega 2: [https://github.com/andresviverosw/holisticare/tree/feature-entrega2-AVW](https://github.com/andresviverosw/holisticare/tree/feature-entrega2-AVW)
 
-Entrega 1 (academia LIDR): [https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185](https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185)
+Entrega 1 previa (academia LIDR / fork, referencia): [https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185](https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185)
 
 Documentación técnica extendida: `README-ORIGINAL.md` y carpeta `docs/`.
 
@@ -115,7 +116,7 @@ Capturas / video: enlazar grabación del flujo demo (login → intake → genera
 # 1. Clonar y configurar entorno
 git clone https://github.com/andresviverosw/holisticare.git
 cd holisticare
-git checkout cursor/docs-typeform-submission-82c5
+git checkout feature-entrega1-AVW
 cp .env.example .env
 # Completar ANTHROPIC_API_KEY, OPENAI_API_KEY, SECRET_KEY en .env
 # Para demo local: ALLOW_DEV_AUTH=true
@@ -484,7 +485,8 @@ Sprints: `docs/sprint-01.md` … `docs/sprint-10.md`.
 
 **Pull Request 3**
 
-- **URL:** [https://github.com/andresviverosw/holisticare/pull/3](https://github.com/andresviverosw/holisticare/pull/3)
-- **Título:** docs(lidr): Typeform submission branch with full project documentation
-- **Historia:** Documentación académica LIDR (README + prompts.md + hub docs/)
-- **Resumen:** Rama canónica para Typeform con README formato LIDR, bitácora de prompts, checklist de entrega y enlace a fases/sprints/piloto. Entrega 1 en academia: [LIDR #185](https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185).
+- **URL:** [https://github.com/andresviverosw/holisticare/pull/3](https://github.com/andresviverosw/holisticare/pull/3) *(si se actualiza el PR de la rama `feature-entrega1-AVW`, usar ese enlace)*
+- **Rama de entrega Typeform:** [feature-entrega1-AVW](https://github.com/andresviverosw/holisticare/tree/feature-entrega1-AVW)
+- **Título:** feat: documentacion tecnica entrega 1 LIDR
+- **Historia:** Documentación académica LIDR (README + prompts.md) sin alterar `main`
+- **Resumen:** Protocolo proyecto propio/avanzado (No Fork): `README-ORIGINAL.md`, `README.md` plantilla LIDR, `prompts.md`, checklist Typeform.
