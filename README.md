@@ -484,7 +484,7 @@ Sprints: `docs/sprint-01.md` … `docs/sprint-10.md`.
 
 **Pull Request 3**
 
-- **URL:** [https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185](https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185)
-- **Título:** Primera entrega: especificación HolistiCare y registro de prompts
-- **Historia:** Documentación académica LIDR (readme.md + prompts.md)
-- **Resumen:** Entrega 1 al repositorio de la academia con especificación completa del MVP HolistiCare y bitácora de prompts usados con asistentes de código.
+- **URL:** [https://github.com/andresviverosw/holisticare/pull/3](https://github.com/andresviverosw/holisticare/pull/3)
+- **Título:** docs(lidr): Typeform submission branch with full project documentation
+- **Historia:** Documentación académica LIDR (README + prompts.md + hub docs/)
+- **Resumen:** Rama canónica para Typeform con README formato LIDR, bitácora de prompts, checklist de entrega y enlace a fases/sprints/piloto. Entrega 1 en academia: [LIDR #185](https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185).

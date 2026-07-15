@@ -18,6 +18,7 @@ Usa esta rama (formato LIDR en `README.md` + `prompts.md` + hub `docs/`):
 | URL de prompts | https://github.com/andresviverosw/holisticare/blob/cursor/docs-typeform-submission-82c5/prompts.md |
 | URL demo (frontend) | https://holisticare-frontend.onrender.com |
 | URL demo (API health) | https://holisticare-api.onrender.com/health |
+| PR de esta documentación (holisticare) | https://github.com/andresviverosw/holisticare/pull/3 |
 | PR Entrega 1 (academia) | https://github.com/LIDR-academy/AI4Devs-finalproject/pull/185 |
 | Rama demo + deploy Entrega 2 | https://github.com/andresviverosw/holisticare/tree/feature-entrega2-AVW |
 
