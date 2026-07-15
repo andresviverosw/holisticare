@@ -485,7 +485,7 @@ Sprints: `docs/sprint-01.md` … `docs/sprint-10.md`.
 
 **Pull Request 3**
 
-- **URL:** [https://github.com/andresviverosw/holisticare/pull/3](https://github.com/andresviverosw/holisticare/pull/3) *(si se actualiza el PR de la rama `feature-entrega1-AVW`, usar ese enlace)*
+- **URL:** [https://github.com/andresviverosw/holisticare/pull/4](https://github.com/andresviverosw/holisticare/pull/4)
 - **Rama de entrega Typeform:** [feature-entrega1-AVW](https://github.com/andresviverosw/holisticare/tree/feature-entrega1-AVW)
 - **Título:** feat: documentacion tecnica entrega 1 LIDR
 - **Historia:** Documentación académica LIDR (README + prompts.md) sin alterar `main`
