@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **Sprint 13 planning:** `US-DIARY-AUTH-PROD` ready-for-dev (`docs/sprint-13.md`) — single-use patient invite link → JWT with `exp` (no OTP/IdP this slice).
 - **Sprint 12 execution (US-DIARY-UI-PATIENT):** patient `/diario`, `RequirePatient` / clinician role redirects, extended `POST /auth/dev-login` for `role=patient` + UUID v4 `sub`.
 - **Sprint 12 QA:** Playwright patient diary smoke + report (`docs/qa-sprint-12-report.md`).
 - **Sprint 12 planning:** `US-DIARY-UI-PATIENT` ready-for-dev (`docs/sprint-12.md`) — patient `/diario`, patient JWT via extended dev-login.

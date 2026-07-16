@@ -161,4 +161,4 @@ M (frontend + small backend auth)
 
 ## Next owner
 
-**Planning Agent** — mark R2+ diary slice closed; next candidates: `US-DIARY-AUTH-PROD`, pilot GO/NO-GO, or R4 mobile.
+**Planning Agent** — Sprint 12 closed (merged PR #9). Next slice planned: **US-DIARY-AUTH-PROD** — [`sprint-13.md`](sprint-13.md).

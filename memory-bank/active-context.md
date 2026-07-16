@@ -2,14 +2,16 @@
 
 ## Ongoing Tasks
 
-- **Sprint 12 complete / QA PASS:** US-DIARY-UI-PATIENT — patient `/diario` + patient JWT.
-- PR: https://github.com/andresviverosw/holisticare/pull/9
+- **Sprint 12 merged** to `main` (PR #9).
+- **Sprint 13 planning complete:** `docs/sprint-13.md` — US-DIARY-AUTH-PROD ready for Development Agent.
+- Locked: single-use invite link → patient JWT with `exp`; no OTP/IdP/email send this slice.
 
 ## Known Issues
 
-- Patient identity remains UUID-in-JWT (dev/pilot); production auth is `US-DIARY-AUTH-PROD`.
-- Pilot GO/NO-GO still optional/deferred per product choice.
+- Clinician login when `ALLOW_DEV_AUTH=false` still needs `US-AUTH-CLINICIAN-PROD`.
+- Prod compose overlay (`US-OPS-PROD-COMPOSE`) still not in repo.
+- Pilot GO/NO-GO optional/deferred.
 
 ## Next Steps
 
-- Planning Agent: merge PR #9; prioritize `US-DIARY-AUTH-PROD`, pilot GO/NO-GO, or R4 mobile.
+- Development Agent: TDD invite model/service → redeem API → Dashboard/Login SPA → QA.
