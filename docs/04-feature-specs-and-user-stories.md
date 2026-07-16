@@ -70,8 +70,8 @@ Translate requirements into implementable product specifications, user stories, 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
-| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
-| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
+| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Backend done; **UI Ready (Sprint 11 — US-INT-002-UI)** |
+| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice); UI deferred |
 | US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
 | US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Done (Sprint 9) |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
@@ -82,12 +82,12 @@ Translate requirements into implementable product specifications, user stories, 
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-RAG-003 | Knowledge base (RAG) | Clinician | to include nutrition evidence in the corpus and retrieve profile-aware dietary guidance | generated plans include what to eat and what to avoid based on patient profile and contraindications | Must | M | Done (backend + ops + UI review) |
 | US-RAG-004 | Knowledge base (RAG) | Clinician | to manage nutrition safety synonym dictionaries via configuration | safety matching can be updated quickly without code changes and remains clinically aligned | Should | M | Done (Sprint 8) |
-| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
-| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
-| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
-| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Done (backend API slice) |
-| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
-| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
+| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Backend done; **UI Ready (Sprint 11 — US-SESS-UI)** |
+| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Backend done; **UI Ready (Sprint 11 — US-SESS-UI)** |
+| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Backend done; **UI Ready (Sprint 11 — US-DIARY-UI, clinician proxy)** |
+| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Backend done; **UI Ready (Sprint 11 — US-DIARY-UI)** |
+| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Backend done; **UI Ready (Sprint 11 — US-ANLY-UI)** |
+| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Backend done; **UI Ready (Sprint 11 — US-ANLY-UI)** |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Done (backend + dashboard + E2E) |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Done (backend + dashboard + E2E) |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
@@ -127,6 +127,8 @@ Implementation evidence (backend):
 - `GET /rag/intake/{patient_id}/risk-flags` implemented with deterministic rule-based risk analysis.
 - Returns `404` when intake is missing and `503` fallback message if risk analysis fails unexpectedly.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for success and not-found contracts.
+
+UI slice (Sprint 11): **US-INT-002-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). Dashboard must surface flags after intake load; acknowledgements deferred (no persistence yet).
 
 ### US-INT-003 - Intake edit with audit trail
 
@@ -203,6 +205,8 @@ Implementation evidence (backend):
 - `POST /rag/sessions` and `GET /rag/sessions/patient/{patient_id}` (JWT roles `clinician` or `admin`).
 - Contract tests in `backend/tests/test_session_api.py`.
 
+UI slice (Sprint 11): **US-SESS-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). E2E was deferred pending this form.
+
 ### US-SESS-002 - AI-assisted note completion
 
 - Given structured interventions and optional draft text, when a clinician requests note assistance, then the API returns suggested observations and patient-reported response text.
@@ -217,6 +221,8 @@ Implementation evidence (backend):
 - Suggestion service in `backend/app/services/session_note_service.py`.
 - `POST /rag/sessions/suggest-note` endpoint (JWT roles `clinician`/`admin`).
 - Tests in `backend/tests/test_session_api.py`.
+
+UI slice (Sprint 11): **US-SESS-UI** (Should assist bundled with Must log) — ready for development; see [`sprint-11.md`](sprint-11.md).
 
 ### US-PLAN-001 - Draft treatment plan generation
 
@@ -306,6 +312,8 @@ Implementation evidence (backend):
 - JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
 - Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
 
+UI slice (Sprint 11): **US-DIARY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). **v1 = clinician proxy** on Dashboard (pilot). Patient self-serve route is **US-DIARY-UI-PATIENT** (deferred).
+
 ### US-DIARY-002 - Optional Spanish free-text notes
 
 - Given a diary check-in, when a patient includes optional `notes_es`, then the value is trimmed, persisted, and returned in the API payload.
@@ -337,6 +345,8 @@ Implementation evidence (backend):
 - Service: `backend/app/services/analytics_service.py`; diary range query: `list_diary_entries_in_date_range` in `diary_service.py`.
 - Tests: `backend/tests/test_analytics_api.py`, `backend/tests/test_analytics_service.py`.
 
+UI slice (Sprint 11): **US-ANLY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). Depends on diary data entry via **US-DIARY-UI**.
+
 ### US-ANLY-002 - Plateau detection
 
 - Given longitudinal outcome data, when trend analysis runs, then plateau/worsening cases are flagged using defined thresholds.
@@ -353,6 +363,8 @@ Implementation evidence (backend):
 - `GET /rag/analytics/patient/{patient_id}/plateau-flags` with same ventana de fechas y autenticación que US-ANLY-001 (`clinician`/`admin`). Respuesta: `analysis_status` (`ok` | `insufficient_data`), `flags` con `code`, `severity`, `metric`, `message`, `detail` (español).
 - Orquestación en `get_patient_plateau_flags_payload` (`analytics_service.py`).
 - Tests: `backend/tests/test_plateau_service.py`, `backend/tests/test_plateau_api.py`.
+
+UI slice (Sprint 11): **US-ANLY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). E2E “flagged patient on dashboard” was deferred pending this panel.
 
 ### US-RAG-001 - Multi-format corpus ingestion
 
@@ -498,12 +510,18 @@ Test intent:
 | US-INT-005 | Should | R2 | US-INT-004 | **Done (Sprint 9).** Dashboard: Nuevo paciente, Copiar ID, validación v4, recientes en `localStorage` — see `sprint-09.md` |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | **Done.** Recovery trajectory endpoint + dashboard panel + tests |
 | US-PRED-002 | Should | R3 | US-PRED-001 | **Done.** Recommendation layer endpoint + dashboard panel + tests |
+| US-INT-002-UI | Must | R1-UI | US-INT-002, US-INT-004 | **Sprint 11.** Surface risk flags on Dashboard (read-only). See `sprint-11.md`. |
+| US-DIARY-UI | Must | R1-UI | US-DIARY-001, US-DIARY-002, US-INT-005 | **Sprint 11.** Clinician-proxy diary check-in + history. Patient self-serve deferred (`US-DIARY-UI-PATIENT`). |
+| US-ANLY-UI | Must | R1-UI | US-ANLY-001, US-ANLY-002, US-DIARY-UI | **Sprint 11.** Outcomes trend + plateau flags panels. |
+| US-SESS-UI | Must | R1-UI | US-SESS-001, US-SESS-002, US-INT-005 | **Sprint 11.** Session log form + history + optional note suggest. |
+| US-DIARY-UI-PATIENT | Should | R2+ | US-DIARY-UI | Patient-role diary page (`sub == patient_id`). Deferred post Sprint 11. |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
+- **R1-UI (Sprint 11 — in progress):** close the continuity **UI gap** for Must stories that are backend-only today — risk flags (**US-INT-002-UI**), clinician-proxy diary (**US-DIARY-UI**), trends/plateaus (**US-ANLY-UI**), session logging + note assist (**US-SESS-UI**). Specs: [`sprint-11.md`](sprint-11.md).
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
