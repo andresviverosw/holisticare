@@ -2,11 +2,12 @@
 
 ## Audience and scope
 
-This guide is for clinicians using the current web app MVP.
+This guide is for clinicians and (pilot/dev) patients using the current web app MVP.
 
 Current UI modules:
 - Login (`/login`)
 - Dashboard: AI plan generation (`/dashboard`) — also risk flags, clinician-proxy diary, progress/plateaus, session logging
+- Patient diary (`/diario`) — self-serve daily check-ins (US-DIARY-UI-PATIENT)
 - Plan review and approval (`/plan/:planId`)
 - Plan sources (`/plan/:planId/sources`)
 - Knowledge base browser (`/chunks`)
@@ -17,16 +18,31 @@ You need:
 - Running services (`docker compose up -d --build`)
 - Backend reachable at `http://localhost:8000`
 - Frontend reachable at `http://localhost:5173`
-- A valid clinician/admin JWT, or dev login enabled (`ALLOW_DEV_AUTH=true`)
+- A valid clinician/admin or patient JWT, or dev login enabled (`ALLOW_DEV_AUTH=true`)
 
 ## Login
 
 1. Open `http://localhost:5173/login`.
 2. Choose one:
-   - **Dev login**: click `Entrar (desarrollo — clínico)` (works only when backend allows dev auth).
-   - **Manual token**: paste a JWT in `Pegar token JWT (Bearer)` and submit.
+   - **Dev login (clínico)**: click `Entrar (desarrollo — clínico)` (works only when backend allows dev auth).
+   - **Dev login (paciente)**: paste the patient’s UUID v4, then click `Entrar (desarrollo — paciente)`. Opens `/diario`.
+   - **Manual token**: paste a JWT in `Pegar token JWT (Bearer)` and submit (patient tokens need `role: patient` and UUID `sub`).
 
 If login fails, an actionable message is shown (e.g. auth disabled, invalid token).
+
+### Share UUID with the patient (clinician)
+
+After creating or selecting a patient on the Dashboard, use **`Copiar ID`** and share that UUID so the patient can use patient dev-login (pilot) or a future production invite flow (`US-DIARY-AUTH-PROD`).
+
+## Patient diary (`/diario`)
+
+1. Sign in as patient (dev UUID login or patient JWT).
+2. Confirm the read-only patient ID matches the shared UUID.
+3. Enter date and scores (dolor / sueño / ánimo / función, 0–10); optional notes.
+4. Click **`Guardar check-in`**. Same-day entries upsert.
+5. Use **`Actualizar`** to refresh recent history.
+
+Patients cannot open clinician Dashboard routes; clinicians cannot stay on `/diario` (proxy diary remains on the Dashboard).
 
 ## Generate a treatment plan
 
