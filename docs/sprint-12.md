@@ -10,7 +10,7 @@
 | Priority | Should (R2+) — next product slice after R1-UI |
 | Scope | Frontend patient route + minimal patient JWT issuance for local/pilot; reuse `patient_diary_v0` APIs |
 | Owner | Planning → Development (TDD) → QA |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **Complete / QA PASS** (2026-07-16) |
 
 ## Problem statement
 
@@ -94,15 +94,15 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given a patient JWT with UUID `sub`, when the patient opens `/diario`, then they see a check-in form bound to that id (id shown read-only / copyable).
-- [ ] Given valid scores and date, when they save, then `POST /rag/diary` succeeds and the entry appears in their history list (same-day upsert).
-- [ ] Given invalid scores or missing date, when they submit, then client validation blocks the API call (reuse `validateDiaryForm`).
-- [ ] Given optional notes, when blank/whitespace, then payload sends `notes_es: null`; when present, trimmed and shown in history.
-- [ ] Given a patient token, when they request another patient’s diary id, then API returns `403` (existing backend); UI never offers another id.
-- [ ] Given role `clinician`/`admin`, when visiting `/diario`, then redirect to `/dashboard`.
-- [ ] Given role `patient`, when visiting `/dashboard` (or plan/chunks), then redirect to `/diario` (or login if unauthenticated).
-- [ ] Given `ALLOW_DEV_AUTH=true`, when login uses patient + valid UUID v4 `sub`, then a patient token is issued and `/diario` loads.
-- [ ] Given `ALLOW_DEV_AUTH=false`, when patient dev-login is attempted, then failure is actionable (404 route absent) — same as clinician dev login.
+- [x] Given a patient JWT with UUID `sub`, when the patient opens `/diario`, then they see a check-in form bound to that id (id shown read-only / copyable).
+- [x] Given valid scores and date, when they save, then `POST /rag/diary` succeeds and the entry appears in their history list (same-day upsert).
+- [x] Given invalid scores or missing date, when they submit, then client validation blocks the API call (reuse `validateDiaryForm`).
+- [x] Given optional notes, when blank/whitespace, then payload sends `notes_es: null`; when present, trimmed and shown in history.
+- [x] Given a patient token, when they request another patient’s diary id, then API returns `403` (existing backend); UI never offers another id.
+- [x] Given role `clinician`/`admin`, when visiting `/diario`, then redirect to `/dashboard`.
+- [x] Given role `patient`, when visiting `/dashboard` (or plan/chunks), then redirect to `/diario` (or login if unauthenticated).
+- [x] Given `ALLOW_DEV_AUTH=true`, when login uses patient + valid UUID v4 `sub`, then a patient token is issued and `/diario` loads.
+- [x] Given `ALLOW_DEV_AUTH=false`, when patient dev-login is attempted, then failure is actionable (404 route absent) — same as clinician dev login.
 
 #### Test intent
 
@@ -144,21 +144,21 @@ M (frontend + small backend auth)
 
 ## Definition of done
 
-- [ ] Acceptance criteria above pass (unit + backend auth tests + Playwright)
-- [ ] Lint/build green; no regression to clinician smoke
-- [ ] Backlog: US-DIARY-UI-PATIENT → Done; release note in CHANGELOG
-- [ ] `docs/07-user-guide.md` patient section + clinician “share UUID” note
-- [ ] QA report with pass/fail
+- [x] Acceptance criteria above pass (unit + backend auth tests + Playwright)
+- [x] Lint/build green; no regression to clinician smoke
+- [x] Backlog: US-DIARY-UI-PATIENT → Done; release note in CHANGELOG
+- [x] `docs/07-user-guide.md` patient section + clinician “share UUID” note
+- [x] QA report with pass/fail
 
 ## Handoff template
 
 - Backlog item ID: US-DIARY-UI-PATIENT
-- Scope:
-- Acceptance criteria: (pass/fail)
-- Test evidence:
-- Risks/issues:
-- Next owner: QA → Planning
+- Scope: Patient `/diario` + patient JWT via extended dev-login; role redirects
+- Acceptance criteria: **PASS** (see `docs/qa-sprint-12-report.md`)
+- Test evidence: backend auth 5/5; Vitest 42/42; Playwright sprint12 3/3; lint/build green
+- Risks/issues: UUID-as-identity is pilot/dev only (`US-DIARY-AUTH-PROD` follow-on)
+- Next owner: Planning Agent (closeout / prioritize next slice)
 
 ## Next owner
 
-**Development Agent** — start with backend patient dev-login (TDD), then `/diario` page.
+**Planning Agent** — mark R2+ diary slice closed; next candidates: `US-DIARY-AUTH-PROD`, pilot GO/NO-GO, or R4 mobile.

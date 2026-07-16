@@ -26,6 +26,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
 | Sprint notes | `sprint-01.md` … `sprint-12.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
+| Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -75,9 +76,9 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** [Sprint 12 — US-DIARY-UI-PATIENT](sprint-12.md) — **Ready for development** (patient self-serve `/diario`).
+- **Current:** Sprint 12 — US-DIARY-UI-PATIENT — **complete / QA PASS** ([`sprint-12.md`](sprint-12.md), [`qa-sprint-12-report.md`](qa-sprint-12-report.md)).
 - **Recently completed:** Sprint 11 R1-UI + QA ([`sprint-11.md`](sprint-11.md), [`qa-sprint-11-report.md`](qa-sprint-11-report.md)).
-- **Next planned (after Sprint 12):**
+- **Next planned:**
   - Production patient auth follow-on (`US-DIARY-AUTH-PROD`)
   - Pilot GO/NO-GO execution on Windows (optional / if not skipped)
   - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth)
@@ -97,7 +98,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-09.md` - Sprint 9 (US-INT-005 automatic patient UUID + recent patients) — **complete**
 - `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
 - `sprint-11.md` - Sprint 11 (R1-UI continuity panels) — **complete / QA PASS**
-- `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **ready for dev**
+- `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
 
 ## Suggested cadence
 

@@ -2,15 +2,14 @@
 
 ## Ongoing Tasks
 
-- **Sprint 12 execution in progress:** US-DIARY-UI-PATIENT — patient `/diario`, patient dev-login, role guards.
-- Branch: `cursor/sprint-12-diary-patient-ui-2591`
-- Spec: `docs/sprint-12.md`
+- **Sprint 12 complete / QA PASS:** US-DIARY-UI-PATIENT — patient `/diario` + patient JWT.
+- PR: https://github.com/andresviverosw/holisticare/pull/9
 
 ## Known Issues
 
-- Patient identity for Sprint 12 is UUID-in-JWT (dev/pilot); production auth is follow-on (`US-DIARY-AUTH-PROD`).
+- Patient identity remains UUID-in-JWT (dev/pilot); production auth is `US-DIARY-AUTH-PROD`.
 - Pilot GO/NO-GO still optional/deferred per product choice.
 
 ## Next Steps
 
-- Finish QA (unit + Playwright + lint/build) and mark story Done.
+- Planning Agent: merge PR #9; prioritize `US-DIARY-AUTH-PROD`, pilot GO/NO-GO, or R4 mobile.

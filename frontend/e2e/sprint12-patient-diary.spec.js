@@ -7,11 +7,11 @@ const { test, expect } = require("@playwright/test");
 
 const PATIENT = "550e8400-e29b-41d4-a716-446655440000";
 
-/** Minimal JWT-shaped token: AuthContext only base64-decodes the payload segment. */
-function fakeJwt(payload) {
-  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  return `header.${body}.signature`;
-}
+/** Minimal JWT-shaped tokens (AuthContext only base64-decodes the payload segment). */
+const PATIENT_JWT =
+  "header.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJyb2xlIjoicGF0aWVudCJ9.signature";
+const CLINICIAN_JWT =
+  "header.eyJzdWIiOiJkZXYtY2xpbmljaWFuIiwicm9sZSI6ImNsaW5pY2lhbiJ9.signature";
 
 async function mockPatientDevLogin(page) {
   await page.route("**/api/auth/dev-login", async (route) => {
@@ -21,7 +21,7 @@ async function mockPatientDevLogin(page) {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          access_token: fakeJwt({ sub: body.sub || PATIENT, role: "patient" }),
+          access_token: PATIENT_JWT,
           token_type: "bearer",
           role: "patient",
           sub: body.sub || PATIENT,
@@ -33,7 +33,7 @@ async function mockPatientDevLogin(page) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        access_token: fakeJwt({ sub: "dev-clinician", role: "clinician" }),
+        access_token: CLINICIAN_JWT,
         token_type: "bearer",
         role: "clinician",
         sub: "dev-clinician",
@@ -99,7 +99,7 @@ test("Sprint 12 patient diary: login, save check-in, see history", async ({ page
   await page.getByRole("button", { name: "Entrar (desarrollo — paciente)" }).click();
   await expect(page).toHaveURL(/\/diario$/);
   await expect(page.getByRole("heading", { name: "Mi diario" })).toBeVisible();
-  await expect(page.getByTitle(PATIENT)).toBeVisible();
+  await expect(page.getByRole("code")).toHaveText(PATIENT);
 
   await page.getByLabel("Dolor 0–10").fill("4");
   await page.getByLabel("Sueño 0–10").fill("6");
