@@ -8,7 +8,7 @@
 | Primary epic | MVP R1/R2 **UI closeout** — sessions, diary, analytics, intake risk flags |
 | Scope | Frontend + Vitest (+ Playwright smoke where flows already have e2e coverage) |
 | Owner | Planning Agent (backlog) → Development Agent (TDD) → QA Agent |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **In development** (UI execution started 2026-07-16) |
 
 ## Problem statement
 
@@ -70,10 +70,10 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given a saved intake with risk hits, when clinician loads intake or clicks **Ver riesgos**, then flags appear with explanation text.
-- [ ] Given no flags, when analysis returns empty, then clinician sees a clear empty state (not an error).
-- [ ] Given missing intake (`404`) or analysis failure (`503`), when request fails, then a Spanish actionable message is shown and generate remains available.
-- [ ] Given invalid patient UUID, when risk load is attempted, then UI blocks the call (reuse `isValidUuidV4`).
+- [x] Given a saved intake with risk hits, when clinician loads intake or clicks **Ver riesgos**, then flags appear with explanation text.
+- [x] Given no flags, when analysis returns empty, then clinician sees a clear empty state (not an error).
+- [x] Given missing intake (`404`) or analysis failure (`503`), when request fails, then a Spanish actionable message is shown and generate remains available.
+- [x] Given invalid patient UUID, when risk load is attempted, then UI blocks the call (reuse `isValidUuidV4`).
 
 #### Test intent
 
@@ -233,10 +233,10 @@ M (Must log) + S (Should assist) — ship together if assist is already one endp
 
 ## Definition of done (Sprint 11 release)
 
-- [ ] All four UI stories meet acceptance criteria above.
-- [ ] Vitest coverage for new builders/validators; lint clean.
-- [ ] `docs/07-user-guide.md` updated with Diario / Sesiones / Progreso / Riesgos.
-- [ ] Backlog statuses in `04-feature-specs-and-user-stories.md` updated to **Done (UI + API)** for completed parents.
+- [x] All four UI stories meet acceptance criteria above (implementation + unit tests).
+- [x] Vitest coverage for new builders/validators; lint clean.
+- [x] `docs/07-user-guide.md` updated with Diario / Sesiones / Progreso / Riesgos.
+- [x] Backlog statuses in `04-feature-specs-and-user-stories.md` updated to **Done (UI + API)** for completed parents.
 - [ ] Handoff to QA with pass/fail per story (template below).
 
 ## Handoff template (per story)
@@ -250,4 +250,13 @@ M (Must log) + S (Should assist) — ship together if assist is already one endp
 
 ## Next owner
 
-**Development Agent** — start with **US-INT-002-UI** (TDD), then **US-DIARY-UI**.
+**QA Agent** — validate Sprint 11 acceptance criteria; then Planning Agent updates final backlog status.
+
+## Dev handoff (2026-07-16)
+
+- Backlog item ID: US-INT-002-UI, US-DIARY-UI, US-ANLY-UI, US-SESS-UI
+- Scope: Dashboard panels + builders (`riskFlags`, `diaryBuilder`, `analyticsDisplay`, `sessionBuilder`) + `ragApi` client methods. No backend contract changes.
+- Acceptance criteria: implementation complete; unit tests green (36 Vitest). E2E Playwright not expanded this slice.
+- Test evidence: `cd frontend && npm run lint && npm test && npm run build`
+- Risks/issues: Dashboard density; diary is clinician-proxy only.
+- Next owner: QA Agent

@@ -74,7 +74,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** [Sprint 11 — MVP UI blockers](sprint-11.md) (R1-UI closeout). Ready-for-dev order: **US-INT-002-UI** → **US-DIARY-UI** → **US-ANLY-UI**; **US-SESS-UI** can parallelize after risk flags.
+- **Current:** [Sprint 11 — MVP UI blockers](sprint-11.md) — **development complete** (awaiting QA). Shipped: `US-INT-002-UI`, `US-DIARY-UI`, `US-ANLY-UI`, `US-SESS-UI`.
 - **Recently completed:** Pilot readiness dry-runs; `US-PRED-001` / `US-PRED-002`; [`sprint-10.md`](sprint-10.md) (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) (US-INT-005).
 - **Next planned (after Sprint 11 UI closeout):**
   - Patient-facing diary (`US-DIARY-UI-PATIENT`)

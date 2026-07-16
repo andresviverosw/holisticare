@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
+import { formatOutcomeSeries, formatPlateauPayload } from "../utils/analyticsDisplay";
+import { buildDiaryCheckin, validateDiaryForm } from "../utils/diaryBuilder";
 import {
   buildIntakePayload,
   formStateFromIntakeJson,
@@ -9,6 +11,12 @@ import {
   validateIntakeForm,
 } from "../utils/intakeBuilder";
 import { addRecentPatient, listRecentPatients } from "../utils/recentPatients";
+import { normalizeRiskFlags, riskFlagsEmptyLabel } from "../utils/riskFlags";
+import {
+  buildNoteAssistPayload,
+  buildSessionLog,
+  validateSessionForm,
+} from "../utils/sessionBuilder";
 import { isValidUuidV4, newPatientUuid } from "../utils/uuidV4";
 
 const SAMPLE_INTAKE_FORM = {
@@ -25,6 +33,33 @@ const SAMPLE_INTAKE_FORM = {
   psychosocialSummary: "",
   priorInterventions: "fisioterapia convencional",
 };
+
+function todayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function defaultDiaryForm() {
+  return {
+    checkinDate: todayIsoDate(),
+    pain: "5",
+    sleep: "5",
+    mood: "5",
+    functionScore: "5",
+    notesEs: "",
+  };
+}
+
+function defaultSessionForm() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const local = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  return {
+    sessionAt: local,
+    interventions: [{ therapyType: "fisioterapia", description: "", durationMinutes: "" }],
+    observations: "",
+    patientReportedResponse: "",
+  };
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -46,6 +81,23 @@ export default function Dashboard() {
   const [recommendationLoading, setRecommendationLoading] = useState(false);
   const [recommendationError, setRecommendationError] = useState(null);
   const [recommendationResult, setRecommendationResult] = useState(null);
+  const [riskFlags, setRiskFlags] = useState(null);
+  const [riskFlagsLoading, setRiskFlagsLoading] = useState(false);
+  const [riskFlagsError, setRiskFlagsError] = useState(null);
+  const [diaryForm, setDiaryForm] = useState(() => defaultDiaryForm());
+  const [diaryItems, setDiaryItems] = useState([]);
+  const [diaryLoading, setDiaryLoading] = useState(false);
+  const [diaryError, setDiaryError] = useState(null);
+  const [diaryNotice, setDiaryNotice] = useState(null);
+  const [outcomeRows, setOutcomeRows] = useState([]);
+  const [plateauView, setPlateauView] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(null);
+  const [sessionForm, setSessionForm] = useState(() => defaultSessionForm());
+  const [sessionItems, setSessionItems] = useState([]);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [sessionError, setSessionError] = useState(null);
+  const [sessionNotice, setSessionNotice] = useState(null);
   const memoryBankQueryRef = useRef(memoryBankQuery);
   memoryBankQueryRef.current = memoryBankQuery;
 
@@ -143,6 +195,25 @@ export default function Dashboard() {
     }
   }
 
+  async function loadRiskFlagsForPatient() {
+    setRiskFlagsError(null);
+    if (!requirePatientUuidForAction()) return;
+    setRiskFlagsLoading(true);
+    try {
+      const res = await ragApi.getIntakeRiskFlags(trimmedPatientId);
+      setRiskFlags(normalizeRiskFlags(res.data));
+    } catch (err) {
+      setRiskFlags(null);
+      setRiskFlagsError(
+        formatApiError(err, {
+          fallback: "No se pudieron cargar las banderas de riesgo. Continúe con revisión manual.",
+        }),
+      );
+    } finally {
+      setRiskFlagsLoading(false);
+    }
+  }
+
   async function handleSaveIntake() {
     setIntakeNotice(null);
     setError(null);
@@ -164,6 +235,7 @@ export default function Dashboard() {
       });
       refreshRecentPatients();
       setIntakeNotice("Intake guardado en el servidor.");
+      await loadRiskFlagsForPatient();
     } catch (err) {
       setError(
         formatApiError(err, {
@@ -191,6 +263,7 @@ export default function Dashboard() {
       });
       refreshRecentPatients();
       setIntakeNotice("Intake cargado desde el servidor.");
+      await loadRiskFlagsForPatient();
     } catch (err) {
       if (err.response?.status === 404) {
         setError("No hay intake guardado para este paciente.");
@@ -202,6 +275,154 @@ export default function Dashboard() {
         }),
       );
     }
+  }
+
+  async function handleLoadDiaryHistory() {
+    setDiaryError(null);
+    if (!requirePatientUuidForAction()) return;
+    setDiaryLoading(true);
+    try {
+      const res = await ragApi.listDiary(trimmedPatientId, { limit: 14 });
+      setDiaryItems(res.data.items || []);
+    } catch (err) {
+      setDiaryError(formatApiError(err, { fallback: "No se pudo cargar el diario." }));
+    } finally {
+      setDiaryLoading(false);
+    }
+  }
+
+  async function handleSaveDiary() {
+    setDiaryError(null);
+    setDiaryNotice(null);
+    if (!requirePatientUuidForAction()) return;
+    const validationError = validateDiaryForm(diaryForm);
+    if (validationError) {
+      setDiaryError(validationError);
+      return;
+    }
+    setDiaryLoading(true);
+    try {
+      await ragApi.saveDiary({
+        patient_id: trimmedPatientId,
+        checkin: buildDiaryCheckin(diaryForm),
+      });
+      setDiaryNotice("Check-in de diario guardado (registro practicante).");
+      await handleLoadDiaryHistory();
+    } catch (err) {
+      setDiaryError(formatApiError(err, { fallback: "No se pudo guardar el diario." }));
+    } finally {
+      setDiaryLoading(false);
+    }
+  }
+
+  async function handleLoadAnalytics() {
+    setAnalyticsError(null);
+    if (!requirePatientUuidForAction()) return;
+    setAnalyticsLoading(true);
+    try {
+      const [trendRes, plateauRes] = await Promise.all([
+        ragApi.getOutcomesTrend(trimmedPatientId),
+        ragApi.getPlateauFlags(trimmedPatientId),
+      ]);
+      setOutcomeRows(formatOutcomeSeries(trendRes.data.series));
+      setPlateauView(formatPlateauPayload(plateauRes.data));
+    } catch (err) {
+      setAnalyticsError(formatApiError(err, { fallback: "No se pudo cargar el progreso." }));
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }
+
+  async function handleLoadSessions() {
+    setSessionError(null);
+    if (!requirePatientUuidForAction()) return;
+    setSessionLoading(true);
+    try {
+      const res = await ragApi.listSessions(trimmedPatientId, { limit: 20 });
+      setSessionItems(res.data.items || []);
+    } catch (err) {
+      setSessionError(formatApiError(err, { fallback: "No se pudo cargar el historial de sesiones." }));
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  async function handleSaveSession() {
+    setSessionError(null);
+    setSessionNotice(null);
+    if (!requirePatientUuidForAction()) return;
+    const validationError = validateSessionForm(sessionForm);
+    if (validationError) {
+      setSessionError(validationError);
+      return;
+    }
+    setSessionLoading(true);
+    try {
+      await ragApi.createSession({
+        patient_id: trimmedPatientId,
+        session_log: buildSessionLog(sessionForm),
+      });
+      setSessionNotice("Sesión registrada.");
+      setSessionForm(defaultSessionForm());
+      await handleLoadSessions();
+    } catch (err) {
+      setSessionError(formatApiError(err, { fallback: "No se pudo guardar la sesión." }));
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  async function handleSuggestSessionNote() {
+    setSessionError(null);
+    setSessionNotice(null);
+    const interventions = sessionForm.interventions || [];
+    if (
+      interventions.every(
+        (item) => !String(item.therapyType || "").trim() || !String(item.description || "").trim(),
+      )
+    ) {
+      setSessionError("Agrega al menos una intervención antes de sugerir la nota.");
+      return;
+    }
+    setSessionLoading(true);
+    try {
+      const res = await ragApi.suggestSessionNote({
+        session_note_input: buildNoteAssistPayload(sessionForm),
+      });
+      setSessionForm((prev) => ({
+        ...prev,
+        observations: res.data.suggested_observations || prev.observations,
+        patientReportedResponse:
+          res.data.suggested_patient_reported_response || prev.patientReportedResponse,
+      }));
+      setSessionNotice("Sugerencia de nota aplicada — revise y edite antes de guardar.");
+    } catch (err) {
+      setSessionError(formatApiError(err, { fallback: "No se pudo sugerir la nota." }));
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  function updateDiaryField(field, value) {
+    setDiaryForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateSessionIntervention(index, field, value) {
+    setSessionForm((prev) => {
+      const interventions = [...(prev.interventions || [])];
+      interventions[index] = { ...interventions[index], [field]: value };
+      return { ...prev, interventions };
+    });
+  }
+
+  function addSessionIntervention() {
+    setSessionForm((prev) => ({
+      ...prev,
+      interventions: [
+        ...(prev.interventions || []),
+        { therapyType: "", description: "", durationMinutes: "" },
+      ],
+    }));
   }
 
   async function handleGenerate() {
@@ -354,6 +575,15 @@ export default function Dashboard() {
             >
               Guardar intake
             </button>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={loadRiskFlagsForPatient}
+              disabled={!patientIdReady || riskFlagsLoading}
+              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+            >
+              {riskFlagsLoading ? "Cargando riesgos…" : "Ver riesgos"}
+            </button>
           </div>
         </div>
 
@@ -458,6 +688,324 @@ export default function Dashboard() {
                   >
                     Usar como borrador
                   </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">
+                Registro de diario (practicante) — US-DIARY-UI
+              </p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Check-in proxy para el piloto: el practicante registra dolor, sueño, ánimo y función.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={handleLoadDiaryHistory}
+                disabled={diaryLoading || !patientIdReady}
+              >
+                {diaryLoading ? "Cargando…" : "Cargar historial"}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={handleSaveDiary}
+                disabled={diaryLoading || !patientIdReady}
+              >
+                Guardar check-in
+              </button>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div>
+              <label className="label">Fecha</label>
+              <input
+                type="date"
+                className="input"
+                value={diaryForm.checkinDate}
+                onChange={(e) => updateDiaryField("checkinDate", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Dolor 0–10</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                className="input"
+                value={diaryForm.pain}
+                onChange={(e) => updateDiaryField("pain", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Sueño 0–10</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                className="input"
+                value={diaryForm.sleep}
+                onChange={(e) => updateDiaryField("sleep", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Ánimo 0–10</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                className="input"
+                value={diaryForm.mood}
+                onChange={(e) => updateDiaryField("mood", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Función 0–10</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                className="input"
+                value={diaryForm.functionScore}
+                onChange={(e) => updateDiaryField("functionScore", e.target.value)}
+              />
+            </div>
+            <div className="md:col-span-3">
+              <label className="label">Notas (opcional, ES)</label>
+              <input
+                type="text"
+                className="input"
+                value={diaryForm.notesEs}
+                onChange={(e) => updateDiaryField("notesEs", e.target.value)}
+                maxLength={1500}
+              />
+            </div>
+          </div>
+          {diaryNotice && (
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
+              {diaryNotice}
+            </div>
+          )}
+          {diaryError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {diaryError}
+            </div>
+          )}
+          {diaryItems.length > 0 && (
+            <ul className="text-xs text-neutral-700 space-y-1 max-h-40 overflow-y-auto">
+              {diaryItems.map((item) => (
+                <li key={item.entry_id} className="border-b border-neutral-100 py-1">
+                  <span className="font-medium">{item.entry_date}</span>
+                  {": "}
+                  dolor {item.checkin?.pain_nrs_0_10 ?? "—"} · sueño {item.checkin?.sleep_quality_0_10 ?? "—"} ·
+                  ánimo {item.checkin?.mood_0_10 ?? "—"} · función {item.checkin?.function_0_10 ?? "—"}
+                  {item.checkin?.notes_es ? ` — ${item.checkin.notes_es}` : ""}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">Progreso (US-ANLY-UI)</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Tendencias del diario y banderas de meseta/empeoramiento (ventana por defecto del API).
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
+              onClick={handleLoadAnalytics}
+              disabled={analyticsLoading || !patientIdReady}
+            >
+              {analyticsLoading ? "Cargando…" : "Cargar progreso"}
+            </button>
+          </div>
+          {analyticsError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {analyticsError}
+            </div>
+          )}
+          {outcomeRows.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs text-left text-neutral-700">
+                <thead>
+                  <tr className="border-b border-neutral-200 text-neutral-500">
+                    <th className="py-1 pr-3 font-medium">Fecha</th>
+                    <th className="py-1 pr-3 font-medium">Dolor</th>
+                    <th className="py-1 pr-3 font-medium">Sueño</th>
+                    <th className="py-1 pr-3 font-medium">Ánimo</th>
+                    <th className="py-1 font-medium">Función</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outcomeRows.map((row) => (
+                    <tr key={row.date} className="border-b border-neutral-100">
+                      <td className="py-1 pr-3">{row.date}</td>
+                      <td className="py-1 pr-3">{row.pain ?? "—"}</td>
+                      <td className="py-1 pr-3">{row.sleep ?? "—"}</td>
+                      <td className="py-1 pr-3">{row.mood ?? "—"}</td>
+                      <td className="py-1">{row.functionScore ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {plateauView && (
+            <div className="rounded-lg border border-neutral-200 bg-white p-3 text-sm text-neutral-700 space-y-1">
+              <p>
+                <span className="font-medium">Estado:</span> {plateauView.statusLabel}
+              </p>
+              {plateauView.flags.length === 0 ? (
+                <p className="text-xs text-neutral-500">
+                  {plateauView.analysisStatus === "insufficient_data"
+                    ? "Datos insuficientes para alertas (mínimo de registros del diario)."
+                    : "Sin banderas de meseta o empeoramiento en la ventana."}
+                </p>
+              ) : (
+                <ul className="list-disc pl-5 space-y-1 text-xs">
+                  {plateauView.flags.map((flag) => (
+                    <li key={flag.code}>
+                      <span className="font-medium">{flag.message}</span>
+                      {flag.detail ? ` — ${flag.detail}` : ""}
+                      {flag.severity ? ` (${flag.severity})` : ""}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">Sesión clínica (US-SESS-UI)</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Registro estructurado de intervenciones y observaciones; sugerencia de nota opcional.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={handleLoadSessions}
+                disabled={sessionLoading || !patientIdReady}
+              >
+                Historial
+              </button>
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={handleSuggestSessionNote}
+                disabled={sessionLoading || !patientIdReady}
+              >
+                Sugerir nota
+              </button>
+              <button
+                type="button"
+                className="btn-secondary text-sm px-3 py-2"
+                onClick={handleSaveSession}
+                disabled={sessionLoading || !patientIdReady}
+              >
+                Guardar sesión
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="label">Fecha y hora</label>
+            <input
+              type="datetime-local"
+              className="input"
+              value={sessionForm.sessionAt}
+              onChange={(e) => setSessionForm((prev) => ({ ...prev, sessionAt: e.target.value }))}
+            />
+          </div>
+          {(sessionForm.interventions || []).map((item, index) => (
+            <div key={`iv-${index}`} className="grid gap-2 md:grid-cols-3">
+              <div>
+                <label className="label">Tipo de terapia</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={item.therapyType}
+                  onChange={(e) => updateSessionIntervention(index, "therapyType", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label">Descripción</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={item.description}
+                  onChange={(e) => updateSessionIntervention(index, "description", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label">Duración (min)</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="input"
+                  value={item.durationMinutes}
+                  onChange={(e) => updateSessionIntervention(index, "durationMinutes", e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
+          <button type="button" className="text-xs text-teal-700 underline" onClick={addSessionIntervention}>
+            + Añadir intervención
+          </button>
+          <div>
+            <label className="label">Observaciones *</label>
+            <textarea
+              rows={3}
+              className="input"
+              value={sessionForm.observations}
+              onChange={(e) => setSessionForm((prev) => ({ ...prev, observations: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="label">Respuesta reportada por el paciente</label>
+            <textarea
+              rows={2}
+              className="input"
+              value={sessionForm.patientReportedResponse}
+              onChange={(e) =>
+                setSessionForm((prev) => ({ ...prev, patientReportedResponse: e.target.value }))
+              }
+            />
+          </div>
+          {sessionNotice && (
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
+              {sessionNotice}
+            </div>
+          )}
+          {sessionError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+              {sessionError}
+            </div>
+          )}
+          {sessionItems.length > 0 && (
+            <ul className="text-xs text-neutral-700 space-y-1 max-h-40 overflow-y-auto">
+              {sessionItems.map((item) => (
+                <li key={item.session_id} className="border-b border-neutral-100 py-1">
+                  <span className="font-medium">{item.occurred_at}</span>
+                  {" — "}
+                  {(item.session_log?.interventions || [])
+                    .map((iv) => iv.therapy_type)
+                    .filter(Boolean)
+                    .join(", ") || "sin intervenciones"}
                 </li>
               ))}
             </ul>
@@ -583,6 +1131,43 @@ export default function Dashboard() {
 
         <div className="space-y-4">
           <h2 className="text-sm font-semibold text-neutral-700">Intake clínico (formulario)</h2>
+
+          <section
+            className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 space-y-2"
+            aria-labelledby="risk-flags-heading"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p id="risk-flags-heading" className="text-sm font-semibold text-neutral-800">
+                Banderas de riesgo (US-INT-002)
+              </p>
+              {riskFlagsLoading && <span className="text-xs text-neutral-500">Analizando…</span>}
+            </div>
+            {riskFlagsError && (
+              <div className="rounded bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+                {riskFlagsError}
+              </div>
+            )}
+            {riskFlags && riskFlags.length === 0 && !riskFlagsError && (
+              <p className="text-xs text-neutral-600">{riskFlagsEmptyLabel()}</p>
+            )}
+            {riskFlags && riskFlags.length > 0 && (
+              <ul className="list-disc pl-5 space-y-1 text-xs text-neutral-800">
+                {riskFlags.map((flag) => (
+                  <li key={`${flag.code}-${flag.message}`}>
+                    {flag.severity ? (
+                      <span className="font-medium uppercase tracking-wide mr-1">{flag.severity}</span>
+                    ) : null}
+                    {flag.message}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!riskFlags && !riskFlagsError && !riskFlagsLoading && (
+              <p className="text-xs text-neutral-500">
+                Guarde o cargue el intake, o pulse «Ver riesgos», para analizar contraindicaciones.
+              </p>
+            )}
+          </section>
 
           <div>
             <label className="label">Motivo principal de consulta *</label>

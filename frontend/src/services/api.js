@@ -47,6 +47,9 @@ export const ragApi = {
   /** Load persisted intake for a patient */
   getIntake: (patientId) => api.get(`/rag/intake/${patientId}`),
 
+  /** US-INT-002 — intake risk flags for a saved profile */
+  getIntakeRiskFlags: (patientId) => api.get(`/rag/intake/${patientId}/risk-flags`),
+
   /** Generate a treatment plan */
   generatePlan: (payload) => api.post("/rag/plan/generate", payload),
 
@@ -71,6 +74,31 @@ export const ragApi = {
     api.get(`/rag/plan/${planId}/pdf`, {
       responseType: "blob",
     }),
+
+  /** US-DIARY-UI — clinician-proxy diary upsert */
+  saveDiary: (payload) => api.post("/rag/diary", payload),
+
+  /** List diary entries for a patient */
+  listDiary: (patientId, params = {}) =>
+    api.get(`/rag/diary/patient/${patientId}`, { params }),
+
+  /** US-ANLY-UI — outcome trend series */
+  getOutcomesTrend: (patientId, params = {}) =>
+    api.get(`/rag/analytics/patient/${patientId}/outcomes-trend`, { params }),
+
+  /** Plateau / worsening flags */
+  getPlateauFlags: (patientId, params = {}) =>
+    api.get(`/rag/analytics/patient/${patientId}/plateau-flags`, { params }),
+
+  /** US-SESS-UI — create structured session log */
+  createSession: (payload) => api.post("/rag/sessions", payload),
+
+  /** List sessions for a patient */
+  listSessions: (patientId, params = {}) =>
+    api.get(`/rag/sessions/patient/${patientId}`, { params }),
+
+  /** AI / heuristic session note suggestion */
+  suggestSessionNote: (payload) => api.post("/rag/sessions/suggest-note", payload),
 
   /** US-PRED-001 — estimate short-term recovery trajectory from diary */
   getRecoveryTrajectory: (patientId, params = {}) =>
