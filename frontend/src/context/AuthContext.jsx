@@ -46,6 +46,17 @@ export function AuthProvider({ children }) {
     return res.data;
   }, []);
 
+  /** US-DIARY-AUTH-PROD — redeem single-use invite → patient JWT. */
+  const redeemInvite = useCallback(async (inviteToken) => {
+    const token = String(inviteToken || "").trim();
+    if (!token) {
+      throw new Error("Pegue o abra un enlace de invitación válido.");
+    }
+    const res = await authApi.redeemInvite({ token });
+    setToken(res.data.access_token);
+    return res.data;
+  }, []);
+
   const claims = useMemo(() => decodeJwtPayload(token), [token]);
   const role = claims.role || null;
   const sub = claims.sub || null;
@@ -60,9 +71,20 @@ export function AuthProvider({ children }) {
       loginWithToken,
       loginDevClinician,
       loginDevPatient,
+      redeemInvite,
       logout,
     }),
-    [token, role, sub, isAuthenticated, loginWithToken, loginDevClinician, loginDevPatient, logout],
+    [
+      token,
+      role,
+      sub,
+      isAuthenticated,
+      loginWithToken,
+      loginDevClinician,
+      loginDevPatient,
+      redeemInvite,
+      logout,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

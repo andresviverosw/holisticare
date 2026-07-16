@@ -14,6 +14,21 @@
 - **Alternatives Considered:** [Alternatives]
 - **Consequences:** [Consequences]
 
+## Sprint 13 — Patient auth via invite-link (not OTP/IdP)
+- **Date:** 2026-07-16
+- **Author:** Planning Agent
+- **Context:** After Sprint 12, `/diario` exists but patient login still depends on `ALLOW_DEV_AUTH` or UUID-as-password.
+- **Decision:** Sprint 13 ships single-use opaque invite tokens (clinician creates, patient redeems → JWT with `exp`). No email/SMS provider, no clinic IdP, no OTP in this slice. Clinician copies link out-of-band.
+- **Alternatives Considered:**
+  - OTP email/SMS first (provider + PII/consent surface)
+  - Clinic OIDC first (integration-heavy)
+  - Prod compose only (turns off login without replacement)
+  - R4 mobile first (leaves patient auth gap)
+- **Consequences:**
+  - Unblocks real patient diary with `ALLOW_DEV_AUTH=false`
+  - Clinician prod login and compose overlay remain follow-ons
+  - Invite leak risk mitigated by TTL + single-use + hash-at-rest
+
 ## Sprint 12 — Patient diary uses UUID-bound JWT (dev), not production IdP
 - **Date:** 2026-07-16
 - **Author:** Planning Agent

@@ -117,6 +117,7 @@ These items motivated work; they are **not** the current state of pinned version
    - Set `ALLOW_DEV_AUTH=false` (or omit; default in `Settings` is false).
    - Confirm `POST /auth/dev-login` returns **404** (route absent), not a token.
    - Never set `ALLOW_DEV_AUTH=true` on staging/production hosts.
+   - Patient diary production path: use invite redeem (`POST /auth/redeem-invite`, always mounted) — **US-DIARY-AUTH-PROD**; do not treat patient UUID as a password.
 
 - [x] TODO-SEC-008 Add security checks to CI
 - Add job for:
