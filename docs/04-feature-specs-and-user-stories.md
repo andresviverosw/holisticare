@@ -70,7 +70,7 @@ Translate requirements into implementable product specifications, user stories, 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
-| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Backend done; **UI Ready (Sprint 11 — US-INT-002-UI)** |
+| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | **Done (UI + API, Sprint 11)** |
 | US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice); UI deferred |
 | US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
 | US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Done (Sprint 9) |
@@ -82,12 +82,12 @@ Translate requirements into implementable product specifications, user stories, 
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-RAG-003 | Knowledge base (RAG) | Clinician | to include nutrition evidence in the corpus and retrieve profile-aware dietary guidance | generated plans include what to eat and what to avoid based on patient profile and contraindications | Must | M | Done (backend + ops + UI review) |
 | US-RAG-004 | Knowledge base (RAG) | Clinician | to manage nutrition safety synonym dictionaries via configuration | safety matching can be updated quickly without code changes and remains clinically aligned | Should | M | Done (Sprint 8) |
-| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Backend done; **UI Ready (Sprint 11 — US-SESS-UI)** |
-| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Backend done; **UI Ready (Sprint 11 — US-SESS-UI)** |
-| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Backend done; **UI Ready (Sprint 11 — US-DIARY-UI, clinician proxy)** |
-| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Backend done; **UI Ready (Sprint 11 — US-DIARY-UI)** |
-| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Backend done; **UI Ready (Sprint 11 — US-ANLY-UI)** |
-| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Backend done; **UI Ready (Sprint 11 — US-ANLY-UI)** |
+| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | **Done (UI + API, Sprint 11)** |
+| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | **Done (UI + API, Sprint 11)** |
+| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | **Done (clinician-proxy UI + API, Sprint 11)** |
+| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | **Done (clinician-proxy UI + API, Sprint 11)** |
+| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | **Done (UI + API, Sprint 11)** |
+| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | **Done (UI + API, Sprint 11)** |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Done (backend + dashboard + E2E) |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Done (backend + dashboard + E2E) |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
@@ -521,7 +521,7 @@ Test intent:
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- **R1-UI (Sprint 11 — in progress):** close the continuity **UI gap** for Must stories that are backend-only today — risk flags (**US-INT-002-UI**), clinician-proxy diary (**US-DIARY-UI**), trends/plateaus (**US-ANLY-UI**), session logging + note assist (**US-SESS-UI**). Specs: [`sprint-11.md`](sprint-11.md).
+- **R1-UI (Sprint 11 — implemented):** close the continuity **UI gap** for Must stories that were backend-only — risk flags (**US-INT-002-UI**), clinician-proxy diary (**US-DIARY-UI**), trends/plateaus (**US-ANLY-UI**), session logging + note assist (**US-SESS-UI**). Specs: [`sprint-11.md`](sprint-11.md).
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.

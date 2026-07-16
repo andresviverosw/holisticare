@@ -6,7 +6,7 @@ This guide is for clinicians using the current web app MVP.
 
 Current UI modules:
 - Login (`/login`)
-- Dashboard: AI plan generation (`/dashboard`)
+- Dashboard: AI plan generation (`/dashboard`) — also risk flags, clinician-proxy diary, progress/plateaus, session logging
 - Plan review and approval (`/plan/:planId`)
 - Plan sources (`/plan/:planId/sources`)
 - Knowledge base browser (`/chunks`)
@@ -67,6 +67,15 @@ Behavior:
 After a plan is **approved**, you can **Guardar en biblioteca** on the plan review screen (title + optional tags). That stores a **de-identified** copy for your team.
 
 On the **Dashboard**, **Biblioteca de plantillas** lists saved templates; use **Usar como borrador** to create a **new** `pending_review` plan for the **current patient ID** (you must review and approve again).
+
+## Continuity panels (Sprint 11)
+
+On the **Dashboard**, with a valid patient UUID:
+
+1. **Banderas de riesgo** — after **Guardar** / **Cargar intake** or **Ver riesgos**.
+2. **Registro de diario (practicante)** — enter daily scores (proxy for patient self-report in the pilot).
+3. **Progreso** — load outcome trends and plateau/worsening flags.
+4. **Sesión clínica** — log interventions, optional **Sugerir nota**, then **Guardar sesión**.
 
 ## View source evidence
 

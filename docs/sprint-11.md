@@ -8,7 +8,7 @@
 | Primary epic | MVP R1/R2 **UI closeout** — sessions, diary, analytics, intake risk flags |
 | Scope | Frontend + Vitest (+ Playwright smoke where flows already have e2e coverage) |
 | Owner | Planning Agent (backlog) → Development Agent (TDD) → QA Agent |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **QA PASS** (2026-07-16) — see `qa-sprint-11-report.md` |
 
 ## Problem statement
 
@@ -70,10 +70,10 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given a saved intake with risk hits, when clinician loads intake or clicks **Ver riesgos**, then flags appear with explanation text.
-- [ ] Given no flags, when analysis returns empty, then clinician sees a clear empty state (not an error).
-- [ ] Given missing intake (`404`) or analysis failure (`503`), when request fails, then a Spanish actionable message is shown and generate remains available.
-- [ ] Given invalid patient UUID, when risk load is attempted, then UI blocks the call (reuse `isValidUuidV4`).
+- [x] Given a saved intake with risk hits, when clinician loads intake or clicks **Ver riesgos**, then flags appear with explanation text.
+- [x] Given no flags, when analysis returns empty, then clinician sees a clear empty state (not an error).
+- [x] Given missing intake (`404`) or analysis failure (`503`), when request fails, then a Spanish actionable message is shown and generate remains available.
+- [x] Given invalid patient UUID, when risk load is attempted, then UI blocks the call (reuse `isValidUuidV4`).
 
 #### Test intent
 
@@ -107,11 +107,11 @@ S
 
 #### Acceptance criteria
 
-- [ ] Given valid scores and date, when clinician saves, then entry persists and appears in the history list (upsert replaces same calendar day).
-- [ ] Given out-of-range scores or empty required fields, when submit is attempted, then UI blocks with field-level Spanish errors (no API call).
-- [ ] Given optional `notes_es`, when provided, then it is trimmed and shown in history; blank → omitted/`null`.
-- [ ] Given API `401`/`403`/`422`, when save fails, then `formatApiError` surfaces an actionable message.
-- [ ] Given no `patient_id` / invalid UUID, when save or list is attempted, then UI blocks like other Dashboard actions.
+- [x] Given valid scores and date, when clinician saves, then entry persists and appears in the history list (upsert replaces same calendar day).
+- [x] Given out-of-range scores or empty required fields, when submit is attempted, then UI blocks with field-level Spanish errors (no API call).
+- [x] Given optional `notes_es`, when provided, then it is trimmed and shown in history; blank → omitted/`null`.
+- [x] Given API `401`/`403`/`422`, when save fails, then `formatApiError` surfaces an actionable message.
+- [x] Given no `patient_id` / invalid UUID, when save or list is attempted, then UI blocks like other Dashboard actions.
 
 #### Explicitly out of scope
 
@@ -151,10 +151,10 @@ M
 
 #### Acceptance criteria
 
-- [ ] Given diary rows in range, when clinician opens progreso, then pain/sleep/mood/function points are shown in chronological order.
-- [ ] Given plateau API returns flags, when panel loads, then each flag shows Spanish rationale (`message` / `detail`).
-- [ ] Given `analysis_status = insufficient_data`, when panel loads, then clinician sees “datos insuficientes” (no false alarms).
-- [ ] Given API error, when load fails, then actionable error; other Dashboard sections remain usable.
+- [x] Given diary rows in range, when clinician opens progreso, then pain/sleep/mood/function points are shown in chronological order.
+- [x] Given plateau API returns flags, when panel loads, then each flag shows Spanish rationale (`message` / `detail`).
+- [x] Given `analysis_status = insufficient_data`, when panel loads, then clinician sees “datos insuficientes” (no false alarms).
+- [x] Given API error, when load fails, then actionable error; other Dashboard sections remain usable.
 
 #### Test intent
 
@@ -188,11 +188,11 @@ M
 
 #### Acceptance criteria
 
-- [ ] Given at least one intervention and non-empty observations, when clinician saves, then session appears in reverse-chronological history.
-- [ ] Given empty interventions or empty observations, when submit is attempted, then UI validation blocks (`clinical_session_v0` rules).
-- [ ] Given interventions entered, when **Sugerir nota** succeeds, then suggested text is applied to a draft field the clinician can edit before save.
-- [ ] Given suggest-note `422`/`401`/`5xx`, when assist fails, then clear error; form remains editable.
-- [ ] Unauthenticated behavior is already API-enforced; UI relies on existing `RequireClinician`.
+- [x] Given at least one intervention and non-empty observations, when clinician saves, then session appears in reverse-chronological history.
+- [x] Given empty interventions or empty observations, when submit is attempted, then UI validation blocks (`clinical_session_v0` rules).
+- [x] Given interventions entered, when **Sugerir nota** succeeds, then suggested text is applied to a draft field the clinician can edit before save.
+- [x] Given suggest-note `422`/`401`/`5xx`, when assist fails, then clear error; form remains editable.
+- [x] Unauthenticated behavior is already API-enforced; UI relies on existing `RequireClinician`.
 
 #### Test intent
 
@@ -233,21 +233,28 @@ M (Must log) + S (Should assist) — ship together if assist is already one endp
 
 ## Definition of done (Sprint 11 release)
 
-- [ ] All four UI stories meet acceptance criteria above.
-- [ ] Vitest coverage for new builders/validators; lint clean.
-- [ ] `docs/07-user-guide.md` updated with Diario / Sesiones / Progreso / Riesgos.
-- [ ] Backlog statuses in `04-feature-specs-and-user-stories.md` updated to **Done (UI + API)** for completed parents.
-- [ ] Handoff to QA with pass/fail per story (template below).
+- [x] All four UI stories meet acceptance criteria above (implementation + unit tests).
+- [x] Vitest coverage for new builders/validators; lint clean.
+- [x] `docs/07-user-guide.md` updated with Diario / Sesiones / Progreso / Riesgos.
+- [x] Backlog statuses in `04-feature-specs-and-user-stories.md` updated to **Done (UI + API)** for completed parents.
+- [x] Handoff to QA with pass/fail per story (template below).
+
+## QA Agent result (2026-07-16)
+
+- Report: [`qa-sprint-11-report.md`](qa-sprint-11-report.md)
+- Verdict: **PASS** (no blockers)
+- Regression added: `frontend/e2e/sprint11-continuity.spec.js` (3 tests); unit suite **38** passing; full Playwright **7** passing
+- Remediation: session/patient label `htmlFor` associations
 
 ## Handoff template (per story)
 
-- Backlog item ID:
-- Scope:
-- Acceptance criteria: (pass/fail per bullet)
-- Test evidence: (commands + results)
-- Risks/issues:
-- Next owner: QA Agent → Planning Agent (status update)
+- Backlog item ID: US-INT-002-UI / US-DIARY-UI / US-ANLY-UI / US-SESS-UI
+- Scope: Dashboard continuity panels + builders + e2e smoke
+- Acceptance criteria: **PASS** (see QA report table)
+- Test evidence: `npm run lint && npm test && npm run test:e2e` (frontend); `pytest -q` (backend 161)
+- Risks/issues: Dashboard density; clinician-proxy diary only; no live-backend continuity e2e
+- Next owner: **Planning Agent**
 
 ## Next owner
 
-**Development Agent** — start with **US-INT-002-UI** (TDD), then **US-DIARY-UI**.
+**Planning Agent** — close R1-UI on backlog; sequence pilot GO/NO-GO and deferred stories.
