@@ -8,7 +8,7 @@
 | Primary epic | MVP R1/R2 **UI closeout** — sessions, diary, analytics, intake risk flags |
 | Scope | Frontend + Vitest (+ Playwright smoke where flows already have e2e coverage) |
 | Owner | Planning Agent (backlog) → Development Agent (TDD) → QA Agent |
-| Status | **In development** (UI execution started 2026-07-16) |
+| Status | **QA PASS** (2026-07-16) — see `qa-sprint-11-report.md` |
 
 ## Problem statement
 
