@@ -62,19 +62,28 @@ class Settings(BaseSettings):
     # US-AUTH-CLINICIAN-PROD — clinician password JWT TTL
     clinician_jwt_ttl_hours: int = 8
 
+    # US-OPS-PROD-COMPOSE — TLS to managed Postgres (Neon etc.)
+    postgres_ssl_require: bool = False
+
     @property
     def database_url(self) -> str:
-        return (
+        base = (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+        if self.postgres_ssl_require:
+            return f"{base}?ssl=require"
+        return base
 
     @property
     def database_url_sync(self) -> str:
-        return (
+        base = (
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+        if self.postgres_ssl_require:
+            return f"{base}?sslmode=require"
+        return base
 
     @property
     def cors_origins_list(self) -> list[str]:

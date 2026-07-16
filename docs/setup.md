@@ -83,6 +83,15 @@ python -m scripts.seed_clinician
 
 Patients continue to use invite redeem (`US-DIARY-AUTH-PROD`), not password accounts.
 
+### 3.1c) Production Compose overlay (`US-OPS-PROD-COMPOSE`)
+
+Do **not** run the root `docker-compose.yml` (dev bind-mount/`--reload`) as production.
+
+Use:
+- `docker-compose.prod.yml` + `Caddyfile` + `.env.prod` (from `.env.prod.example`)
+- Details and smoke checklist: `docs/06-deployment-and-ops-runbook.md` (production Compose section)
+- Image publish: `.github/workflows/build-backend.yml` (push to `main` affecting `backend/`)
+
 ### 3.2) Backend Docker image vs `requirements.txt`
 
 Application code is bind-mounted from `./backend`, but **Python packages inside the image** come from the last **`docker compose build`**. After you change **`backend/requirements.txt`**, rebuild so the container matches (for example before exercising RAG or LLM imports):

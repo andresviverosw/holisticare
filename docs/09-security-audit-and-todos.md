@@ -119,6 +119,7 @@ These items motivated work; they are **not** the current state of pinned version
    - Never set `ALLOW_DEV_AUTH=true` on staging/production hosts.
    - Patient diary production path: use invite redeem (`POST /auth/redeem-invite`, always mounted) — **US-DIARY-AUTH-PROD**; do not treat patient UUID as a password.
    - Clinician production path: username/password via `POST /auth/login` + `seed_clinician.py` (**US-AUTH-CLINICIAN-PROD**); store bcrypt hashes only.
+   - Production process layout: `docker-compose.prod.yml` + Caddy (**US-OPS-PROD-COMPOSE**); never enable `ALLOW_DEV_AUTH` there.
 
 - [x] TODO-SEC-008 Add security checks to CI
 - Add job for:

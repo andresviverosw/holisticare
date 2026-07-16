@@ -15,7 +15,12 @@ htmlcov/
 
 # Environment
 .env
+.env.prod
 *.env.local
+# Keep committed templates:
+!.env.example
+!.env.prod.example
+!.env.clinician.example
 
 # Node
 node_modules/
