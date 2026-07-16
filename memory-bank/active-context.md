@@ -2,16 +2,16 @@
 
 ## Ongoing Tasks
 
-- Sprint 11 QA **PASS** — see `docs/qa-sprint-11-report.md`.
-- Next: Planning Agent closes R1-UI; then pilot GO/NO-GO and/or `US-DIARY-UI-PATIENT`.
+- Pilot GO/NO-GO: detailed plan published at `docs/pilot-go-no-go-plan.md`.
+- Next human work: Steps 0–2 on Windows+Docker; Step 3 with clinician; Step 4 pack share/ack.
 
 ## Known Issues
 
-- Dashboard density (non-blocking; monitor pilot).
-- Diary remains clinician-proxy until `US-DIARY-UI-PATIENT`.
-- Pilot GO/NO-GO still needs final clinician sign-off.
+- Historical 2026-04-21 evidence is stale relative to Sprint 11 merge — re-run Steps 1–2 on current `main`.
+- Final clinician UX sign-off still open.
+- Cloud/iOS agent cannot execute Docker-based Steps 1–2.
 
 ## Next Steps
 
-- Merge Sprint 11 PR after Planning review.
-- Run pilot rehearsal with continuity panels exercised.
+- Andres: freeze SHA/tag (Step 0), re-run health + rehearsal ×2, schedule clinician walkthrough.
+- Planning: update `pilot-go-no-go.md` decision log when evidence lands.

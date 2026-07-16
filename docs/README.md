@@ -10,6 +10,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Clinician quick trial on Windows | `quickstart-clinician.md` |
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
 | Pilot go/no-go decision gate | `pilot-go-no-go.md` |
+| Pilot go/no-go **execution plan** (steps 0–4) | `pilot-go-no-go-plan.md` |
 | Pilot rehearsal run history template | `pilot-rehearsal-log.md` |
 | Clinician pilot feedback template | `pilot-clinician-feedback-form.md` |
 | Mobile app planning draft | `mobile-strategy-v0.md` |
@@ -55,6 +56,7 @@ This directory contains the six core documentation phases for the AI4devs master
 - `../holisticare_deployment_quickstart.md` - step-by-step hybrid deployment quickstart (Hetzner + Neon + Cloudflare)
 - `pilot-rehearsal-checklist.md` - synthetic pilot runbook and pass/fail gate before clinician handoff
 - `pilot-go-no-go.md` - explicit pre-pilot release criteria and no-go triggers
+- `pilot-go-no-go-plan.md` - detailed execution plan for GO criteria (startup, rehearsal, UX, ops)
 - `pilot-rehearsal-log.md` - reusable run log template with example entry
 - `pilot-clinician-feedback-form.md` - structured clinician questionnaire for pilot sessions
 - `mobile-strategy-v0.md` - phased mobile strategy, options, and starter US-MOB backlog
@@ -75,7 +77,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** [Sprint 11](sprint-11.md) — **QA PASS** ([report](qa-sprint-11-report.md)). Ready for Planning closeout / merge of PR #6.
+- **Current:** Pilot GO/NO-GO execution — follow [`pilot-go-no-go-plan.md`](pilot-go-no-go-plan.md). Sprint 11 R1-UI is merged; Steps 1–2 must be re-run on current `main`.
 - **Recently completed:** Pilot readiness dry-runs; `US-PRED-001` / `US-PRED-002`; [`sprint-10.md`](sprint-10.md) (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) (US-INT-005).
 - **Next planned (after Sprint 11 UI closeout):**
   - Patient-facing diary (`US-DIARY-UI-PATIENT`)

@@ -2,6 +2,8 @@
 
 Use this checklist 24-48 hours before clinician handoff to decide if the pilot can proceed.
 
+**Detailed execution plan (owners, environments, evidence):** [`pilot-go-no-go-plan.md`](pilot-go-no-go-plan.md)
+
 ## Scope
 
 - Environment: clinician local install with Docker Desktop.
