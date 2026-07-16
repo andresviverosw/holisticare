@@ -24,10 +24,11 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-13.md` |
+| Sprint notes | `sprint-01.md` … `sprint-14.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Sprint 13 QA report | `qa-sprint-13-report.md` |
+| Sprint 14 QA report | `qa-sprint-14-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -77,13 +78,13 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** Sprint 13 — US-DIARY-AUTH-PROD — **complete / QA PASS** ([`sprint-13.md`](sprint-13.md), [`qa-sprint-13-report.md`](qa-sprint-13-report.md)).
-- **Recently completed:** Sprint 12 patient `/diario` ([`sprint-12.md`](sprint-12.md)); Sprint 11 R1-UI ([`sprint-11.md`](sprint-11.md)).
+- **Current:** Sprint 14 — US-AUTH-CLINICIAN-PROD — **complete / QA PASS** ([`sprint-14.md`](sprint-14.md), [`qa-sprint-14-report.md`](qa-sprint-14-report.md)).
+- **Recently completed:** Sprint 13 invite auth ([`sprint-13.md`](sprint-13.md)); Sprint 12 `/diario`.
 - **Next planned:**
-  - Clinician production auth (`US-AUTH-CLINICIAN-PROD`)
-  - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth) — `US-OPS-PROD-COMPOSE`
-  - Pilot GO/NO-GO execution on Windows (optional)
-  - JWT harden / reminders / R4 mobile (`US-MOB-001..003`)
+  - Production overlay for Compose (`US-OPS-PROD-COMPOSE`)
+  - JWT harden / password reset / IdP
+  - Pilot GO/NO-GO (optional)
+  - R4 mobile (`US-MOB-001..003`)
 
 ### Sprint history (reference)
 
@@ -100,6 +101,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-11.md` - Sprint 11 (R1-UI continuity panels) — **complete / QA PASS**
 - `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
 - `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
+- `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
 
 ## Suggested cadence
 

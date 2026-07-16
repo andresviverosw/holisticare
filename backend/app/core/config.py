@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     patient_jwt_ttl_hours: int = 720
     public_app_base_url: str = "http://localhost:5173"
 
+    # US-AUTH-CLINICIAN-PROD — clinician password JWT TTL
+    clinician_jwt_ttl_hours: int = 8
+
     @property
     def database_url(self) -> str:
         return (

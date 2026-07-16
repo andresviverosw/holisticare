@@ -35,6 +35,18 @@ export function AuthProvider({ children }) {
     return res.data;
   }, []);
 
+  /** US-AUTH-CLINICIAN-PROD — username/password → clinician/admin JWT. */
+  const loginWithPassword = useCallback(async (username, password) => {
+    const user = String(username || "").trim();
+    const pass = String(password || "");
+    if (!user || !pass) {
+      throw new Error("Indique usuario y contraseña.");
+    }
+    const res = await authApi.login({ username: user, password: pass });
+    setToken(res.data.access_token);
+    return res.data;
+  }, []);
+
   /** US-DIARY-UI-PATIENT — patient JWT with UUID v4 `sub`. */
   const loginDevPatient = useCallback(async (patientUuid) => {
     const sub = String(patientUuid || "").trim();
@@ -69,6 +81,7 @@ export function AuthProvider({ children }) {
       sub,
       isAuthenticated,
       loginWithToken,
+      loginWithPassword,
       loginDevClinician,
       loginDevPatient,
       redeemInvite,
@@ -80,6 +93,7 @@ export function AuthProvider({ children }) {
       sub,
       isAuthenticated,
       loginWithToken,
+      loginWithPassword,
       loginDevClinician,
       loginDevPatient,
       redeemInvite,

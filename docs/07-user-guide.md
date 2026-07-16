@@ -24,12 +24,25 @@ You need:
 
 1. Open `http://localhost:5173/login`.
 2. Choose one:
-   - **Invitación al diario (paciente)**: open the clinician-shared link (`/login?invite=…`) or paste the invite token and click **`Entrar con invitación`**. Works with `ALLOW_DEV_AUTH=false`.
+   - **Personal clínico (producción/staging):** enter **Usuario** / **Contraseña** and click **`Entrar`**. Requires a seeded account (`seed_clinician.py`). Works with `ALLOW_DEV_AUTH=false`.
+   - **Invitación al diario (paciente)**: open the clinician-shared link (`/login?invite=…`) or paste the invite token and click **`Entrar con invitación`**.
    - **Dev login (clínico)**: click `Entrar (desarrollo — clínico)` (works only when backend allows dev auth).
    - **Dev login (paciente)**: paste the patient’s UUID v4, then click `Entrar (desarrollo — paciente)`. Opens `/diario` (dev/pilot only).
-   - **Manual token**: paste a JWT in `Pegar token JWT (Bearer)` and submit (patient tokens need `role: patient` and UUID `sub`).
+   - **Manual token**: paste a JWT in `Pegar token JWT (Bearer)` and submit.
 
-If login fails, an actionable message is shown (e.g. auth disabled, invalid/expired invite).
+If login fails, an actionable message is shown (e.g. wrong password, invalid/expired invite).
+
+### Seed a clinician account (ops)
+
+```bash
+# With backend env / compose network available:
+SEED_CLINICIAN_USERNAME=clinician \
+SEED_CLINICIAN_PASSWORD='use-a-strong-password' \
+SEED_CLINICIAN_ROLE=clinician \
+python -m scripts.seed_clinician
+```
+
+Idempotent: re-running updates the password/role for the same username. Never commit real passwords. Apply `app_users` DDL from `infra/init.sql` on existing databases first.
 
 ### Invite patient to diary (clinician) — US-DIARY-AUTH-PROD
 

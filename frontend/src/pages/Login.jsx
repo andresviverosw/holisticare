@@ -7,14 +7,24 @@ import { inviteTokenFromSearch } from "../utils/inviteUrl";
 import { isValidUuidV4 } from "../utils/uuidV4";
 
 export default function Login() {
-  const { isAuthenticated, role, loginDevClinician, loginDevPatient, loginWithToken, redeemInvite } =
-    useAuth();
+  const {
+    isAuthenticated,
+    role,
+    loginWithPassword,
+    loginDevClinician,
+    loginDevPatient,
+    loginWithToken,
+    redeemInvite,
+  } = useAuth();
   const [searchParams] = useSearchParams();
 
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [manualToken, setManualToken] = useState("");
   const [patientUuid, setPatientUuid] = useState("");
   const [inviteToken, setInviteToken] = useState(() => inviteTokenFromSearch(searchParams.toString()));
   const [error, setError] = useState(null);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [patientLoading, setPatientLoading] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -45,6 +55,23 @@ export default function Login() {
 
   if (isAuthenticated) {
     return <Navigate to={homePathForRole(role)} replace />;
+  }
+
+  async function handlePasswordLogin(e) {
+    e.preventDefault();
+    setPasswordLoading(true);
+    setError(null);
+    try {
+      await loginWithPassword(username, password);
+    } catch (err) {
+      setError(
+        formatApiError(err, {
+          fallback: err?.message || "Usuario o contraseña incorrectos.",
+        }),
+      );
+    } finally {
+      setPasswordLoading(false);
+    }
   }
 
   async function handleDevLogin() {
@@ -118,7 +145,7 @@ export default function Login() {
     loginWithToken(t);
   }
 
-  const busy = loading || patientLoading || inviteLoading;
+  const busy = passwordLoading || loading || patientLoading || inviteLoading;
 
   return (
     <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-6">
@@ -129,7 +156,44 @@ export default function Login() {
           <p className="text-sm text-neutral-500 mt-1">Acceso clínico o diario del paciente</p>
         </div>
 
-        <form onSubmit={handleInviteRedeem} className="space-y-3">
+        <form onSubmit={handlePasswordLogin} className="space-y-3">
+          <p className="text-sm font-semibold text-neutral-800">Personal clínico</p>
+          <div>
+            <label htmlFor="clinician-username" className="label">
+              Usuario
+            </label>
+            <input
+              id="clinician-username"
+              type="text"
+              className="input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              spellCheck={false}
+            />
+          </div>
+          <div>
+            <label htmlFor="clinician-password" className="label">
+              Contraseña
+            </label>
+            <input
+              id="clinician-password"
+              type="password"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+          <button type="submit" disabled={busy} className="btn-primary w-full">
+            {passwordLoading ? "Entrando…" : "Entrar"}
+          </button>
+          <p className="text-xs text-neutral-400 text-center">
+            Cuenta creada con <code className="bg-neutral-100 px-1 rounded">seed_clinician.py</code>
+          </p>
+        </form>
+
+        <form onSubmit={handleInviteRedeem} className="space-y-3 border-t border-neutral-200 pt-4">
           <label htmlFor="invite-token-login" className="label">
             Invitación al diario (paciente)
           </label>
@@ -143,12 +207,9 @@ export default function Login() {
             spellCheck={false}
             autoComplete="off"
           />
-          <button type="submit" disabled={busy} className="btn-primary w-full">
+          <button type="submit" disabled={busy} className="btn-secondary w-full">
             {inviteLoading ? "Canjeando…" : "Entrar con invitación"}
           </button>
-          <p className="text-xs text-neutral-400 text-center">
-            Use el enlace que le compartió su clínico (también funciona abrir `/login?invite=…`).
-          </p>
         </form>
 
         <div className="relative">
@@ -199,7 +260,7 @@ export default function Login() {
           </label>
           <textarea
             id="manual-jwt"
-            rows={4}
+            rows={3}
             value={manualToken}
             onChange={(e) => setManualToken(e.target.value)}
             className="input font-mono text-xs"

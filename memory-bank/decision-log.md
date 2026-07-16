@@ -14,6 +14,20 @@
 - **Alternatives Considered:** [Alternatives]
 - **Consequences:** [Consequences]
 
+## Sprint 14 — Clinician password login (not IdP / magic-link)
+- **Date:** 2026-07-16
+- **Author:** Planning Agent
+- **Context:** After Sprint 13, patients can auth with ALLOW_DEV_AUTH=false; clinicians still need hand-minted JWTs or dev-login.
+- **Decision:** Sprint 14 ships local app_users + bcrypt password login (`POST /auth/login`) and seed_clinician.py. JWT includes exp. No IdP, no clinician magic-link, no prod compose in this slice.
+- **Alternatives Considered:**
+  - Bundle docker-compose.prod (ops coupling)
+  - Clinician invite/magic-link (bootstrap chicken-egg)
+  - R4 mobile first (leaves clinician prod login broken)
+- **Consequences:**
+  - Unblocks clinician SPA in staging/production
+  - Local credential store requires strong seed password + rotation ops
+  - Compose overlay and JWT harden remain follow-ons
+
 ## Sprint 13 — Patient auth via invite-link (not OTP/IdP)
 - **Date:** 2026-07-16
 - **Author:** Planning Agent

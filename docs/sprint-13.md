@@ -194,4 +194,4 @@ M–L (backend invite + JWT exp + small SPA)
 
 ## Next owner
 
-**Planning Agent** — merge PR #11; next candidates: `US-AUTH-CLINICIAN-PROD`, `US-OPS-PROD-COMPOSE`, R4 mobile.
+**Planning Agent** — Sprint 13 closed (merged PR #11). Next slice planned: **US-AUTH-CLINICIAN-PROD** — [`sprint-14.md`](sprint-14.md).

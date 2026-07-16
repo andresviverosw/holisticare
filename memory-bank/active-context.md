@@ -2,15 +2,14 @@
 
 ## Ongoing Tasks
 
-- **Sprint 13 complete / QA PASS:** US-DIARY-AUTH-PROD — invite-link patient auth.
-- PR: https://github.com/andresviverosw/holisticare/pull/11
+- **Sprint 14 complete / QA PASS:** US-AUTH-CLINICIAN-PROD — clinician password login.
+- PR: https://github.com/andresviverosw/holisticare/pull/13
 
 ## Known Issues
 
-- Existing deployments must apply `patient_diary_invites` DDL from `infra/init.sql`.
-- Clinician login when `ALLOW_DEV_AUTH=false` still needs `US-AUTH-CLINICIAN-PROD`.
-- Prod compose overlay still follow-on.
+- Existing DBs need `app_users` (+ earlier `patient_diary_invites`) DDL.
+- Prod compose overlay still follow-on (`US-OPS-PROD-COMPOSE`).
 
 ## Next Steps
 
-- Planning Agent: merge PR #11; prioritize clinician prod auth, prod compose, or R4 mobile.
+- Planning Agent: merge PR #13; prioritize prod compose, JWT harden, or R4 mobile.
