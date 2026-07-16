@@ -89,6 +89,10 @@ export default function Dashboard() {
   const [diaryLoading, setDiaryLoading] = useState(false);
   const [diaryError, setDiaryError] = useState(null);
   const [diaryNotice, setDiaryNotice] = useState(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState(null);
+  const [inviteLink, setInviteLink] = useState(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [outcomeRows, setOutcomeRows] = useState([]);
   const [plateauView, setPlateauView] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -192,6 +196,40 @@ export default function Dashboard() {
       setIntakeNotice("ID copiado al portapapeles.");
     } catch {
       setError("No se pudo copiar al portapapeles. Copia el texto del campo manualmente.");
+    }
+  }
+
+  async function handleCreateDiaryInvite() {
+    setInviteError(null);
+    setInviteCopied(false);
+    setInviteLink(null);
+    if (!requirePatientUuidForAction()) return;
+    setInviteLoading(true);
+    try {
+      const res = await ragApi.createDiaryInvite({ patient_id: trimmedPatientId });
+      const path = res.data?.redeem_path || `/login?invite=${res.data?.token || ""}`;
+      const absolute =
+        res.data?.redeem_url ||
+        `${window.location.origin}${path.startsWith("/") ? path : `/${path}`}`;
+      setInviteLink(absolute);
+      setIntakeNotice("Invitación al diario creada. Copie el enlace y compártalo con el paciente.");
+    } catch (err) {
+      setInviteError(
+        formatApiError(err, { fallback: "No se pudo crear la invitación al diario." }),
+      );
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
+  async function handleCopyInviteLink() {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      setInviteError("No se pudo copiar el enlace. Selecciónelo y cópielo manualmente.");
     }
   }
 
@@ -563,6 +601,19 @@ export default function Dashboard() {
             <button
               type="button"
               className="btn-secondary text-sm px-3 py-2"
+              onClick={handleCreateDiaryInvite}
+              disabled={!patientIdReady || inviteLoading}
+              title={
+                !patientIdReady
+                  ? "Indica un UUID v4 de paciente válido"
+                  : "Crear enlace de invitación de un solo uso para el diario"
+              }
+            >
+              {inviteLoading ? "Creando invitación…" : "Invitar al diario"}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary text-sm px-3 py-2"
               onClick={handleLoadIntake}
               disabled={!patientIdReady}
             >
@@ -587,6 +638,29 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {inviteLink && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2 space-y-2">
+            <p className="text-xs font-medium text-emerald-900">Enlace de invitación (un solo uso)</p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <code className="flex-1 text-xs font-mono text-neutral-800 break-all bg-white border border-emerald-100 rounded px-2 py-1.5">
+                {inviteLink}
+              </code>
+              <button
+                type="button"
+                className="btn-secondary text-xs px-2 py-1.5 shrink-0"
+                onClick={handleCopyInviteLink}
+              >
+                {inviteCopied ? "Copiado" : "Copiar enlace"}
+              </button>
+            </div>
+          </div>
+        )}
+        {inviteError && (
+          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700" role="alert">
+            {inviteError}
+          </div>
+        )}
 
         {recentPatients.length > 0 && (
           <div>

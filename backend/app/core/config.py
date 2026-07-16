@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     secret_key: str
     cors_origins: str = "http://localhost:5173"
 
+    # US-DIARY-AUTH-PROD — patient invite / JWT TTL
+    diary_invite_ttl_hours: int = 168
+    patient_jwt_ttl_hours: int = 720
+    public_app_base_url: str = "http://localhost:5173"
+
     @property
     def database_url(self) -> str:
         return (

@@ -29,6 +29,8 @@ api.interceptors.request.use((config) => {
 
 export const authApi = {
   devLogin: (payload) => api.post("/auth/dev-login", payload),
+  /** US-DIARY-AUTH-PROD — public invite redeem → patient JWT */
+  redeemInvite: (payload) => api.post("/auth/redeem-invite", payload),
 };
 
 // ─── RAG endpoints ────────────────────────────────────────────
@@ -77,6 +79,9 @@ export const ragApi = {
 
   /** US-DIARY-UI — clinician-proxy diary upsert */
   saveDiary: (payload) => api.post("/rag/diary", payload),
+
+  /** US-DIARY-AUTH-PROD — create single-use patient invite */
+  createDiaryInvite: (payload) => api.post("/rag/diary/invites", payload),
 
   /** List diary entries for a patient */
   listDiary: (patientId, params = {}) =>

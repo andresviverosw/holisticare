@@ -1,18 +1,47 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { formatApiError } from "../utils/apiErrors";
 import { homePathForRole } from "../utils/authRoles";
+import { inviteTokenFromSearch } from "../utils/inviteUrl";
 import { isValidUuidV4 } from "../utils/uuidV4";
 
 export default function Login() {
-  const { isAuthenticated, role, loginDevClinician, loginDevPatient, loginWithToken } = useAuth();
+  const { isAuthenticated, role, loginDevClinician, loginDevPatient, loginWithToken, redeemInvite } =
+    useAuth();
+  const [searchParams] = useSearchParams();
 
   const [manualToken, setManualToken] = useState("");
   const [patientUuid, setPatientUuid] = useState("");
+  const [inviteToken, setInviteToken] = useState(() => inviteTokenFromSearch(searchParams.toString()));
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [patientLoading, setPatientLoading] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteAutoTried, setInviteAutoTried] = useState(false);
+
+  useEffect(() => {
+    const fromQuery = inviteTokenFromSearch(searchParams.toString());
+    if (fromQuery) setInviteToken(fromQuery);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (isAuthenticated || inviteAutoTried) return;
+    const fromQuery = inviteTokenFromSearch(searchParams.toString());
+    if (!fromQuery) return;
+    setInviteAutoTried(true);
+    setInviteLoading(true);
+    setError(null);
+    redeemInvite(fromQuery)
+      .catch((err) => {
+        setError(
+          formatApiError(err, {
+            fallback: "No se pudo canjear la invitación (inválida, usada o vencida).",
+          }),
+        );
+      })
+      .finally(() => setInviteLoading(false));
+  }, [isAuthenticated, inviteAutoTried, redeemInvite, searchParams]);
 
   if (isAuthenticated) {
     return <Navigate to={homePathForRole(role)} replace />;
@@ -60,6 +89,24 @@ export default function Login() {
     }
   }
 
+  async function handleInviteRedeem(e) {
+    e.preventDefault();
+    setInviteLoading(true);
+    setError(null);
+    try {
+      await redeemInvite(inviteToken);
+    } catch (err) {
+      setError(
+        formatApiError(err, {
+          fallback:
+            err?.message || "No se pudo canjear la invitación (inválida, usada o vencida).",
+        }),
+      );
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
   function handleManualSubmit(e) {
     e.preventDefault();
     setError(null);
@@ -71,6 +118,8 @@ export default function Login() {
     loginWithToken(t);
   }
 
+  const busy = loading || patientLoading || inviteLoading;
+
   return (
     <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md card space-y-6">
@@ -80,12 +129,43 @@ export default function Login() {
           <p className="text-sm text-neutral-500 mt-1">Acceso clínico o diario del paciente</p>
         </div>
 
+        <form onSubmit={handleInviteRedeem} className="space-y-3">
+          <label htmlFor="invite-token-login" className="label">
+            Invitación al diario (paciente)
+          </label>
+          <input
+            id="invite-token-login"
+            type="text"
+            className="input font-mono text-xs"
+            value={inviteToken}
+            onChange={(e) => setInviteToken(e.target.value)}
+            placeholder="Token del enlace de invitación"
+            spellCheck={false}
+            autoComplete="off"
+          />
+          <button type="submit" disabled={busy} className="btn-primary w-full">
+            {inviteLoading ? "Canjeando…" : "Entrar con invitación"}
+          </button>
+          <p className="text-xs text-neutral-400 text-center">
+            Use el enlace que le compartió su clínico (también funciona abrir `/login?invite=…`).
+          </p>
+        </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-neutral-200" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-neutral-400">desarrollo</span>
+          </div>
+        </div>
+
         <div className="space-y-3">
           <button
             type="button"
             onClick={handleDevLogin}
-            disabled={loading || patientLoading}
-            className="btn-primary w-full"
+            disabled={busy}
+            className="btn-secondary w-full"
           >
             {loading ? "Conectando…" : "Entrar (desarrollo — clínico)"}
           </button>
@@ -94,7 +174,7 @@ export default function Login() {
           </p>
         </div>
 
-        <form onSubmit={handlePatientDevLogin} className="space-y-3 border-t border-neutral-200 pt-4">
+        <form onSubmit={handlePatientDevLogin} className="space-y-3">
           <label htmlFor="patient-uuid-login" className="label">
             UUID de paciente (desarrollo)
           </label>
@@ -108,25 +188,12 @@ export default function Login() {
             spellCheck={false}
             autoComplete="off"
           />
-          <button
-            type="submit"
-            disabled={loading || patientLoading}
-            className="btn-secondary w-full"
-          >
+          <button type="submit" disabled={busy} className="btn-secondary w-full">
             {patientLoading ? "Conectando…" : "Entrar (desarrollo — paciente)"}
           </button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-200" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-neutral-400">o</span>
-          </div>
-        </div>
-
-        <form onSubmit={handleManualSubmit} className="space-y-3">
+        <form onSubmit={handleManualSubmit} className="space-y-3 border-t border-neutral-200 pt-4">
           <label htmlFor="manual-jwt" className="label">
             Pegar token JWT (Bearer)
           </label>
@@ -144,7 +211,7 @@ export default function Login() {
               {error}
             </p>
           )}
-          <button type="submit" className="btn-secondary w-full">
+          <button type="submit" className="btn-secondary w-full" disabled={busy}>
             Entrar con token
           </button>
         </form>
