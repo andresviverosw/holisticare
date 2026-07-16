@@ -2,16 +2,14 @@
 
 ## Ongoing Tasks
 
-- Sprint 11 QA **PASS** — see `docs/qa-sprint-11-report.md`.
-- Next: Planning Agent closes R1-UI; then pilot GO/NO-GO and/or `US-DIARY-UI-PATIENT`.
+- **Sprint 12 planning complete:** `docs/sprint-12.md` — US-DIARY-UI-PATIENT ready for Development Agent.
+- Locked: patient `/diario`, extend dev-login for `role=patient` + UUID `sub`, reuse diaryBuilder; no production IdP this slice.
 
 ## Known Issues
 
-- Dashboard density (non-blocking; monitor pilot).
-- Diary remains clinician-proxy until `US-DIARY-UI-PATIENT`.
-- Pilot GO/NO-GO still needs final clinician sign-off.
+- Patient identity for Sprint 12 is UUID-in-JWT (dev/pilot); production auth is follow-on.
+- Pilot GO/NO-GO still optional/deferred per product choice.
 
 ## Next Steps
 
-- Merge Sprint 11 PR after Planning review.
-- Run pilot rehearsal with continuity panels exercised.
+- Development Agent: TDD backend patient dev-login → Login/guards → PatientDiary page → QA.
