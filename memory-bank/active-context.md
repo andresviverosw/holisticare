@@ -2,15 +2,15 @@
 
 ## Ongoing Tasks
 
-- **Sprint 13 complete / QA PASS:** US-DIARY-AUTH-PROD — invite-link patient auth.
-- PR: https://github.com/andresviverosw/holisticare/pull/11
+- **Sprint 13 merged** to `main` (PR #11).
+- **Sprint 14 planning complete:** `docs/sprint-14.md` — US-AUTH-CLINICIAN-PROD ready for Development Agent.
+- Locked: app_users + bcrypt + POST /auth/login + seed_clinician.py; JWT with exp.
 
 ## Known Issues
 
-- Existing deployments must apply `patient_diary_invites` DDL from `infra/init.sql`.
-- Clinician login when `ALLOW_DEV_AUTH=false` still needs `US-AUTH-CLINICIAN-PROD`.
+- Existing DBs need `patient_diary_invites` (Sprint 13) and will need `app_users` (Sprint 14).
 - Prod compose overlay still follow-on.
 
 ## Next Steps
 
-- Planning Agent: merge PR #11; prioritize clinician prod auth, prod compose, or R4 mobile.
+- Development Agent: TDD user model/hash → login API → seed script → Login SPA → QA.
