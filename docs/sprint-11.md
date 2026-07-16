@@ -107,11 +107,11 @@ S
 
 #### Acceptance criteria
 
-- [ ] Given valid scores and date, when clinician saves, then entry persists and appears in the history list (upsert replaces same calendar day).
-- [ ] Given out-of-range scores or empty required fields, when submit is attempted, then UI blocks with field-level Spanish errors (no API call).
-- [ ] Given optional `notes_es`, when provided, then it is trimmed and shown in history; blank → omitted/`null`.
-- [ ] Given API `401`/`403`/`422`, when save fails, then `formatApiError` surfaces an actionable message.
-- [ ] Given no `patient_id` / invalid UUID, when save or list is attempted, then UI blocks like other Dashboard actions.
+- [x] Given valid scores and date, when clinician saves, then entry persists and appears in the history list (upsert replaces same calendar day).
+- [x] Given out-of-range scores or empty required fields, when submit is attempted, then UI blocks with field-level Spanish errors (no API call).
+- [x] Given optional `notes_es`, when provided, then it is trimmed and shown in history; blank → omitted/`null`.
+- [x] Given API `401`/`403`/`422`, when save fails, then `formatApiError` surfaces an actionable message.
+- [x] Given no `patient_id` / invalid UUID, when save or list is attempted, then UI blocks like other Dashboard actions.
 
 #### Explicitly out of scope
 
@@ -151,10 +151,10 @@ M
 
 #### Acceptance criteria
 
-- [ ] Given diary rows in range, when clinician opens progreso, then pain/sleep/mood/function points are shown in chronological order.
-- [ ] Given plateau API returns flags, when panel loads, then each flag shows Spanish rationale (`message` / `detail`).
-- [ ] Given `analysis_status = insufficient_data`, when panel loads, then clinician sees “datos insuficientes” (no false alarms).
-- [ ] Given API error, when load fails, then actionable error; other Dashboard sections remain usable.
+- [x] Given diary rows in range, when clinician opens progreso, then pain/sleep/mood/function points are shown in chronological order.
+- [x] Given plateau API returns flags, when panel loads, then each flag shows Spanish rationale (`message` / `detail`).
+- [x] Given `analysis_status = insufficient_data`, when panel loads, then clinician sees “datos insuficientes” (no false alarms).
+- [x] Given API error, when load fails, then actionable error; other Dashboard sections remain usable.
 
 #### Test intent
 
@@ -188,11 +188,11 @@ M
 
 #### Acceptance criteria
 
-- [ ] Given at least one intervention and non-empty observations, when clinician saves, then session appears in reverse-chronological history.
-- [ ] Given empty interventions or empty observations, when submit is attempted, then UI validation blocks (`clinical_session_v0` rules).
-- [ ] Given interventions entered, when **Sugerir nota** succeeds, then suggested text is applied to a draft field the clinician can edit before save.
-- [ ] Given suggest-note `422`/`401`/`5xx`, when assist fails, then clear error; form remains editable.
-- [ ] Unauthenticated behavior is already API-enforced; UI relies on existing `RequireClinician`.
+- [x] Given at least one intervention and non-empty observations, when clinician saves, then session appears in reverse-chronological history.
+- [x] Given empty interventions or empty observations, when submit is attempted, then UI validation blocks (`clinical_session_v0` rules).
+- [x] Given interventions entered, when **Sugerir nota** succeeds, then suggested text is applied to a draft field the clinician can edit before save.
+- [x] Given suggest-note `422`/`401`/`5xx`, when assist fails, then clear error; form remains editable.
+- [x] Unauthenticated behavior is already API-enforced; UI relies on existing `RequireClinician`.
 
 #### Test intent
 
