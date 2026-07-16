@@ -90,6 +90,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | **Done (UI + API, Sprint 11)** |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Done (backend + dashboard + E2E) |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Done (backend + dashboard + E2E) |
+| US-DIARY-UI-PATIENT | Patient diary | Patient | to submit my own daily diary check-ins with a patient JWT | my between-session outcomes are captured without clinician proxy entry | Should | M | **Done (Sprint 12)** |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned |
 | US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned |
@@ -312,7 +313,7 @@ Implementation evidence (backend):
 - JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
 - Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
 
-UI slice (Sprint 11): **US-DIARY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). **v1 = clinician proxy** on Dashboard (pilot). Patient self-serve route is **US-DIARY-UI-PATIENT** (deferred).
+UI slice (Sprint 11): **US-DIARY-UI** — clinician proxy on Dashboard (**done**). Patient self-serve: **US-DIARY-UI-PATIENT** — see [`sprint-12.md`](sprint-12.md) (**Done**).
 
 ### US-DIARY-002 - Optional Spanish free-text notes
 
@@ -511,17 +512,18 @@ Test intent:
 | US-PRED-001 | Should | R3 | US-ANLY-001 | **Done.** Recovery trajectory endpoint + dashboard panel + tests |
 | US-PRED-002 | Should | R3 | US-PRED-001 | **Done.** Recommendation layer endpoint + dashboard panel + tests |
 | US-INT-002-UI | Must | R1-UI | US-INT-002, US-INT-004 | **Sprint 11.** Surface risk flags on Dashboard (read-only). See `sprint-11.md`. |
-| US-DIARY-UI | Must | R1-UI | US-DIARY-001, US-DIARY-002, US-INT-005 | **Sprint 11.** Clinician-proxy diary check-in + history. Patient self-serve deferred (`US-DIARY-UI-PATIENT`). |
-| US-ANLY-UI | Must | R1-UI | US-ANLY-001, US-ANLY-002, US-DIARY-UI | **Sprint 11.** Outcomes trend + plateau flags panels. |
-| US-SESS-UI | Must | R1-UI | US-SESS-001, US-SESS-002, US-INT-005 | **Sprint 11.** Session log form + history + optional note suggest. |
-| US-DIARY-UI-PATIENT | Should | R2+ | US-DIARY-UI | Patient-role diary page (`sub == patient_id`). Deferred post Sprint 11. |
+| US-DIARY-UI | Must | R1-UI | US-DIARY-001, US-DIARY-002, US-INT-005 | **Done (Sprint 11).** Clinician-proxy diary. |
+| US-ANLY-UI | Must | R1-UI | US-ANLY-001, US-ANLY-002, US-DIARY-UI | **Done (Sprint 11).** Outcomes trend + plateau flags. |
+| US-SESS-UI | Must | R1-UI | US-SESS-001, US-SESS-002, US-INT-005 | **Done (Sprint 11).** Session log + note suggest. |
+| US-DIARY-UI-PATIENT | Should | R2+ | US-DIARY-UI | **Sprint 12 — Done.** Patient `/diario` + patient JWT (`sub` = UUID). See `sprint-12.md`. |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
-- **R1-UI (Sprint 11 — implemented):** close the continuity **UI gap** for Must stories that were backend-only — risk flags (**US-INT-002-UI**), clinician-proxy diary (**US-DIARY-UI**), trends/plateaus (**US-ANLY-UI**), session logging + note assist (**US-SESS-UI**). Specs: [`sprint-11.md`](sprint-11.md).
+- **R1-UI (Sprint 11 — done):** continuity UI — risk flags, clinician-proxy diary, trends/plateaus, sessions. See [`sprint-11.md`](sprint-11.md), [`qa-sprint-11-report.md`](qa-sprint-11-report.md).
+- **R2+ patient engagement (Sprint 12 — done):** patient self-serve diary (**US-DIARY-UI-PATIENT**) — [`sprint-12.md`](sprint-12.md).
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.

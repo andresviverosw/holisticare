@@ -1,19 +1,20 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { canAccessClinicianRoutes, homePathForRole } from "../utils/authRoles";
+import { canAccessPatientRoutes, homePathForRole } from "../utils/authRoles";
 
 /**
- * Clinician/admin SPA shell. Patients are redirected to `/diario`.
+ * US-DIARY-UI-PATIENT — patient-only routes (`/diario`).
+ * Clinicians/admins are redirected to `/dashboard`.
  */
-export default function RequireClinician() {
-  const { isAuthenticated, role } = useAuth();
+export default function RequirePatient() {
+  const { isAuthenticated, role, sub } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (!canAccessClinicianRoutes({ isAuthenticated, role })) {
+  if (!canAccessPatientRoutes({ isAuthenticated, role, sub })) {
     return <Navigate to={homePathForRole(role)} replace />;
   }
 

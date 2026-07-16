@@ -2,16 +2,14 @@
 
 ## Ongoing Tasks
 
-- Sprint 11 QA **PASS** — see `docs/qa-sprint-11-report.md`.
-- Next: Planning Agent closes R1-UI; then pilot GO/NO-GO and/or `US-DIARY-UI-PATIENT`.
+- **Sprint 12 complete / QA PASS:** US-DIARY-UI-PATIENT — patient `/diario` + patient JWT.
+- PR: https://github.com/andresviverosw/holisticare/pull/9
 
 ## Known Issues
 
-- Dashboard density (non-blocking; monitor pilot).
-- Diary remains clinician-proxy until `US-DIARY-UI-PATIENT`.
-- Pilot GO/NO-GO still needs final clinician sign-off.
+- Patient identity remains UUID-in-JWT (dev/pilot); production auth is `US-DIARY-AUTH-PROD`.
+- Pilot GO/NO-GO still optional/deferred per product choice.
 
 ## Next Steps
 
-- Merge Sprint 11 PR after Planning review.
-- Run pilot rehearsal with continuity panels exercised.
+- Planning Agent: merge PR #9; prioritize `US-DIARY-AUTH-PROD`, pilot GO/NO-GO, or R4 mobile.
