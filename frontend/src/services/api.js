@@ -28,6 +28,8 @@ api.interceptors.request.use((config) => {
 // ─── Auth (development) ──────────────────────────────────────
 
 export const authApi = {
+  /** US-AUTH-CLINICIAN-PROD — username/password login */
+  login: (payload) => api.post("/auth/login", payload),
   devLogin: (payload) => api.post("/auth/dev-login", payload),
   /** US-DIARY-AUTH-PROD — public invite redeem → patient JWT */
   redeemInvite: (payload) => api.post("/auth/redeem-invite", payload),

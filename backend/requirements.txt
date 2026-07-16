@@ -38,6 +38,7 @@ reportlab==4.4.4
 # PyJWT replaces python-jose to avoid unfixed transitive ecdsa advisories (HS256 only).
 PyJWT[crypto]==2.13.0
 passlib[bcrypt]==1.7.4
+bcrypt>=4.0.1,<6
 
 # ─── Dev & testing ────────────────────────────────────────────
 pytest==9.0.3
