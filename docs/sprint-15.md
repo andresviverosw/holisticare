@@ -10,7 +10,7 @@
 | Priority | Should (R2+) — enable deployable API without running the dev stack |
 | Scope | `docker-compose.prod.yml`, `Caddyfile`, `.env.prod.example`, forced `ALLOW_DEV_AUTH=false`, CI config checks |
 | Owner | Planning → Development (TDD where testable) → QA |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **Complete / QA PASS** (2026-07-16) |
 
 ## Problem statement
 
@@ -98,13 +98,13 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given `docker-compose.prod.yml`, when inspected, then it has `backend` + `caddy` only (no `db`, no `frontend`), no source bind-mount, no `--reload`.
-- [ ] Given prod compose environment, when `ALLOW_DEV_AUTH` is set, then it is forced to `false` in the overlay.
-- [ ] Given `Caddyfile`, when reviewed, then it reverse-proxies to `backend:8000` on 80/443 volumes as documented.
-- [ ] Given `.env.prod.example`, when copied to `.env.prod`, then it documents `DEBUG=false`, CORS SPA origin, `ALLOW_DEV_AUTH=false`, and never contains real secrets.
-- [ ] Given CI, when compose contract tests run, then they fail if prod overlay regresses to include `db`/`frontend` or enable reload/bind-mount.
-- [ ] Given docs checklist, when followed after deploy, then operator verifies `GET /health` and `POST /auth/dev-login` → **404**.
-- [ ] NOM-024: plan approval gate unchanged; no auto-activation path introduced.
+- [x] Given `docker-compose.prod.yml`, when inspected, then it has `backend` + `caddy` only (no `db`, no `frontend`), no source bind-mount, no `--reload`.
+- [x] Given prod compose environment, when `ALLOW_DEV_AUTH` is set, then it is forced to `false` in the overlay.
+- [x] Given `Caddyfile`, when reviewed, then it reverse-proxies to `backend:8000` on 80/443 volumes as documented.
+- [x] Given `.env.prod.example`, when copied to `.env.prod`, then it documents `DEBUG=false`, CORS SPA origin, `ALLOW_DEV_AUTH=false`, and never contains real secrets.
+- [x] Given CI, when compose contract tests run, then they fail if prod overlay regresses to include `db`/`frontend` or enable reload/bind-mount.
+- [x] Given docs checklist, when followed after deploy, then operator verifies `GET /health` and `POST /auth/dev-login` → **404**.
+- [x] NOM-024: plan approval gate unchanged; no auto-activation path introduced.
 
 #### Test intent
 
@@ -140,20 +140,20 @@ S–M
 
 ## Definition of done
 
-- [ ] Acceptance criteria pass (contract tests + docs)
-- [ ] Backlog Done + CHANGELOG
-- [ ] Runbook/setup updated; smoke checklist includes health + dev-login 404
-- [ ] QA report pass/fail
+- [x] Acceptance criteria pass (contract tests + docs)
+- [x] Backlog Done + CHANGELOG
+- [x] Runbook/setup updated; smoke checklist includes health + dev-login 404
+- [x] QA report pass/fail
 
 ## Handoff template
 
 - Backlog item ID: US-OPS-PROD-COMPOSE
-- Scope:
-- Acceptance criteria: (pass/fail)
-- Test evidence:
-- Risks/issues:
-- Next owner: QA → Planning
+- Scope: prod compose + Caddy + env template + CI tests + GHCR workflow + SSL DSN flag
+- Acceptance criteria: **PASS** (see `docs/qa-sprint-15-report.md`)
+- Test evidence: compose/SSL/auth pytest 17 passed
+- Risks/issues: SPA static host still follow-on; replace api.example.com before LE
+- Next owner: Planning Agent
 
 ## Next owner
 
-**Development Agent** — start with `.env.prod.example` + prod compose + Caddyfile, then contract tests (TDD), then docs.
+**Planning Agent** — merge execution PR; next candidates: `US-OPS-SPA-HOST`, JWT harden, pilot GO/NO-GO, R4 mobile.
