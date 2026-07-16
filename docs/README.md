@@ -78,10 +78,10 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** Sprint 14 — US-AUTH-CLINICIAN-PROD — **complete / QA PASS** ([`sprint-14.md`](sprint-14.md), [`qa-sprint-14-report.md`](qa-sprint-14-report.md)).
-- **Recently completed:** Sprint 13 invite auth ([`sprint-13.md`](sprint-13.md)); Sprint 12 `/diario`.
-- **Next planned:**
-  - Production overlay for Compose (`US-OPS-PROD-COMPOSE`)
+- **Current:** [Sprint 15 — US-OPS-PROD-COMPOSE](sprint-15.md) — **Ready for development** (prod Compose + Caddy).
+- **Recently completed:** Sprint 14 clinician password login ([`sprint-14.md`](sprint-14.md), [`qa-sprint-14-report.md`](qa-sprint-14-report.md)); Sprint 13 invites.
+- **Next planned (after Sprint 15):**
+  - GHCR image publish / SPA host (`VITE_API_BASE_URL`) if not included
   - JWT harden / password reset / IdP
   - Pilot GO/NO-GO (optional)
   - R4 mobile (`US-MOB-001..003`)
@@ -102,6 +102,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
 - `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
 - `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
+- `sprint-15.md` - Sprint 15 (US-OPS-PROD-COMPOSE production Compose + Caddy) — **ready for dev**
 
 ## Suggested cadence
 

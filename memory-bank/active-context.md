@@ -2,14 +2,15 @@
 
 ## Ongoing Tasks
 
-- **Sprint 14 complete / QA PASS:** US-AUTH-CLINICIAN-PROD — clinician password login.
-- PR: https://github.com/andresviverosw/holisticare/pull/13
+- **Sprint 14 merged** to `main` (PR #13).
+- **Sprint 15 planning complete:** `docs/sprint-15.md` — US-OPS-PROD-COMPOSE ready for Development Agent.
+- Locked: docker-compose.prod.yml + Caddyfile + .env.prod.example; force ALLOW_DEV_AUTH=false; CI contract tests.
 
 ## Known Issues
 
-- Existing DBs need `app_users` (+ earlier `patient_diary_invites`) DDL.
-- Prod compose overlay still follow-on (`US-OPS-PROD-COMPOSE`).
+- Existing DBs need app_users / patient_diary_invites DDL when upgrading.
+- SPA Pages host + GHCR publish may still be needed for a full live pilot.
 
 ## Next Steps
 
-- Planning Agent: merge PR #13; prioritize prod compose, JWT harden, or R4 mobile.
+- Development Agent: prod compose + Caddy + env example → contract tests → docs → QA.
