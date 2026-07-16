@@ -14,6 +14,19 @@
 - **Alternatives Considered:** [Alternatives]
 - **Consequences:** [Consequences]
 
+## Sprint 15 — Prod Compose overlay (not full SPA host / IdP)
+- **Date:** 2026-07-16
+- **Author:** Planning Agent
+- **Context:** After clinician+patient prod auth, the missing piece is a safe API process layout (docs sketched compose/Caddy but files absent).
+- **Decision:** Sprint 15 ships `docker-compose.prod.yml` + `Caddyfile` + `.env.prod.example`, force `ALLOW_DEV_AUTH=false`, CI YAML contract tests. Optional thin GHCR workflow / Neon SSL flag if capacity. Defer Cloudflare Pages SPA base URL and full observability.
+- **Alternatives Considered:**
+  - Bundle Pages SPA + VITE_API_BASE_URL (larger surface)
+  - Skip to R4 mobile (leaves deploy gap)
+  - Self-host Postgres in prod compose (contradicts hybrid model)
+- **Consequences:**
+  - Operators get a real prod overlay matching the quickstart
+  - Full pilot still needs SPA host + published image (documented follow-ons)
+
 ## Sprint 14 — Clinician password login (not IdP / magic-link)
 - **Date:** 2026-07-16
 - **Author:** Planning Agent

@@ -2,14 +2,14 @@
 
 ## Ongoing Tasks
 
-- **Sprint 14 complete / QA PASS:** US-AUTH-CLINICIAN-PROD — clinician password login.
-- PR: https://github.com/andresviverosw/holisticare/pull/13
+- **Sprint 15 complete / QA PASS:** US-OPS-PROD-COMPOSE — prod Compose + Caddy.
+- Branch: `cursor/sprint-15-ops-prod-compose-exec-2591`
 
 ## Known Issues
 
-- Existing DBs need `app_users` (+ earlier `patient_diary_invites`) DDL.
-- Prod compose overlay still follow-on (`US-OPS-PROD-COMPOSE`).
+- Replace `api.example.com` in `Caddyfile` before first LE issue.
+- SPA static host (`US-OPS-SPA-HOST`) still needed for a full public pilot.
 
 ## Next Steps
 
-- Planning Agent: merge PR #13; prioritize prod compose, JWT harden, or R4 mobile.
+- Planning Agent: merge execution PR; prioritize SPA host, JWT harden, pilot GO/NO-GO, or R4 mobile.

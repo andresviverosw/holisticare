@@ -105,6 +105,23 @@ Define repeatable deployment, monitoring, incident response, backup, and mainten
 - Monthly cost tracking:
 - Optimization actions:
 
+### HolistiCare production Compose overlay (US-OPS-PROD-COMPOSE)
+
+Shipped files (Sprint 15):
+- `docker-compose.prod.yml` — backend image + Caddy; **no** local `db`/`frontend`; **forces** `ALLOW_DEV_AUTH=false`
+- `Caddyfile` — reverse proxy (replace `api.example.com` with your hostname)
+- `.env.prod.example` — copy to server-only `.env.prod` (never commit)
+
+Deploy order:
+1. Point DNS A/AAAA for the API hostname at the host; edit `Caddyfile`.
+2. `cp .env.prod.example .env.prod` and fill secrets (`DEBUG=false`, CORS SPA origin, managed Postgres, `POSTGRES_SSL_REQUIRE=true`).
+3. Ensure `app_users` / invite DDL applied on the managed DB (`infra/init.sql` fragments).
+4. Pull/build image (`GHCR_OWNER` / `TAG` env optional): `docker compose -f docker-compose.prod.yml pull && … up -d`.
+5. Seed clinician: `docker compose -f docker-compose.prod.yml exec backend python -m scripts.seed_clinician` with `SEED_CLINICIAN_*` set.
+6. Smoke: `curl -fsS https://<api-host>/health` and `curl -s -o /dev/null -w '%{http_code}\n' -X POST https://<api-host>/auth/dev-login` → **404**.
+
+SPA hosting (Cloudflare Pages / static) and `VITE_API_BASE_URL` remain a follow-on (`US-OPS-SPA-HOST`).
+
 ### HolistiCare future deployment plan (post-pilot)
 
 Source notes:
@@ -113,12 +130,12 @@ Source notes:
 
 Planned implementation slices:
 1. Production runtime split:
-   - Add `docker-compose.prod.yml` with backend + reverse proxy only.
+   - **Done (Sprint 15):** `docker-compose.prod.yml` with backend + Caddy only.
    - Keep frontend on static hosting and move database to managed Postgres with pgvector.
 2. Security and auth hardening:
-   - Enforce `ALLOW_DEV_AUTH=false` in production.
-   - Lock `CORS_ORIGINS` to production frontend domain.
-   - Confirm TLS-only DB connectivity (`sslmode=require`).
+   - **Done:** Enforce `ALLOW_DEV_AUTH=false` in production overlay + clinician/patient prod auth (Sprints 13–14).
+   - Lock `CORS_ORIGINS` to production frontend domain (documented in `.env.prod.example`).
+   - TLS DB connectivity via `POSTGRES_SSL_REQUIRE=true`.
 3. Operability baseline:
    - Add independent daily `pg_dump` backup to object storage.
    - Add uptime probe and error monitoring.

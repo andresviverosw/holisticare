@@ -1,0 +1,47 @@
+# HolistiCare production overlay (US-OPS-PROD-COMPOSE)
+#
+# Usage (on the API host, after DNS points at this machine):
+#   cp .env.prod.example .env.prod   # fill secrets; never commit .env.prod
+#   # Build/push image (GHCR workflow on main, or manual):
+#   #   docker build -t ghcr.io/<owner>/holisticare-backend:latest ./backend
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# This stack intentionally omits local `db` and `frontend` (managed Postgres + static SPA).
+
+services:
+  backend:
+    image: ghcr.io/${GHCR_OWNER:-andresviverosw}/holisticare-backend:${TAG:-latest}
+    container_name: holisticare_backend
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      # Force-disable regardless of .env.prod mistakes (TODO-SEC-007 / US-OPS-PROD-COMPOSE).
+      ALLOW_DEV_AUTH: "false"
+      DEBUG: "false"
+    expose:
+      - "8000"
+    # No source bind-mount; do not use uvicorn reload in production
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+    networks: [web]
+
+  caddy:
+    image: caddy:2
+    container_name: holisticare_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [backend]
+    networks: [web]
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  web:

@@ -24,11 +24,12 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-14.md` |
+| Sprint notes | `sprint-01.md` … `sprint-15.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Sprint 13 QA report | `qa-sprint-13-report.md` |
 | Sprint 14 QA report | `qa-sprint-14-report.md` |
+| Sprint 15 QA report | `qa-sprint-15-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -78,10 +79,10 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** Sprint 14 — US-AUTH-CLINICIAN-PROD — **complete / QA PASS** ([`sprint-14.md`](sprint-14.md), [`qa-sprint-14-report.md`](qa-sprint-14-report.md)).
-- **Recently completed:** Sprint 13 invite auth ([`sprint-13.md`](sprint-13.md)); Sprint 12 `/diario`.
+- **Current:** Sprint 15 — US-OPS-PROD-COMPOSE — **complete / QA PASS** ([`sprint-15.md`](sprint-15.md), [`qa-sprint-15-report.md`](qa-sprint-15-report.md)).
+- **Recently completed:** Sprint 14 clinician login ([`sprint-14.md`](sprint-14.md)); Sprint 13 invites.
 - **Next planned:**
-  - Production overlay for Compose (`US-OPS-PROD-COMPOSE`)
+  - SPA static host / API base URL (`US-OPS-SPA-HOST`)
   - JWT harden / password reset / IdP
   - Pilot GO/NO-GO (optional)
   - R4 mobile (`US-MOB-001..003`)
@@ -102,6 +103,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
 - `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
 - `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
+- `sprint-15.md` - Sprint 15 (US-OPS-PROD-COMPOSE production Compose + Caddy) — **complete / QA PASS**
 
 ## Suggested cadence
 

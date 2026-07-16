@@ -175,4 +175,4 @@ M
 
 ## Next owner
 
-**Planning Agent** — merge PR #13; next candidates: `US-OPS-PROD-COMPOSE`, JWT harden, R4 mobile.
+**Planning Agent** — Sprint 14 closed (merged PR #13). Next slice planned: **US-OPS-PROD-COMPOSE** — [`sprint-15.md`](sprint-15.md).
