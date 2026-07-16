@@ -27,6 +27,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Sprint notes | `sprint-01.md` … `sprint-13.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
+| Sprint 13 QA report | `qa-sprint-13-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -76,9 +77,9 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** [Sprint 13 — US-DIARY-AUTH-PROD](sprint-13.md) — **Ready for development** (patient invite-link auth).
-- **Recently completed:** Sprint 12 patient `/diario` ([`sprint-12.md`](sprint-12.md), [`qa-sprint-12-report.md`](qa-sprint-12-report.md)); Sprint 11 R1-UI ([`sprint-11.md`](sprint-11.md)).
-- **Next planned (after Sprint 13):**
+- **Current:** Sprint 13 — US-DIARY-AUTH-PROD — **complete / QA PASS** ([`sprint-13.md`](sprint-13.md), [`qa-sprint-13-report.md`](qa-sprint-13-report.md)).
+- **Recently completed:** Sprint 12 patient `/diario` ([`sprint-12.md`](sprint-12.md)); Sprint 11 R1-UI ([`sprint-11.md`](sprint-11.md)).
+- **Next planned:**
   - Clinician production auth (`US-AUTH-CLINICIAN-PROD`)
   - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth) — `US-OPS-PROD-COMPOSE`
   - Pilot GO/NO-GO execution on Windows (optional)
@@ -98,7 +99,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
 - `sprint-11.md` - Sprint 11 (R1-UI continuity panels) — **complete / QA PASS**
 - `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
-- `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **ready for dev**
+- `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
 
 ## Suggested cadence
 

@@ -10,7 +10,7 @@
 | Priority | Should (R2+) — next product slice after patient `/diario` |
 | Scope | Production-capable **patient** authentication via clinician-issued invite links; keep diary SPA unchanged |
 | Owner | Planning → Development (TDD) → QA |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **Complete / QA PASS** (2026-07-16) |
 
 ## Problem statement
 
@@ -113,16 +113,16 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given a clinician JWT and valid patient UUID, when they create an invite, then API returns a one-time token + expiry and stores only a hash.
-- [ ] Given a valid unexpired unused invite token, when the patient redeems it, then they receive a patient JWT with `sub` = that UUID, `role=patient`, and future `exp`.
-- [ ] Given the same invite token again, when redeemed, then API returns **410/400** (already used) and no new JWT.
-- [ ] Given an expired invite, when redeemed, then API returns **410/400** and no JWT.
-- [ ] Given `ALLOW_DEV_AUTH=false`, when redeem succeeds, then `/diario` works (no dependency on `/auth/dev-login`).
-- [ ] Given an expired patient JWT (`exp` past), when calling diary APIs, then **401**.
-- [ ] Given Login with `?invite=<token>`, when redeem succeeds, then navigate to `/diario` with patient session.
-- [ ] Given Dashboard **Invitar al diario**, when invite is created, then clinician can copy a redeem URL for the current patient UUID.
-- [ ] Patients still cannot access clinician routes; clinicians still cannot stay on `/diario`.
-- [ ] Dev-login clinician/patient paths remain available only when `ALLOW_DEV_AUTH=true`.
+- [x] Given a clinician JWT and valid patient UUID, when they create an invite, then API returns a one-time token + expiry and stores only a hash.
+- [x] Given a valid unexpired unused invite token, when the patient redeems it, then they receive a patient JWT with `sub` = that UUID, `role=patient`, and future `exp`.
+- [x] Given the same invite token again, when redeemed, then API returns **410/400** (already used) and no new JWT.
+- [x] Given an expired invite, when redeemed, then API returns **410/400** and no JWT.
+- [x] Given `ALLOW_DEV_AUTH=false`, when redeem succeeds, then `/diario` works (no dependency on `/auth/dev-login`).
+- [x] Given an expired patient JWT (`exp` past), when calling diary APIs, then **401**.
+- [x] Given Login with `?invite=<token>`, when redeem succeeds, then navigate to `/diario` with patient session.
+- [x] Given Dashboard **Invitar al diario**, when invite is created, then clinician can copy a redeem URL for the current patient UUID.
+- [x] Patients still cannot access clinician routes; clinicians still cannot stay on `/diario`.
+- [x] Dev-login clinician/patient paths remain available only when `ALLOW_DEV_AUTH=true`.
 
 #### Test intent
 
@@ -177,21 +177,21 @@ M–L (backend invite + JWT exp + small SPA)
 
 ## Definition of done
 
-- [ ] Acceptance criteria pass (service + API + Playwright)
-- [ ] Lint/build green; Sprint 12 + clinician regression green
-- [ ] Backlog: US-DIARY-AUTH-PROD → Done; CHANGELOG note
-- [ ] User guide: clinician invite + patient redeem; security audit pointer
-- [ ] QA report with pass/fail
+- [x] Acceptance criteria pass (service + API + Playwright)
+- [x] Lint/build green; Sprint 12 + clinician regression green
+- [x] Backlog: US-DIARY-AUTH-PROD → Done; CHANGELOG note
+- [x] User guide: clinician invite + patient redeem; security audit pointer
+- [x] QA report with pass/fail
 
 ## Handoff template
 
 - Backlog item ID: US-DIARY-AUTH-PROD
-- Scope:
-- Acceptance criteria: (pass/fail)
-- Test evidence:
-- Risks/issues:
-- Next owner: QA → Planning
+- Scope: Invite create/redeem + patient JWT with `exp` + SPA
+- Acceptance criteria: **PASS** (see `docs/qa-sprint-13-report.md`)
+- Test evidence: invite service/API 12; auth 5; Vitest 44; Playwright sprint13+12 5; lint/build green
+- Risks/issues: clinician prod auth + compose overlay still follow-ons; apply DDL on existing DBs
+- Next owner: Planning Agent
 
 ## Next owner
 
-**Development Agent** — start with invite model + service tests (TDD), then redeem API, then SPA.
+**Planning Agent** — merge PR #11; next candidates: `US-AUTH-CLINICIAN-PROD`, `US-OPS-PROD-COMPOSE`, R4 mobile.

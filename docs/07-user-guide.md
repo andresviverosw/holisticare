@@ -24,20 +24,26 @@ You need:
 
 1. Open `http://localhost:5173/login`.
 2. Choose one:
+   - **Invitación al diario (paciente)**: open the clinician-shared link (`/login?invite=…`) or paste the invite token and click **`Entrar con invitación`**. Works with `ALLOW_DEV_AUTH=false`.
    - **Dev login (clínico)**: click `Entrar (desarrollo — clínico)` (works only when backend allows dev auth).
-   - **Dev login (paciente)**: paste the patient’s UUID v4, then click `Entrar (desarrollo — paciente)`. Opens `/diario`.
+   - **Dev login (paciente)**: paste the patient’s UUID v4, then click `Entrar (desarrollo — paciente)`. Opens `/diario` (dev/pilot only).
    - **Manual token**: paste a JWT in `Pegar token JWT (Bearer)` and submit (patient tokens need `role: patient` and UUID `sub`).
 
-If login fails, an actionable message is shown (e.g. auth disabled, invalid token).
+If login fails, an actionable message is shown (e.g. auth disabled, invalid/expired invite).
 
-### Share UUID with the patient (clinician)
+### Invite patient to diary (clinician) — US-DIARY-AUTH-PROD
 
-After creating or selecting a patient on the Dashboard, use **`Copiar ID`** and share that UUID so the patient can use patient dev-login (pilot) or a future production invite flow (`US-DIARY-AUTH-PROD`).
+1. On the Dashboard, set a valid patient UUID v4.
+2. Click **`Invitar al diario`**.
+3. Copy the one-time link and share it out-of-band (WhatsApp/email outside the app).
+4. The patient opens the link once; it expires after the configured TTL (default 7 days) or after first use.
+
+Prefer invites over sharing the raw UUID as a login secret.
 
 ## Patient diary (`/diario`)
 
-1. Sign in as patient (dev UUID login or patient JWT).
-2. Confirm the read-only patient ID matches the shared UUID.
+1. Sign in as patient (invite redeem, or dev UUID login / patient JWT).
+2. Confirm the read-only patient ID matches the invited patient.
 3. Enter date and scores (dolor / sueño / ánimo / función, 0–10); optional notes.
 4. Click **`Guardar check-in`**. Same-day entries upsert.
 5. Use **`Actualizar`** to refresh recent history.

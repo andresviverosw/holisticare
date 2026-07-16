@@ -2,16 +2,15 @@
 
 ## Ongoing Tasks
 
-- **Sprint 12 merged** to `main` (PR #9).
-- **Sprint 13 planning complete:** `docs/sprint-13.md` — US-DIARY-AUTH-PROD ready for Development Agent.
-- Locked: single-use invite link → patient JWT with `exp`; no OTP/IdP/email send this slice.
+- **Sprint 13 complete / QA PASS:** US-DIARY-AUTH-PROD — invite-link patient auth.
+- PR: https://github.com/andresviverosw/holisticare/pull/11
 
 ## Known Issues
 
+- Existing deployments must apply `patient_diary_invites` DDL from `infra/init.sql`.
 - Clinician login when `ALLOW_DEV_AUTH=false` still needs `US-AUTH-CLINICIAN-PROD`.
-- Prod compose overlay (`US-OPS-PROD-COMPOSE`) still not in repo.
-- Pilot GO/NO-GO optional/deferred.
+- Prod compose overlay still follow-on.
 
 ## Next Steps
 
-- Development Agent: TDD invite model/service → redeem API → Dashboard/Login SPA → QA.
+- Planning Agent: merge PR #11; prioritize clinician prod auth, prod compose, or R4 mobile.
