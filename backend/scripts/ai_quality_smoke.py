@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 
 import httpx
-from jose import jwt
+import jwt
 
 from app.core.config import get_settings
 

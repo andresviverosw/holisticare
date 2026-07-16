@@ -13,7 +13,7 @@ from __future__ import annotations
 import sys
 
 import httpx
-from jose import jwt
+import jwt
 
 from app.core.config import get_settings
 

@@ -24,7 +24,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-10.md` |
+| Sprint notes | `sprint-01.md` … `sprint-11.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -74,13 +74,15 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** Pilot readiness hardening + clinician dry-runs (post `US-PRED-001` / `US-PRED-002` delivery).
-- **Recently completed:** `US-PRED-001` (recovery trajectory) and `US-PRED-002` (recommendation layer) on backend + dashboard + E2E; [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
-- **Next planned (post-pilot):**
+- **Current:** [Sprint 11 — MVP UI blockers](sprint-11.md) (R1-UI closeout). Ready-for-dev order: **US-INT-002-UI** → **US-DIARY-UI** → **US-ANLY-UI**; **US-SESS-UI** can parallelize after risk flags.
+- **Recently completed:** Pilot readiness dry-runs; `US-PRED-001` / `US-PRED-002`; [`sprint-10.md`](sprint-10.md) (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) (US-INT-005).
+- **Next planned (after Sprint 11 UI closeout):**
+  - Patient-facing diary (`US-DIARY-UI-PATIENT`)
   - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth)
   - Hybrid stack baseline (compute + managed Postgres with pgvector + Cloudflare frontend)
   - Ops hardening (`pg_dump` backups, UptimeRobot/Sentry, restore drill)
   - Compliance hardening (cross-border consent text, DPA checklist, audit logging validation)
+  - R4 mobile (`US-MOB-001..003`)
 
 ### Sprint history (reference)
 
@@ -94,6 +96,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-08.md` - Sprint 8 (US-RAG-004 config-driven nutrition safety dictionaries) — **complete**
 - `sprint-09.md` - Sprint 9 (US-INT-005 automatic patient UUID + recent patients) — **complete**
 - `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
+- `sprint-11.md` - Sprint 11 (R1-UI: risk flags, diary proxy, analytics, sessions) — **planning complete / ready for dev**
 
 ## Suggested cadence
 

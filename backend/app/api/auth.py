@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Literal
 
 from fastapi import APIRouter
-from jose import jwt
+import jwt
 from pydantic import BaseModel, Field
 
 from app.core.config import get_settings

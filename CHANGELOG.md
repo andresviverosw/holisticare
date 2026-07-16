@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Added
+
+- **Sprint 11 planning (R1-UI):** Ready-for-dev UI stories for MVP continuity blockers — `US-INT-002-UI`, `US-DIARY-UI`, `US-ANLY-UI`, `US-SESS-UI`. See `docs/sprint-11.md`.
+
+### Security
+
+- **TODO-SEC-011:** Patch CI `security-audit` findings — bump FastAPI/Starlette, pydantic-settings, pypdf, pillow, transformers; replace `python-jose` with `PyJWT`; frontend `npm audit fix` (axios/vite/vitest/react-router/postcss). See `docs/09-security-audit-and-todos.md`.
+
 ## [2026-04-07]
 
 ### Added

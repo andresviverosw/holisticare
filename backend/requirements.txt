@@ -1,8 +1,8 @@
 # ─── Core framework ───────────────────────────────────────────
-fastapi==0.121.3
+fastapi==0.139.0
 uvicorn[standard]==0.30.6
 pydantic==2.12.5
-pydantic-settings==2.13.1
+pydantic-settings==2.14.2
 python-dotenv==1.2.2
 
 # ─── Database ─────────────────────────────────────────────────
@@ -20,22 +20,23 @@ llama-index-readers-file==0.6.0
 # ─── Embeddings & reranker ────────────────────────────────────
 openai==1.40.0
 sentence-transformers==5.3.0    # free cross-encoder reranker
-transformers==5.0.0rc3
+transformers==5.5.0
 
 # ─── LLM ─────────────────────────────────────────────────────
 anthropic==0.90.0
 
 # ─── Document processing ──────────────────────────────────────
-pypdf==6.10.2
+pypdf==6.13.3
 langdetect==1.0.9
 pymupdf==1.26.7
 pytesseract==0.3.13
-pillow==12.2.0
+pillow==12.3.0
 beautifulsoup4==4.14.3
 reportlab==4.4.4
 
 # ─── Auth & security ──────────────────────────────────────────
-python-jose[cryptography]==3.5.0
+# PyJWT replaces python-jose to avoid unfixed transitive ecdsa advisories (HS256 only).
+PyJWT[crypto]==2.13.0
 passlib[bcrypt]==1.7.4
 
 # ─── Dev & testing ────────────────────────────────────────────
