@@ -24,7 +24,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-14.md` |
+| Sprint notes | `sprint-01.md` … `sprint-15.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Sprint 13 QA report | `qa-sprint-13-report.md` |
