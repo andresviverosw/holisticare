@@ -531,8 +531,9 @@ export default function Dashboard() {
       <div className="card space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <div className="flex-1 min-w-0">
-            <label className="label">ID del paciente (UUID v4)</label>
+            <label className="label" htmlFor="patient-id-input">ID del paciente (UUID v4)</label>
             <input
+              id="patient-id-input"
               type="text"
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
@@ -923,8 +924,9 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <label className="label">Fecha y hora</label>
+            <label className="label" htmlFor="session-at-input">Fecha y hora</label>
             <input
+              id="session-at-input"
               type="datetime-local"
               className="input"
               value={sessionForm.sessionAt}
@@ -934,8 +936,9 @@ export default function Dashboard() {
           {(sessionForm.interventions || []).map((item, index) => (
             <div key={`iv-${index}`} className="grid gap-2 md:grid-cols-3">
               <div>
-                <label className="label">Tipo de terapia</label>
+                <label className="label" htmlFor={`session-therapy-${index}`}>Tipo de terapia</label>
                 <input
+                  id={`session-therapy-${index}`}
                   type="text"
                   className="input"
                   value={item.therapyType}
@@ -943,8 +946,9 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <label className="label">Descripción</label>
+                <label className="label" htmlFor={`session-desc-${index}`}>Descripción</label>
                 <input
+                  id={`session-desc-${index}`}
                   type="text"
                   className="input"
                   value={item.description}
@@ -952,8 +956,9 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <label className="label">Duración (min)</label>
+                <label className="label" htmlFor={`session-duration-${index}`}>Duración (min)</label>
                 <input
+                  id={`session-duration-${index}`}
                   type="number"
                   min={1}
                   className="input"
@@ -967,8 +972,9 @@ export default function Dashboard() {
             + Añadir intervención
           </button>
           <div>
-            <label className="label">Observaciones *</label>
+            <label className="label" htmlFor="session-observations">Observaciones *</label>
             <textarea
+              id="session-observations"
               rows={3}
               className="input"
               value={sessionForm.observations}
@@ -976,8 +982,9 @@ export default function Dashboard() {
             />
           </div>
           <div>
-            <label className="label">Respuesta reportada por el paciente</label>
+            <label className="label" htmlFor="session-patient-response">Respuesta reportada por el paciente</label>
             <textarea
+              id="session-patient-response"
               rows={2}
               className="input"
               value={sessionForm.patientReportedResponse}

@@ -2,18 +2,16 @@
 
 ## Ongoing Tasks
 
-- **Sprint 11 execution (Development):** R1-UI continuity panels implemented on Dashboard.
-  - Spec: `docs/sprint-11.md`
-  - Shipped UI: `US-INT-002-UI`, `US-DIARY-UI`, `US-ANLY-UI`, `US-SESS-UI`
-- Next: QA Agent validation / Playwright smoke optional; patient diary route still deferred (`US-DIARY-UI-PATIENT`).
+- Sprint 11 QA **PASS** — see `docs/qa-sprint-11-report.md`.
+- Next: Planning Agent closes R1-UI; then pilot GO/NO-GO and/or `US-DIARY-UI-PATIENT`.
 
 ## Known Issues
 
-- Diary v1 is clinician-proxy only (labeled on Dashboard); not patient self-serve.
-- Dashboard density increased; monitor pilot UX (split routes if needed).
-- Pilot GO/NO-GO still needs final clinician sign-off (`docs/pilot-go-no-go.md`).
+- Dashboard density (non-blocking; monitor pilot).
+- Diary remains clinician-proxy until `US-DIARY-UI-PATIENT`.
+- Pilot GO/NO-GO still needs final clinician sign-off.
 
 ## Next Steps
 
-- QA Agent: map acceptance criteria in `sprint-11.md` to pass/fail with test evidence.
-- Planning Agent: mark R1-UI complete after QA sign-off.
+- Merge Sprint 11 PR after Planning review.
+- Run pilot rehearsal with continuity panels exercised.

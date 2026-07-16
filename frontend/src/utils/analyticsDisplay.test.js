@@ -61,4 +61,14 @@ describe("formatPlateauPayload", () => {
     expect(result.flags).toHaveLength(1);
     expect(result.flags[0].message).toBe("Dolor en empeoramiento");
   });
+
+  it("filters blank flag messages on ok status", () => {
+    const result = formatPlateauPayload({
+      analysis_status: "ok",
+      flags: [{ code: "X", message: "   " }, { code: "Y", message: "Ok" }],
+    });
+    expect(result.flags).toEqual([
+      { code: "Y", severity: "", metric: "", message: "Ok", detail: "" },
+    ]);
+  });
 });

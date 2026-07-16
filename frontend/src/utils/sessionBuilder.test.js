@@ -16,6 +16,12 @@ describe("validateSessionForm", () => {
   it("requires session time, one intervention, and observations", () => {
     expect(validateSessionForm({ ...baseForm, sessionAt: "" })).toMatch(/fecha|hora/i);
     expect(validateSessionForm({ ...baseForm, interventions: [] })).toMatch(/intervención/i);
+    expect(
+      validateSessionForm({
+        ...baseForm,
+        interventions: [{ therapyType: "  ", description: "x", durationMinutes: "" }],
+      }),
+    ).toMatch(/intervención/i);
     expect(validateSessionForm({ ...baseForm, observations: "  " })).toMatch(/observacion/i);
     expect(validateSessionForm(baseForm)).toBeNull();
   });

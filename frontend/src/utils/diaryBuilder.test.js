@@ -23,6 +23,19 @@ describe("validateDiaryForm", () => {
       }),
     ).toBeNull();
   });
+
+  it("rejects notes longer than 1500 characters", () => {
+    expect(
+      validateDiaryForm({
+        checkinDate: "2026-07-16",
+        pain: "5",
+        sleep: "5",
+        mood: "5",
+        functionScore: "5",
+        notesEs: "x".repeat(1501),
+      }),
+    ).toMatch(/1500/);
+  });
 });
 
 describe("buildDiaryCheckin", () => {
