@@ -14,6 +14,18 @@
 - **Alternatives Considered:** [Alternatives]
 - **Consequences:** [Consequences]
 
+## Sprint 12 — Patient diary uses UUID-bound JWT (dev), not production IdP
+- **Date:** 2026-07-16
+- **Author:** Planning Agent
+- **Context:** Next product slice after clinician-proxy diary; backend already requires patient `sub == patient_id`.
+- **Decision:** Sprint 12 issues patient tokens only via extended `ALLOW_DEV_AUTH` login with UUID v4 `sub`, plus manual JWT paste. No magic links/OTP/IdP.
+- **Alternatives Considered:**
+  - Build invite-link auth first (larger scope, blocks diary UI)
+  - Let patients type arbitrary patient_id (breaks server-side subject check / unsafe)
+- **Consequences:**
+  - Unblocks patient UI quickly for pilot/dev
+  - Production auth tracked as `US-DIARY-AUTH-PROD`
+
 ## Sprint 11 — Clinician-proxy diary for R1-UI closeout
 - **Date:** 2026-07-16
 - **Author:** Planning Agent

@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **Sprint 12 planning:** `US-DIARY-UI-PATIENT` ready-for-dev (`docs/sprint-12.md`) — patient `/diario`, patient JWT via extended dev-login.
 - **Sprint 11 planning (R1-UI):** Ready-for-dev UI stories for MVP continuity blockers — `US-INT-002-UI`, `US-DIARY-UI`, `US-ANLY-UI`, `US-SESS-UI`. See `docs/sprint-11.md`.
 - **Sprint 11 execution:** Dashboard continuity UI — intake risk flags, clinician-proxy diary, outcome trends/plateaus, session log + note suggest (Vitest builders + `api.js` wiring).
 - **Sprint 11 QA:** Continuity Playwright suite + report (`docs/qa-sprint-11-report.md`); label a11y fix on session/patient fields.

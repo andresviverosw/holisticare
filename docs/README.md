@@ -24,7 +24,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-11.md` |
+| Sprint notes | `sprint-01.md` … `sprint-12.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
@@ -75,14 +75,13 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** [Sprint 11](sprint-11.md) — **QA PASS** ([report](qa-sprint-11-report.md)). Ready for Planning closeout / merge of PR #6.
-- **Recently completed:** Pilot readiness dry-runs; `US-PRED-001` / `US-PRED-002`; [`sprint-10.md`](sprint-10.md) (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) (US-INT-005).
-- **Next planned (after Sprint 11 UI closeout):**
-  - Patient-facing diary (`US-DIARY-UI-PATIENT`)
+- **Current:** [Sprint 12 — US-DIARY-UI-PATIENT](sprint-12.md) — **Ready for development** (patient self-serve `/diario`).
+- **Recently completed:** Sprint 11 R1-UI + QA ([`sprint-11.md`](sprint-11.md), [`qa-sprint-11-report.md`](qa-sprint-11-report.md)).
+- **Next planned (after Sprint 12):**
+  - Production patient auth follow-on (`US-DIARY-AUTH-PROD`)
+  - Pilot GO/NO-GO execution on Windows (optional / if not skipped)
   - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth)
-  - Hybrid stack baseline (compute + managed Postgres with pgvector + Cloudflare frontend)
-  - Ops hardening (`pg_dump` backups, UptimeRobot/Sentry, restore drill)
-  - Compliance hardening (cross-border consent text, DPA checklist, audit logging validation)
+  - Hybrid stack baseline / ops hardening / compliance hardening
   - R4 mobile (`US-MOB-001..003`)
 
 ### Sprint history (reference)
@@ -97,7 +96,8 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-08.md` - Sprint 8 (US-RAG-004 config-driven nutrition safety dictionaries) — **complete**
 - `sprint-09.md` - Sprint 9 (US-INT-005 automatic patient UUID + recent patients) — **complete**
 - `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
-- `sprint-11.md` - Sprint 11 (R1-UI: risk flags, diary proxy, analytics, sessions) — **planning complete / ready for dev**
+- `sprint-11.md` - Sprint 11 (R1-UI continuity panels) — **complete / QA PASS**
+- `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **ready for dev**
 
 ## Suggested cadence
 
