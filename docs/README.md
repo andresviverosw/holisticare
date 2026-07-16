@@ -28,6 +28,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Sprint 13 QA report | `qa-sprint-13-report.md` |
+| Sprint 14 QA report | `qa-sprint-14-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use

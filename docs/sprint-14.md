@@ -98,15 +98,15 @@ flowchart LR
 
 #### Acceptance criteria
 
-- [ ] Given a seeded active clinician, when they submit correct username/password, then API returns JWT with `role` clinician|admin, `sub` = user id, and future `exp`.
-- [ ] Given wrong password or unknown user, when login is attempted, then API returns **401** with a generic message (no user enumeration detail).
-- [ ] Given `is_active=false`, when login is attempted, then **401**.
-- [ ] Given `ALLOW_DEV_AUTH=false`, when password login succeeds, then Dashboard loads (no dependency on `/auth/dev-login`).
-- [ ] Given seed script run twice with same username, when executed, then it does not create duplicates (idempotent).
-- [ ] Passwords are stored only as hashes (never plaintext in DB or logs).
-- [ ] Login SPA: username/password form signs clinician into `/dashboard`.
-- [ ] Patient invite redeem and role redirects remain unchanged.
-- [ ] Dev-login remains available only when `ALLOW_DEV_AUTH=true`.
+- [x] Given a seeded active clinician, when they submit correct username/password, then API returns JWT with `role` clinician|admin, `sub` = user id, and future `exp`.
+- [x] Given wrong password or unknown user, when login is attempted, then API returns **401** with a generic message (no user enumeration detail).
+- [x] Given `is_active=false`, when login is attempted, then **401**.
+- [x] Given `ALLOW_DEV_AUTH=false`, when password login succeeds, then Dashboard loads (no dependency on `/auth/dev-login`).
+- [x] Given seed script run twice with same username, when executed, then it does not create duplicates (idempotent).
+- [x] Passwords are stored only as hashes (never plaintext in DB or logs).
+- [x] Login SPA: username/password form signs clinician into `/dashboard`.
+- [x] Patient invite redeem and role redirects remain unchanged.
+- [x] Dev-login remains available only when `ALLOW_DEV_AUTH=true`.
 
 #### Test intent
 
@@ -158,21 +158,21 @@ M
 
 ## Definition of done
 
-- [ ] Acceptance criteria pass (unit + API + Playwright)
-- [ ] Lint/build green; Sprint 12/13 regression green
-- [ ] Backlog Done + CHANGELOG
-- [ ] User guide + setup/seed docs
-- [ ] QA report pass/fail
+- [x] Acceptance criteria pass (unit + API + Playwright)
+- [x] Lint/build green; Sprint 12/13 regression green
+- [x] Backlog Done + CHANGELOG
+- [x] User guide + setup/seed docs
+- [x] QA report pass/fail
 
 ## Handoff template
 
 - Backlog item ID: US-AUTH-CLINICIAN-PROD
-- Scope:
-- Acceptance criteria: (pass/fail)
-- Test evidence:
-- Risks/issues:
-- Next owner: QA → Planning
+- Scope: app_users + bcrypt login + seed + SPA
+- Acceptance criteria: **PASS** (see `docs/qa-sprint-14-report.md`)
+- Test evidence: pytest 24; Vitest 44; Playwright 8; lint/build green
+- Risks/issues: apply `app_users` DDL; strong seed password; rate-limit follow-on
+- Next owner: Planning Agent
 
 ## Next owner
 
-**Development Agent** — start with `app_users` model + hash/verify tests (TDD), then login API, seed script, SPA.
+**Planning Agent** — merge PR #13; next candidates: `US-OPS-PROD-COMPOSE`, JWT harden, R4 mobile.

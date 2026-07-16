@@ -544,7 +544,7 @@ Test intent:
 | US-SESS-UI | Must | R1-UI | US-SESS-001, US-SESS-002, US-INT-005 | **Done (Sprint 11).** Session log + note suggest. |
 | US-DIARY-UI-PATIENT | Should | R2+ | US-DIARY-UI | **Sprint 12 — Done.** Patient `/diario` + patient JWT (`sub` = UUID). See `sprint-12.md`. |
 | US-DIARY-AUTH-PROD | Should | R2+ | US-DIARY-UI-PATIENT | **Sprint 13 — Done.** Single-use invite link → patient JWT with `exp`. See `sprint-13.md`. |
-| US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Ready.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
+| US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Done.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
@@ -554,7 +554,7 @@ Release definition:
 - **R1-UI (Sprint 11 — done):** continuity UI — risk flags, clinician-proxy diary, trends/plateaus, sessions. See [`sprint-11.md`](sprint-11.md), [`qa-sprint-11-report.md`](qa-sprint-11-report.md).
 - **R2+ patient engagement (Sprint 12 — done):** patient self-serve diary (**US-DIARY-UI-PATIENT**) — [`sprint-12.md`](sprint-12.md).
 - **R2+ patient auth (Sprint 13 — done):** invite-link patient authentication (**US-DIARY-AUTH-PROD**) — [`sprint-13.md`](sprint-13.md).
-- **R2+ clinician auth (Sprint 14 — ready):** username/password login + seed (**US-AUTH-CLINICIAN-PROD**) — [`sprint-14.md`](sprint-14.md).
+- **R2+ clinician auth (Sprint 14 — done):** username/password login + seed (**US-AUTH-CLINICIAN-PROD**) — [`sprint-14.md`](sprint-14.md).
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
