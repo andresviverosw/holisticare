@@ -2,15 +2,14 @@
 
 ## Ongoing Tasks
 
-- **Sprint 13 merged** to `main` (PR #11).
-- **Sprint 14 planning complete:** `docs/sprint-14.md` — US-AUTH-CLINICIAN-PROD ready for Development Agent.
-- Locked: app_users + bcrypt + POST /auth/login + seed_clinician.py; JWT with exp.
+- **Sprint 14 complete / QA PASS:** US-AUTH-CLINICIAN-PROD — clinician password login.
+- PR: https://github.com/andresviverosw/holisticare/pull/13
 
 ## Known Issues
 
-- Existing DBs need `patient_diary_invites` (Sprint 13) and will need `app_users` (Sprint 14).
-- Prod compose overlay still follow-on.
+- Existing DBs need `app_users` (+ earlier `patient_diary_invites`) DDL.
+- Prod compose overlay still follow-on (`US-OPS-PROD-COMPOSE`).
 
 ## Next Steps
 
-- Development Agent: TDD user model/hash → login API → seed script → Login SPA → QA.
+- Planning Agent: merge PR #13; prioritize prod compose, JWT harden, or R4 mobile.

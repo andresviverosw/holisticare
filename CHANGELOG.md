@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **Sprint 14 execution (US-AUTH-CLINICIAN-PROD):** `app_users` + bcrypt, `POST /auth/login`, `seed_clinician.py`, Login username/password SPA.
+- **Sprint 14 QA:** Playwright clinician login smoke + report (`docs/qa-sprint-14-report.md`).
 - **Sprint 14 planning:** `US-AUTH-CLINICIAN-PROD` ready-for-dev (`docs/sprint-14.md`) — username/password login + seed clinician JWT with `exp`.
 - **Sprint 13 execution (US-DIARY-AUTH-PROD):** single-use diary invites (`POST /rag/diary/invites`, `POST /auth/redeem-invite`), patient JWT `exp`, Dashboard/Login SPA.
 - **Sprint 13 QA:** Playwright invite smoke + report (`docs/qa-sprint-13-report.md`).

@@ -10,7 +10,7 @@
 | Priority | Should (R2+) — unblock clinician SPA when `ALLOW_DEV_AUTH=false` |
 | Scope | Local clinician/admin user store + password login issuing JWT with `exp` |
 | Owner | Planning → Development (TDD) → QA |
-| Status | **Ready for development** (planning complete 2026-07-16) |
+| Status | **Complete / QA PASS** (2026-07-16) |
 
 ## Problem statement
 
