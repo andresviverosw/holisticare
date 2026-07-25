@@ -43,6 +43,7 @@ from app.services.analytics_service import (
     get_patient_recovery_trajectory_payload,
 )
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
+from app.services.diary_invite_service import InviteError, create_diary_invite
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
 from app.services.session_note_service import suggest_session_note
 from app.services.plan_memory_bank_service import (
@@ -345,6 +346,44 @@ async def save_diary_checkin(
         "patient_id": str(row.patient_id),
         "entry_date": row.entry_date.isoformat(),
         "checkin": row.diary_json,
+    }
+
+
+class DiaryInviteCreateRequest(BaseModel):
+    patient_id: UUID4
+
+
+@router.post("/diary/invites")
+async def create_patient_diary_invite(
+    request: DiaryInviteCreateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: AuthUser = Depends(require_roles("clinician", "admin")),
+) -> dict[str, Any]:
+    """US-DIARY-AUTH-PROD — clinician issues a single-use patient diary invite (plaintext once)."""
+    from app.core.config import get_settings
+
+    try:
+        created = await create_diary_invite(
+            db,
+            patient_id=request.patient_id,
+            created_by_sub=current_user.sub,
+        )
+    except InviteError as exc:
+        raise HTTPException(status_code=400, detail=exc.message) from exc
+
+    settings = get_settings()
+    redeem_path = f"/login?invite={created.plaintext_token}"
+    base = (settings.public_app_base_url or "").rstrip("/")
+    redeem_url = f"{base}{redeem_path}" if base else redeem_path
+    return {
+        "invite_id": str(created.invite.id),
+        "patient_id": str(created.invite.patient_id),
+        "expires_at": created.invite.expires_at.isoformat().replace("+00:00", "Z")
+        if created.invite.expires_at.tzinfo
+        else created.invite.expires_at.isoformat() + "Z",
+        "redeem_path": redeem_path,
+        "redeem_url": redeem_url,
+        "token": created.plaintext_token,
     }
 
 

@@ -8,7 +8,7 @@ import anthropic
 import openai
 import pytest
 from fastapi.testclient import TestClient
-from jose import jwt
+import jwt
 
 from app.api.deps import AuthUser, get_current_user, get_rag_pipeline
 from app.core.config import get_settings

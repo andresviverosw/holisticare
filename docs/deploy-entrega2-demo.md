@@ -1,5 +1,7 @@
 # Despliegue demo — Entrega 2 LIDR (Render)
 
+> **Entrega final:** use [`deploy-final-demo.md`](deploy-final-demo.md) as the canonical checklist (same Render topology; deltas for current auth/schema). This file remains the Entrega 2 historical runbook.
+
 Guía para montar HolistiCare **desde cero** en un entorno accesible por URL pública (requisito Entrega 2).
 
 **Tiempo estimado:** 45–90 min (primera vez).

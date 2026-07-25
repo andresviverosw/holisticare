@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(auth.auth_router, tags=["Auth"])
     if settings.allow_dev_auth:
         app.include_router(auth.dev_auth_router, tags=["Auth"])
     app.include_router(rag.router, prefix="/rag", tags=["RAG"])

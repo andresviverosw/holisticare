@@ -116,3 +116,30 @@ CREATE TABLE IF NOT EXISTS patient_diary_entries (
 
 CREATE INDEX IF NOT EXISTS patient_diary_entries_patient_date_idx
     ON patient_diary_entries (patient_id, entry_date DESC);
+
+-- ─── Patient diary invites (US-DIARY-AUTH-PROD) ────────────────
+CREATE TABLE IF NOT EXISTS patient_diary_invites (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id      UUID NOT NULL,
+    token_hash      VARCHAR(64) NOT NULL,
+    expires_at      TIMESTAMPTZ NOT NULL,
+    redeemed_at     TIMESTAMPTZ,
+    created_by_sub  VARCHAR(255) NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_patient_diary_invite_token_hash UNIQUE (token_hash)
+);
+
+CREATE INDEX IF NOT EXISTS patient_diary_invites_patient_idx
+    ON patient_diary_invites (patient_id, created_at DESC);
+
+-- ─── App users (US-AUTH-CLINICIAN-PROD) ────────────────────────
+CREATE TABLE IF NOT EXISTS app_users (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username        VARCHAR(64) NOT NULL,
+    password_hash   VARCHAR(255) NOT NULL,
+    role            VARCHAR(32) NOT NULL,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_app_users_username UNIQUE (username),
+    CONSTRAINT ck_app_users_role CHECK (role IN ('clinician', 'admin'))
+);

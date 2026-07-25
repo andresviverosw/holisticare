@@ -117,6 +117,9 @@ These items motivated work; they are **not** the current state of pinned version
    - Set `ALLOW_DEV_AUTH=false` (or omit; default in `Settings` is false).
    - Confirm `POST /auth/dev-login` returns **404** (route absent), not a token.
    - Never set `ALLOW_DEV_AUTH=true` on staging/production hosts.
+   - Patient diary production path: use invite redeem (`POST /auth/redeem-invite`, always mounted) — **US-DIARY-AUTH-PROD**; do not treat patient UUID as a password.
+   - Clinician production path: username/password via `POST /auth/login` + `seed_clinician.py` (**US-AUTH-CLINICIAN-PROD**); store bcrypt hashes only.
+   - Production process layout: `docker-compose.prod.yml` + Caddy (**US-OPS-PROD-COMPOSE**); never enable `ALLOW_DEV_AUTH` there.
 
 - [x] TODO-SEC-008 Add security checks to CI
 - Add job for:
@@ -151,6 +154,19 @@ These items motivated work; they are **not** the current state of pinned version
 - Verify:
   - `pip-audit -r backend/requirements.txt` reports no known vulnerabilities.
   - backend tests remain green after dependency update.
+
+- [x] TODO-SEC-011 Patch July 2026 `pip-audit` findings (CI `security-audit` blocker)
+- Context: CI reported vulnerabilities in `pydantic-settings`, `pypdf`, `transformers`, `pillow`, transitive `starlette` (via FastAPI), and unfixed `ecdsa` pulled by `python-jose`.
+- Implemented:
+  - Bumped: `fastapi==0.139.0` (pulls `starlette>=1.3.1`), `pydantic-settings==2.14.2`, `pypdf==6.14.2` (was 6.13.3; CVE-2026-59935..59938), `pillow==12.3.0`, `transformers==5.5.0`
+  - Follow-up (2026-07-25 CI): frontend React `19.2.7` + `react-router@8.3.0` (replaces `react-router-dom@6`); npm `overrides` for `brace-expansion@5.0.8` and `minimatch@^10.2.5`; CI Node `22.22` (RR8 engine).
+  - Replaced `python-jose[cryptography]` with `PyJWT[crypto]==2.13.0` (HS256-only auth; removes unfixed `ecdsa` advisories from the tree)
+  - Updated JWT encode/decode call sites under `backend/app/api/` and related tests/scripts
+  - Frontend: `npm audit fix` + raised minimum ranges (`axios`, `vite`, `vitest`, `react-router-dom`, `postcss`) so `npm audit --audit-level=moderate` is clean
+- Verify:
+  - `pip-audit` (installed tree) → no known vulnerabilities
+  - `npm audit --audit-level=moderate` (frontend) → 0 vulnerabilities
+  - `pytest -q` (backend) green; `npm run lint|test|build` green
 
 ## Notes and assumptions
 

@@ -1,16 +1,20 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "../context/AuthContext";
+import { canAccessClinicianRoutes, homePathForRole } from "../utils/authRoles";
 
 /**
- * Clinician-only SPA: any authenticated JWT is allowed (role patient would still work
- * if pasted, but flows are intended for clinician/admin).
+ * Clinician/admin SPA shell. Patients are redirected to `/diario`.
  */
 export default function RequireClinician() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (!canAccessClinicianRoutes({ isAuthenticated, role })) {
+    return <Navigate to={homePathForRole(role)} replace />;
   }
 
   return <Outlet />;

@@ -7,7 +7,8 @@ import uuid
 from pydantic import BaseModel
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 
 from app.core.config import get_settings
 from app.rag.pipeline import RAGPipeline
@@ -39,7 +40,7 @@ def get_current_user(
     settings = get_settings()
     try:
         payload = jwt.decode(credentials.credentials, settings.secret_key, algorithms=["HS256"])
-    except JWTError as exc:
+    except InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail="Invalid authentication token") from exc
     role = payload.get("role")
     if not role:

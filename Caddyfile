@@ -1,0 +1,12 @@
+# HolistiCare API reverse proxy (US-OPS-PROD-COMPOSE)
+# Replace api.example.com with your real API hostname before first deploy.
+# Caddy will obtain and renew Let's Encrypt certificates automatically.
+
+api.example.com {
+	reverse_proxy backend:8000
+	encode zstd gzip
+	log {
+		output file /data/access.log
+		format json
+	}
+}

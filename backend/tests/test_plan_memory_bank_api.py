@@ -13,7 +13,7 @@ from app.models.treatment_plan import TreatmentPlan
 
 
 def _auth() -> dict[str, str]:
-    from jose import jwt
+    import jwt
 
     from app.core.config import get_settings
 

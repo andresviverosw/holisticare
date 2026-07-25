@@ -35,7 +35,12 @@ For the master's Typeform delivery — **protocolo proyecto propio / avanzado (N
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-10.md` |
+| Sprint notes | `sprint-01.md` … `sprint-15.md` |
+| Sprint 11 QA report | `qa-sprint-11-report.md` |
+| Sprint 12 QA report | `qa-sprint-12-report.md` |
+| Sprint 13 QA report | `qa-sprint-13-report.md` |
+| Sprint 14 QA report | `qa-sprint-14-report.md` |
+| Sprint 15 QA report | `qa-sprint-15-report.md` |
 | Project memory (Cursor MCP) | `memory-bank/README.md` at repository root |
 
 ## How to use
@@ -85,13 +90,16 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current:** Pilot readiness hardening + clinician dry-runs (post `US-PRED-001` / `US-PRED-002` delivery).
-- **Recently completed:** `US-PRED-001` (recovery trajectory) and `US-PRED-002` (recommendation layer) on backend + dashboard + E2E; [`sprint-10.md`](sprint-10.md) — Sprint 10 (US-PLAN-004 memory bank); [`sprint-09.md`](sprint-09.md) — Sprint 9 (US-INT-005).
-- **Next planned (post-pilot):**
-  - Production overlay for Compose (`docker-compose.prod.yml`, `Caddyfile`, no dev auth)
-  - Hybrid stack baseline (compute + managed Postgres with pgvector + Cloudflare frontend)
-  - Ops hardening (`pg_dump` backups, UptimeRobot/Sentry, restore drill)
-  - Compliance hardening (cross-border consent text, DPA checklist, audit logging validation)
+- **Current focus:** **Final delivery / capstone closeout** — [`final-delivery-plan.md`](final-delivery-plan.md) (**Approved**; D1–D4 locked).
+- **Recently completed:** Sprint 15 — US-OPS-PROD-COMPOSE — **complete / QA PASS** ([`sprint-15.md`](sprint-15.md), [`qa-sprint-15-report.md`](qa-sprint-15-report.md)); Sprint 14 clinician login; Sprint 13 invites.
+- **In final window (Must):**
+  - `US-PRIV-001` — anonymize/pseudonymize before external LLM calls
+  - `US-OPS-SPA-HOST` + **DEPLOY-01** — public **Render** deploy (Blueprint), same approach as Entrega 2 — [`deploy-final-demo.md`](deploy-final-demo.md)
+  - Phase 1 FR/NFR + Phase 3 privacy dictionary closeout
+  - RAG eval short report + **public** demo walkthrough + clinician feedback artifact
+- **Deferred (cut from final window):**
+  - JWT harden / password reset / IdP
+  - R4 mobile (`US-MOB-001..003`)
 
 ### Sprint history (reference)
 
@@ -105,6 +113,15 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-08.md` - Sprint 8 (US-RAG-004 config-driven nutrition safety dictionaries) — **complete**
 - `sprint-09.md` - Sprint 9 (US-INT-005 automatic patient UUID + recent patients) — **complete**
 - `sprint-10.md` - Sprint 10 (US-PLAN-004 approved plan memory bank) — **complete**
+- `sprint-11.md` - Sprint 11 (R1-UI continuity panels) — **complete / QA PASS**
+- `sprint-12.md` - Sprint 12 (US-DIARY-UI-PATIENT patient self-serve diary) — **complete / QA PASS**
+- `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
+- `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
+- `sprint-15.md` - Sprint 15 (US-OPS-PROD-COMPOSE production Compose + Caddy) — **complete / QA PASS**
+- `sprint-16.md` - Sprint 16 (final delivery: US-PRIV-001 + US-OPS-SPA-HOST + Render deploy) — **ready for dev**
+- `final-delivery-plan.md` - Capstone final-delivery plan (**Approved**; D1–D4 locked; D2 = Render)
+- `deploy-entrega2-demo.md` - Entrega 2 Render deploy guide (historical)
+- `deploy-final-demo.md` - Entrega final Render deploy guide (canonical)
 
 ## Suggested cadence
 

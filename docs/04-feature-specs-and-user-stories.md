@@ -70,8 +70,8 @@ Translate requirements into implementable product specifications, user stories, 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
 | US-INT-001 | Patient intake and profile | Clinician | to complete a structured intake form with required clinical fields | patient baseline data is complete and analyzable | Must | M | Done (backend API slice) |
-| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | Done (backend API slice) |
-| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice) |
+| US-INT-002 | Patient intake and profile | Clinician | AI to flag risk indicators from intake responses | I can identify contraindications early | Must | M | **Done (UI + API, Sprint 11)** |
+| US-INT-003 | Patient intake and profile | Admin | to edit and correct patient demographic/contact data with audit trail | records remain accurate and compliant | Should | S | Done (backend API slice); UI deferred |
 | US-INT-004 | Patient intake and profile | Clinician | to enter intake data using a structured form instead of raw JSON in the plan generator | I avoid syntax errors and confusion when preparing `generic_holistic_v0` for plan generation | Should | M | Done (UI + API) |
 | US-INT-005 | Patient intake and profile | Clinician | the tool to assign a new RFC-4122 UUID v4 for a new patient and to retrieve or select an existing patient identifier | I never have to invent or type UUIDs by hand, and I can return to a known patient safely | Should | M | Done (Sprint 9) |
 | US-PLAN-001 | AI treatment planning | Clinician | to generate a draft multi-week treatment plan from patient profile and goals | I get a high-quality starting point faster | Must | L | Done (backend Sprint 1) |
@@ -82,17 +82,24 @@ Translate requirements into implementable product specifications, user stories, 
 | US-RAG-002 | Knowledge base (RAG) | Admin | to load my curated clinical corpus into the running system and confirm retrieval works | plan generation uses my real evidence base instead of mock samples | Must | M | Done (ops + verification) |
 | US-RAG-003 | Knowledge base (RAG) | Clinician | to include nutrition evidence in the corpus and retrieve profile-aware dietary guidance | generated plans include what to eat and what to avoid based on patient profile and contraindications | Must | M | Done (backend + ops + UI review) |
 | US-RAG-004 | Knowledge base (RAG) | Clinician | to manage nutrition safety synonym dictionaries via configuration | safety matching can be updated quickly without code changes and remains clinically aligned | Should | M | Done (Sprint 8) |
-| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | Done (backend API slice) |
-| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | Done (backend API slice) |
-| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | Done (backend API slice) |
-| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | Done (backend API slice) |
-| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | Done (backend API slice) |
-| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | Done (backend API slice) |
+| US-SESS-001 | Session logging | Clinician | to log session interventions and observations in structured format | progress can be tracked across time | Must | M | **Done (UI + API, Sprint 11)** |
+| US-SESS-002 | Session logging | Clinician | AI to suggest note completion from structured inputs | documentation time decreases | Should | M | **Done (UI + API, Sprint 11)** |
+| US-DIARY-001 | Patient diary | Patient | to submit daily pain, sleep, mood, and function check-ins | my progress between sessions is visible | Must | M | **Done (clinician-proxy UI + API, Sprint 11)** |
+| US-DIARY-002 | Patient diary | Patient | to add optional free-text notes in Spanish | I can provide relevant context in my own words | Should | S | **Done (clinician-proxy UI + API, Sprint 11)** |
+| US-ANLY-001 | Progress analytics | Clinician | to view trends for core outcomes over time | I can evaluate therapy effectiveness | Must | M | **Done (UI + API, Sprint 11)** |
+| US-ANLY-002 | Progress analytics | Clinician | to detect plateaus and worsening trends automatically | I can intervene earlier | Must | M | **Done (UI + API, Sprint 11)** |
 | US-PRED-001 | Outcome prediction | Clinician | to estimate recovery trajectory based on patient history | I can set realistic treatment expectations | Should | L | Done (backend + dashboard + E2E) |
 | US-PRED-002 | Outcome prediction | Clinician | to receive adjustment suggestions when predicted progress declines | I can adapt plans proactively | Should | L | Done (backend + dashboard + E2E) |
-| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
-| US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned |
-| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned |
+| US-DIARY-UI-PATIENT | Patient diary | Patient | to submit my own daily diary check-ins with a patient JWT | my between-session outcomes are captured without clinician proxy entry | Should | M | **Done (Sprint 12)** |
+| US-DIARY-AUTH-PROD | Patient diary | Clinician / Patient | to invite a patient with a single-use link that issues a patient JWT | patients can use `/diario` without `ALLOW_DEV_AUTH` or UUID-as-password | Should | M | **Done (Sprint 13)** |
+| US-AUTH-CLINICIAN-PROD | Auth | Clinician / Admin | to sign in with username and password when dev auth is off | I can use the SPA in staging/production without minting JWTs by hand | Should | M | **Done (Sprint 14)** |
+| US-OPS-PROD-COMPOSE | Ops | Admin | to run the API with a production Compose overlay (Caddy TLS, no dev auth) | I can deploy without the unsafe bind-mount/reload stack | Should | M | **Done (Sprint 15)** |
+| US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Ready for dev (final delivery)** |
+| US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
+| US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Ready for dev (final delivery — D2 locked Render)** |
+| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned (deferred — final delivery cut) |
+| US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — final delivery cut) |
+| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned (deferred — final delivery cut) |
 
 ## 5. Story-level acceptance criteria
 
@@ -127,6 +134,8 @@ Implementation evidence (backend):
 - `GET /rag/intake/{patient_id}/risk-flags` implemented with deterministic rule-based risk analysis.
 - Returns `404` when intake is missing and `503` fallback message if risk analysis fails unexpectedly.
 - Regression tests in `backend/tests/test_plan_generate_api.py` for success and not-found contracts.
+
+UI slice (Sprint 11): **US-INT-002-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). Dashboard must surface flags after intake load; acknowledgements deferred (no persistence yet).
 
 ### US-INT-003 - Intake edit with audit trail
 
@@ -203,6 +212,8 @@ Implementation evidence (backend):
 - `POST /rag/sessions` and `GET /rag/sessions/patient/{patient_id}` (JWT roles `clinician` or `admin`).
 - Contract tests in `backend/tests/test_session_api.py`.
 
+UI slice (Sprint 11): **US-SESS-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). E2E was deferred pending this form.
+
 ### US-SESS-002 - AI-assisted note completion
 
 - Given structured interventions and optional draft text, when a clinician requests note assistance, then the API returns suggested observations and patient-reported response text.
@@ -217,6 +228,8 @@ Implementation evidence (backend):
 - Suggestion service in `backend/app/services/session_note_service.py`.
 - `POST /rag/sessions/suggest-note` endpoint (JWT roles `clinician`/`admin`).
 - Tests in `backend/tests/test_session_api.py`.
+
+UI slice (Sprint 11): **US-SESS-UI** (Should assist bundled with Must log) — ready for development; see [`sprint-11.md`](sprint-11.md).
 
 ### US-PLAN-001 - Draft treatment plan generation
 
@@ -306,6 +319,44 @@ Implementation evidence (backend):
 - JWT roles: `patient`, `clinician`, or `admin`. **Patient** tokens must use `sub` equal to the target `patient_id` (UUID) or the API returns `403`.
 - Tests: `backend/tests/test_diary_api.py`, `backend/tests/test_diary_service.py`.
 
+UI slice (Sprint 11): **US-DIARY-UI** — clinician proxy on Dashboard (**done**). Patient self-serve: **US-DIARY-UI-PATIENT** — see [`sprint-12.md`](sprint-12.md) (**Done**). Production patient auth: **US-DIARY-AUTH-PROD** — invite-link JWT — see [`sprint-13.md`](sprint-13.md) (**Done**).
+
+### US-DIARY-AUTH-PROD - Patient invite-link authentication
+
+- Given a clinician and a patient UUID, when they create a diary invite, then the API returns a single-use opaque token (plaintext once) and stores only a hash with TTL.
+- Given a valid unused invite, when the patient redeems it, then they receive a patient JWT (`sub` = patient UUID, `role=patient`, with `exp`) and can use `/diario` with `ALLOW_DEV_AUTH=false`.
+- Given a reused or expired invite, when redeemed, then the API rejects without issuing a JWT.
+- Given an expired patient JWT, when diary APIs are called, then the API returns `401`.
+
+Test intent:
+- Service/API: create, redeem, expire, single-use; JWT `exp` enforcement.
+- E2E: clinician invite → Login redeem → `/diario` (mocked).
+
+See [`sprint-13.md`](sprint-13.md).
+
+### US-AUTH-CLINICIAN-PROD - Clinician/admin password login
+
+- Given a seeded active clinician/admin, when they submit correct username/password to `POST /auth/login`, then they receive a JWT with matching `role`, UUID `sub`, and `exp`.
+- Given wrong credentials or inactive user, when login is attempted, then the API returns `401` without revealing whether the username exists.
+- Given `ALLOW_DEV_AUTH=false`, when password login succeeds, then the clinician SPA works without `/auth/dev-login`.
+
+Test intent:
+- Unit: bcrypt hash/verify; inactive rejection.
+- API + E2E: login happy/error paths; seed idempotency.
+
+See [`sprint-14.md`](sprint-14.md).
+
+### US-OPS-PROD-COMPOSE - Production Compose + Caddy overlay
+
+- Given the prod overlay files, when an operator deploys them, then the API runs without bind-mount/`--reload`, behind Caddy on 80/443, with `ALLOW_DEV_AUTH=false`.
+- Given the prod checklist, when smoke is run, then `/health` is ok and `/auth/dev-login` returns 404.
+
+Test intent:
+- Contract tests on compose YAML structure (CI, no live TLS).
+- Existing auth tests with `ALLOW_DEV_AUTH=false`.
+
+See [`sprint-15.md`](sprint-15.md).
+
 ### US-DIARY-002 - Optional Spanish free-text notes
 
 - Given a diary check-in, when a patient includes optional `notes_es`, then the value is trimmed, persisted, and returned in the API payload.
@@ -337,6 +388,8 @@ Implementation evidence (backend):
 - Service: `backend/app/services/analytics_service.py`; diary range query: `list_diary_entries_in_date_range` in `diary_service.py`.
 - Tests: `backend/tests/test_analytics_api.py`, `backend/tests/test_analytics_service.py`.
 
+UI slice (Sprint 11): **US-ANLY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). Depends on diary data entry via **US-DIARY-UI**.
+
 ### US-ANLY-002 - Plateau detection
 
 - Given longitudinal outcome data, when trend analysis runs, then plateau/worsening cases are flagged using defined thresholds.
@@ -353,6 +406,8 @@ Implementation evidence (backend):
 - `GET /rag/analytics/patient/{patient_id}/plateau-flags` with same ventana de fechas y autenticación que US-ANLY-001 (`clinician`/`admin`). Respuesta: `analysis_status` (`ok` | `insufficient_data`), `flags` con `code`, `severity`, `metric`, `message`, `detail` (español).
 - Orquestación en `get_patient_plateau_flags_payload` (`analytics_service.py`).
 - Tests: `backend/tests/test_plateau_service.py`, `backend/tests/test_plateau_api.py`.
+
+UI slice (Sprint 11): **US-ANLY-UI** — ready for development; see [`sprint-11.md`](sprint-11.md). E2E “flagged patient on dashboard” was deferred pending this panel.
 
 ### US-RAG-001 - Multi-format corpus ingestion
 
@@ -498,15 +553,65 @@ Test intent:
 | US-INT-005 | Should | R2 | US-INT-004 | **Done (Sprint 9).** Dashboard: Nuevo paciente, Copiar ID, validación v4, recientes en `localStorage` — see `sprint-09.md` |
 | US-PRED-001 | Should | R3 | US-ANLY-001 | **Done.** Recovery trajectory endpoint + dashboard panel + tests |
 | US-PRED-002 | Should | R3 | US-PRED-001 | **Done.** Recommendation layer endpoint + dashboard panel + tests |
-| US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
-| US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
-| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
+| US-INT-002-UI | Must | R1-UI | US-INT-002, US-INT-004 | **Sprint 11.** Surface risk flags on Dashboard (read-only). See `sprint-11.md`. |
+| US-DIARY-UI | Must | R1-UI | US-DIARY-001, US-DIARY-002, US-INT-005 | **Done (Sprint 11).** Clinician-proxy diary. |
+| US-ANLY-UI | Must | R1-UI | US-ANLY-001, US-ANLY-002, US-DIARY-UI | **Done (Sprint 11).** Outcomes trend + plateau flags. |
+| US-SESS-UI | Must | R1-UI | US-SESS-001, US-SESS-002, US-INT-005 | **Done (Sprint 11).** Session log + note suggest. |
+| US-DIARY-UI-PATIENT | Should | R2+ | US-DIARY-UI | **Sprint 12 — Done.** Patient `/diario` + patient JWT (`sub` = UUID). See `sprint-12.md`. |
+| US-DIARY-AUTH-PROD | Should | R2+ | US-DIARY-UI-PATIENT | **Sprint 13 — Done.** Single-use invite link → patient JWT with `exp`. See `sprint-13.md`. |
+| US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Done.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
+| US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
+| US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Final delivery.** Anonymize/pseudonymize intake before Claude/OpenAI calls. See [`final-delivery-plan.md`](final-delivery-plan.md). |
+| US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
+| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Final delivery (D2 Render).** `VITE_API_BASE_URL` + `render.yaml` / Static Site; companion ops **DEPLOY-01**. See [`deploy-final-demo.md`](deploy-final-demo.md). |
+| US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
+| US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
+| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
+- **R1-UI (Sprint 11 — done):** continuity UI — risk flags, clinician-proxy diary, trends/plateaus, sessions. See [`sprint-11.md`](sprint-11.md), [`qa-sprint-11-report.md`](qa-sprint-11-report.md).
+- **R2+ patient engagement (Sprint 12 — done):** patient self-serve diary (**US-DIARY-UI-PATIENT**) — [`sprint-12.md`](sprint-12.md).
+- **R2+ patient auth (Sprint 13 — done):** invite-link patient authentication (**US-DIARY-AUTH-PROD**) — [`sprint-13.md`](sprint-13.md).
+- **R2+ clinician auth (Sprint 14 — done):** username/password login + seed (**US-AUTH-CLINICIAN-PROD**) — [`sprint-14.md`](sprint-14.md).
+- **R2+ prod ops (Sprint 15 — done):** production Compose + Caddy (**US-OPS-PROD-COMPOSE**) — [`sprint-15.md`](sprint-15.md).
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
+- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public **Render** deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as Entrega 2), Phase 1/3 documentation completion, RAG eval report, public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md) and [`deploy-final-demo.md`](deploy-final-demo.md). Mobile / JWT harden / IdP remain deferred.
+
+### US-PRIV-001 - Anonymize patient data before external LLM calls
+
+- Given intake JSON that includes `patient_id` and optional contact-like strings in free text, when a clinical summary is built for RAG, then the outbound LLM payload contains no raw `patient_id` and no matched email/phone patterns.
+- Given plan generation, when the generator calls the LLM, then the prompt uses a local placeholder for the patient token and the persisted plan still stores the real `patient_id`.
+- Given anonymization validation fails, when generation is attempted, then the API errors without calling the external LLM.
+- Given Phase 3 privacy docs, when reviewed, then US-PRIV-001 is mapped as an LFPDPPP international-transfer mitigation control (with residual legal caveat).
+
+Test intent:
+- Unit: scrubber fixtures (email, phone, UUID, free-text).
+- Integration: mock LLM chat and assert call args omit identifiers; persistence still binds real `patient_id`.
+- E2E: deferred; covered by API/pipeline regression.
+
+Implementation notes:
+- Prefer a single choke point in `RAGPipeline.generate_plan` before query construction.
+- Local DB remains identified by UUID (egress pseudonymization, not record erasure).
+- Full story + sequencing: [`final-delivery-plan.md`](final-delivery-plan.md) §4.
+
+### US-OPS-SPA-HOST - SPA API base URL for Render Static Site
+
+- Given `VITE_API_BASE_URL` is set at build time, when the SPA boots, then the HTTP client uses that absolute API origin.
+- Given `VITE_API_BASE_URL` is unset, when running local Vite, then the client falls back to `/api` (proxy-compatible).
+- Given production CORS allowlist includes the Render Static Site origin, when the SPA calls login and a smoke RAG path, then browser requests succeed.
+- Given deployment docs, when an operator follows [`deploy-final-demo.md`](deploy-final-demo.md), then `render.yaml`, env vars, and SPA rewrites match this repo.
+
+Test intent:
+- Unit: base URL resolution helper (configured vs fallback).
+- Integration/contract: optional axios factory test; CORS documented for Render.
+- Ops: **DEPLOY-01** Render public health + demo login smoke (not CI-blocking for unit suite).
+
+Implementation notes:
+- On `main`, `frontend/src/services/api.js` hardcodes `baseURL: "/api"` — reintroduce Entrega 2 pattern: `import.meta.env.VITE_API_BASE_URL || "/api"`.
+- Companion live deploy checklist: [`deploy-final-demo.md`](deploy-final-demo.md).
 
 ## 8. Definition of ready / done
 

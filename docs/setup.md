@@ -6,7 +6,7 @@ This guide provides a clean, repeatable setup for HolistiCare on local developme
 
 - Docker Desktop (running)
 - Python 3.10+
-- Node.js LTS and npm
+- Node.js **≥ 22.22** and npm (React Router 8 engine requirement; CI uses 22.22)
 
 Optional but recommended:
 - PowerShell 7+
@@ -64,6 +64,33 @@ docker compose up -d backend
 ```
 
 Never set `ALLOW_DEV_AUTH=true` in production. See `09-security-audit-and-todos.md` (TODO-SEC-007).
+
+### 3.1b) Clinician password login (`US-AUTH-CLINICIAN-PROD`)
+
+Production/staging clinician access uses `POST /auth/login` (always mounted) with a seeded user in `app_users`.
+
+1. Ensure `app_users` exists (fresh `infra/init.sql`, or apply the DDL fragment).
+2. Seed once:
+
+```bash
+SEED_CLINICIAN_USERNAME=clinician \
+SEED_CLINICIAN_PASSWORD='use-a-strong-password' \
+SEED_CLINICIAN_ROLE=clinician \
+python -m scripts.seed_clinician
+```
+
+3. Sign in on `/login` with Usuario / Contraseña.
+
+Patients continue to use invite redeem (`US-DIARY-AUTH-PROD`), not password accounts.
+
+### 3.1c) Production Compose overlay (`US-OPS-PROD-COMPOSE`)
+
+Do **not** run the root `docker-compose.yml` (dev bind-mount/`--reload`) as production.
+
+Use:
+- `docker-compose.prod.yml` + `Caddyfile` + `.env.prod` (from `.env.prod.example`)
+- Details and smoke checklist: `docs/06-deployment-and-ops-runbook.md` (production Compose section)
+- Image publish: `.github/workflows/build-backend.yml` (push to `main` affecting `backend/`)
 
 ### 3.2) Backend Docker image vs `requirements.txt`
 

@@ -15,12 +15,20 @@ htmlcov/
 
 # Environment
 .env
+.env.prod
 *.env.local
+# Keep committed templates:
+!.env.example
+!.env.prod.example
+!.env.clinician.example
 
 # Node
 node_modules/
 dist/
 .vite/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
 
 # Data — don't commit real clinical PDFs
 backend/data/raw/
