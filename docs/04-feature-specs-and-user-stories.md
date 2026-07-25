@@ -94,9 +94,11 @@ Translate requirements into implementable product specifications, user stories, 
 | US-DIARY-AUTH-PROD | Patient diary | Clinician / Patient | to invite a patient with a single-use link that issues a patient JWT | patients can use `/diario` without `ALLOW_DEV_AUTH` or UUID-as-password | Should | M | **Done (Sprint 13)** |
 | US-AUTH-CLINICIAN-PROD | Auth | Clinician / Admin | to sign in with username and password when dev auth is off | I can use the SPA in staging/production without minting JWTs by hand | Should | M | **Done (Sprint 14)** |
 | US-OPS-PROD-COMPOSE | Ops | Admin | to run the API with a production Compose overlay (Caddy TLS, no dev auth) | I can deploy without the unsafe bind-mount/reload stack | Should | M | **Done (Sprint 15)** |
-| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned |
-| US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned |
-| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned |
+| US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Ready for dev (final delivery)** |
+| US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
+| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned (deferred — final delivery cut) |
+| US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — final delivery cut) |
+| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned (deferred — final delivery cut) |
 
 ## 5. Story-level acceptance criteria
 
@@ -558,9 +560,11 @@ Test intent:
 | US-DIARY-AUTH-PROD | Should | R2+ | US-DIARY-UI-PATIENT | **Sprint 13 — Done.** Single-use invite link → patient JWT with `exp`. See `sprint-13.md`. |
 | US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Done.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
 | US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
-| US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) |
-| US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior |
-| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow |
+| US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Final delivery.** Anonymize/pseudonymize intake before Claude/OpenAI calls. See [`final-delivery-plan.md`](final-delivery-plan.md). |
+| US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
+| US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
+| US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
+| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
@@ -572,6 +576,24 @@ Release definition:
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
+- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), Phase 1/3 documentation completion, RAG eval report, demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md). Mobile / SPA host / IdP remain deferred.
+
+### US-PRIV-001 - Anonymize patient data before external LLM calls
+
+- Given intake JSON that includes `patient_id` and optional contact-like strings in free text, when a clinical summary is built for RAG, then the outbound LLM payload contains no raw `patient_id` and no matched email/phone patterns.
+- Given plan generation, when the generator calls the LLM, then the prompt uses a local placeholder for the patient token and the persisted plan still stores the real `patient_id`.
+- Given anonymization validation fails, when generation is attempted, then the API errors without calling the external LLM.
+- Given Phase 3 privacy docs, when reviewed, then US-PRIV-001 is mapped as an LFPDPPP international-transfer mitigation control (with residual legal caveat).
+
+Test intent:
+- Unit: scrubber fixtures (email, phone, UUID, free-text).
+- Integration: mock LLM chat and assert call args omit identifiers; persistence still binds real `patient_id`.
+- E2E: deferred; covered by API/pipeline regression.
+
+Implementation notes:
+- Prefer a single choke point in `RAGPipeline.generate_plan` before query construction.
+- Local DB remains identified by UUID (egress pseudonymization, not record erasure).
+- Full story + sequencing: [`final-delivery-plan.md`](final-delivery-plan.md) §4.
 
 ## 8. Definition of ready / done
 
