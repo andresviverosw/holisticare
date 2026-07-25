@@ -248,7 +248,8 @@ def _build_sessions(
     trajectory: TrajectoryId,
     rng_seed: int,
 ) -> list[SyntheticSession]:
-    rng = random.Random(rng_seed)
+    # Seeded synthetic clinical text only — not a security boundary.
+    rng = random.Random(rng_seed)  # nosec B311
     if trajectory == "short_series":
         n = 1
     else:
@@ -305,7 +306,8 @@ def _build_diary_entries(
     baseline_pain: int,
     rng_seed: int,
 ) -> list[SyntheticDiaryEntry]:
-    rng = random.Random(rng_seed)
+    # Seeded synthetic diary noise only — not a security boundary.
+    rng = random.Random(rng_seed)  # nosec B311
     points = build_diary_series(
         trajectory=trajectory,
         start_date=start_date,
