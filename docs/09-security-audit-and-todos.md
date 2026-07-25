@@ -159,6 +159,7 @@ These items motivated work; they are **not** the current state of pinned version
 - Context: CI reported vulnerabilities in `pydantic-settings`, `pypdf`, `transformers`, `pillow`, transitive `starlette` (via FastAPI), and unfixed `ecdsa` pulled by `python-jose`.
 - Implemented:
   - Bumped: `fastapi==0.139.0` (pulls `starlette>=1.3.1`), `pydantic-settings==2.14.2`, `pypdf==6.14.2` (was 6.13.3; CVE-2026-59935..59938), `pillow==12.3.0`, `transformers==5.5.0`
+  - Follow-up (2026-07-25 CI): frontend React `19.2.7` + `react-router@8.3.0` (replaces `react-router-dom@6`); npm `overrides` for `brace-expansion@5.0.8` and `minimatch@^10.2.5`; CI Node `22.22` (RR8 engine).
   - Replaced `python-jose[cryptography]` with `PyJWT[crypto]==2.13.0` (HS256-only auth; removes unfixed `ecdsa` advisories from the tree)
   - Updated JWT encode/decode call sites under `backend/app/api/` and related tests/scripts
   - Frontend: `npm audit fix` + raised minimum ranges (`axios`, `vite`, `vitest`, `react-router-dom`, `postcss`) so `npm audit --audit-level=moderate` is clean
