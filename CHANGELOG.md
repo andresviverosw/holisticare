@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI backend-tests:** `test_redeem_invite_200_returns_patient_jwt_with_exp` used a fixed July-16 `expires_at`, which became expired vs wall-clock `datetime.now(UTC)` after that date (410 instead of 200).
+- **CI security-audit:** bump `pypdf` `6.13.3` → `6.14.2` (CVE-2026-59935..59938).
+
 ### Added
 
 - **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** on **Render** (Entrega 2 parity: `render.yaml`, `docs/deploy-final-demo.md`); mobile/JWT-harden/IdP cut.
