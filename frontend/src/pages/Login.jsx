@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { formatApiError } from "../utils/apiErrors";
 import { homePathForRole } from "../utils/authRoles";
