@@ -44,7 +44,7 @@ Follow [`deploy-final-demo.md`](deploy-final-demo.md) / [`deploy-entrega2-demo.m
 - **DB:** Render PostgreSQL 16 (Neon fallback only if `vector` unavailable)
 - **API:** Docker web service `holisticare-api` (`backend/Dockerfile`)
 - **SPA:** Render Static Site with `VITE_API_BASE_URL` → API origin
-- **Auth (demo default):** `ALLOW_DEV_AUTH=true` for TA “Entrar desarrollo”, plus seeded clinician login documented
+- **Auth (locked):** `ALLOW_DEV_AUTH=true` for TA “Entrar desarrollo”, plus seeded clinician login documented as secondary path
 - **Evidence:** public `*.onrender.com` (or custom) frontend + API `/health` in submission notes
 
 `docker-compose.prod.yml` / Hetzner+Cloudflare remain **alternate** ops paths, not the capstone demo host.

@@ -1,9 +1,10 @@
 import axios from "axios";
+import { resolveApiBaseUrl } from "../utils/apiBaseUrl";
 
 const TOKEN_KEY = "holisticare_token";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
   headers: { "Content-Type": "application/json" },
 });
 
