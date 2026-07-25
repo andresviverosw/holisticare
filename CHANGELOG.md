@@ -4,8 +4,14 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI backend-tests:** `test_redeem_invite_200_returns_patient_jwt_with_exp` used a fixed July-16 `expires_at`, which became expired vs wall-clock `datetime.now(UTC)` after that date (410 instead of 200).
+- **CI security-audit:** bump `pypdf` `6.13.3` → `6.14.2` (CVE-2026-59935..59938); frontend `npm audit` via React 19 + `react-router@8.3.0`, `brace-expansion@5.0.8` / `minimatch@10` overrides; CI Node `22.22`.
+
 ### Added
 
+- **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** on **Render** (Entrega 2 parity: `render.yaml`, `docs/deploy-final-demo.md`); mobile/JWT-harden/IdP cut.
 - **Sprint 15 execution (US-OPS-PROD-COMPOSE):** `docker-compose.prod.yml`, `Caddyfile`, `.env.prod.example`, GHCR build workflow, `POSTGRES_SSL_REQUIRE` DSN flag.
 - **Sprint 15 QA:** compose contract tests + report (`docs/qa-sprint-15-report.md`).
 - **Sprint 15 planning:** `US-OPS-PROD-COMPOSE` ready-for-dev (`docs/sprint-15.md`) — `docker-compose.prod.yml` + Caddyfile + prod env contract.

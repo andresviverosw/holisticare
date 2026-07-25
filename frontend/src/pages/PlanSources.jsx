@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
 

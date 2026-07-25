@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
 /** Minimal shell for patient diary — logo + logout only (no clinician nav). */

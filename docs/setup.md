@@ -6,7 +6,7 @@ This guide provides a clean, repeatable setup for HolistiCare on local developme
 
 - Docker Desktop (running)
 - Python 3.10+
-- Node.js LTS and npm
+- Node.js **≥ 22.22** and npm (React Router 8 engine requirement; CI uses 22.22)
 
 Optional but recommended:
 - PowerShell 7+

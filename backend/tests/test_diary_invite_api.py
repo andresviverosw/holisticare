@@ -78,11 +78,13 @@ def test_create_invite_403_for_patient_role(client: TestClient):
 
 def test_redeem_invite_200_returns_patient_jwt_with_exp():
     token = "plaintext-invite-token"
+    # Must be relative to wall clock: redeem_invite() uses datetime.now(UTC),
+    # not the module-level NOW fixture used for create-path mocks.
     invite = PatientDiaryInvite(
         id=uuid.uuid4(),
         patient_id=PATIENT_ID,
         token_hash=hash_invite_token(token),
-        expires_at=NOW + timedelta(days=1),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=1),
         redeemed_at=None,
         created_by_sub="clin-1",
     )
@@ -116,8 +118,8 @@ def test_redeem_invite_410_when_already_used():
         id=uuid.uuid4(),
         patient_id=PATIENT_ID,
         token_hash=hash_invite_token(token),
-        expires_at=NOW + timedelta(days=1),
-        redeemed_at=NOW,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=1),
+        redeemed_at=datetime.now(timezone.utc),
         created_by_sub="clin-1",
     )
     db = _mock_db()
