@@ -2,10 +2,21 @@
 
 This directory contains the six core documentation phases for the AI4devs master's project.
 
+## Typeform / LIDR submission
+
+For the master's Typeform delivery — **protocolo proyecto propio / avanzado (No Fork)**:
+
+- Branch (pegar en Typeform): `feature-entrega1-AVW`
+- Field checklist: [`typeform-submission.md`](typeform-submission.md)
+- Academic README (repo root): `README.md`
+- Prompt log (repo root): `prompts.md`
+- Product README preserved as: `README-ORIGINAL.md`
+
 ## Documentation map (by audience)
 
 | Need | Start here |
 |------|------------|
+| Typeform field checklist (máster LIDR) | `typeform-submission.md` |
 | Run the app locally, tests, Docker | `setup.md` |
 | Clinician quick trial on Windows | `quickstart-clinician.md` |
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
