@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
-- **Final delivery planning:** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — capstone closeout backlog with **US-PRIV-001** (patient anonymization before LLM egress) as Must; mobile/SPA/IdP cut from final window.
+- **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** (public hybrid deploy like second delivery), docs/eval/demo closeout; mobile/JWT-harden/IdP cut.
 - **Sprint 15 execution (US-OPS-PROD-COMPOSE):** `docker-compose.prod.yml`, `Caddyfile`, `.env.prod.example`, GHCR build workflow, `POSTGRES_SSL_REQUIRE` DSN flag.
 - **Sprint 15 QA:** compose contract tests + report (`docs/qa-sprint-15-report.md`).
 - **Sprint 15 planning:** `US-OPS-PROD-COMPOSE` ready-for-dev (`docs/sprint-15.md`) — `docker-compose.prod.yml` + Caddyfile + prod env contract.

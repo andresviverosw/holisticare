@@ -120,7 +120,7 @@ Deploy order:
 5. Seed clinician: `docker compose -f docker-compose.prod.yml exec backend python -m scripts.seed_clinician` with `SEED_CLINICIAN_*` set.
 6. Smoke: `curl -fsS https://<api-host>/health` and `curl -s -o /dev/null -w '%{http_code}\n' -X POST https://<api-host>/auth/dev-login` → **404**.
 
-SPA hosting (Cloudflare Pages / static) and `VITE_API_BASE_URL` remain a follow-on (`US-OPS-SPA-HOST`).
+SPA hosting (Cloudflare Pages / static) and `VITE_API_BASE_URL` are **in scope for final delivery** (`US-OPS-SPA-HOST` + ops checklist **DEPLOY-01** in [`final-delivery-plan.md`](final-delivery-plan.md)); follow [`../holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md) Phase 5.
 
 ### HolistiCare future deployment plan (post-pilot)
 

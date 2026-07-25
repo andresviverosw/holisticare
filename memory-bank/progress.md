@@ -7,13 +7,14 @@
 
 ## Pending Milestones
 
-- **Final delivery (R-final):** US-PRIV-001, Phase 1/3 doc closeout, RAG eval report, demo + feedback package (`docs/final-delivery-plan.md`).
+- **Final delivery (R-final):** US-PRIV-001, US-OPS-SPA-HOST + DEPLOY-01 (public hybrid deploy), Phase 1/3 doc closeout, RAG eval report, public demo + feedback package (`docs/final-delivery-plan.md`).
 - Pilot final GO/NO-GO + clinician clinical alignment of US-PRED outputs (optional if feedback waiver used).
-- Deferred: R4 mobile (`US-MOB-001..003`), `US-OPS-SPA-HOST`, JWT harden / IdP.
+- Deferred: R4 mobile (`US-MOB-001..003`), JWT harden / IdP.
 
 ## Update History
 
-- [2026-07-25] Planning Agent: Final delivery plan + Sprint 16 ready-for-confirmation; added US-PRIV-001/002 to backlog; cut mobile/SPA/IdP from final window.
+- [2026-07-25] Planning Agent: Locked D1–D4 — D2 = public hybrid deploy (second-delivery approach); promoted US-OPS-SPA-HOST + DEPLOY-01 to Must; plan status Approved / Sprint 16 ready for dev.
+- [2026-07-25] Planning Agent: Final delivery plan + Sprint 16 initial draft; added US-PRIV-001/002 to backlog; cut mobile/IdP from final window.
 - [2026-07-16] QA Agent: Sprint 11 **PASS** (`docs/qa-sprint-11-report.md`); e2e continuity suite added (7 Playwright total); Vitest 38; a11y label fix.
 - [2026-07-16] Development: Sprint 11 UI execution — risk flags, clinician-proxy diary, analytics, sessions on Dashboard.
 - [2026-07-16] Planning session: MVP UI blockers scoped as Sprint 11 ready-for-dev stories (`US-INT-002-UI`, `US-DIARY-UI`, `US-ANLY-UI`, `US-SESS-UI`). Diary v1 = clinician proxy.

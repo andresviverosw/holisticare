@@ -79,14 +79,14 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current focus:** **Final delivery / capstone closeout** — [`final-delivery-plan.md`](final-delivery-plan.md) (US-PRIV-001 anonymization + academic docs + demo package).
+- **Current focus:** **Final delivery / capstone closeout** — [`final-delivery-plan.md`](final-delivery-plan.md) (**Approved**; D1–D4 locked).
 - **Recently completed:** Sprint 15 — US-OPS-PROD-COMPOSE — **complete / QA PASS** ([`sprint-15.md`](sprint-15.md), [`qa-sprint-15-report.md`](qa-sprint-15-report.md)); Sprint 14 clinician login; Sprint 13 invites.
 - **In final window (Must):**
   - `US-PRIV-001` — anonymize/pseudonymize before external LLM calls
+  - `US-OPS-SPA-HOST` + **DEPLOY-01** — public hybrid deploy (VPS API + Neon + Cloudflare Pages), same approach as second delivery
   - Phase 1 FR/NFR + Phase 3 privacy dictionary closeout
-  - RAG eval short report + demo smoke + clinician feedback artifact
-- **Deferred (cut from final window unless tutor requires):**
-  - SPA static host / API base URL (`US-OPS-SPA-HOST`)
+  - RAG eval short report + **public** demo walkthrough + clinician feedback artifact
+- **Deferred (cut from final window):**
   - JWT harden / password reset / IdP
   - R4 mobile (`US-MOB-001..003`)
 
@@ -107,8 +107,8 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
 - `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
 - `sprint-15.md` - Sprint 15 (US-OPS-PROD-COMPOSE production Compose + Caddy) — **complete / QA PASS**
-- `sprint-16.md` - Sprint 16 (final delivery: US-PRIV-001 + capstone closeout) — **ready for confirmation**
-- `final-delivery-plan.md` - Capstone final-delivery plan (Must / cut list / anonymization story)
+- `sprint-16.md` - Sprint 16 (final delivery: US-PRIV-001 + US-OPS-SPA-HOST + public deploy) — **ready for dev**
+- `final-delivery-plan.md` - Capstone final-delivery plan (**Approved**; D1–D4 locked)
 
 ## Suggested cadence
 

@@ -5,35 +5,46 @@
 | Owner | Planning Agent |
 | Audience | Solo developer / product owner (Andrés) |
 | Horizon | Short final-submission window (aggressive scope control) |
-| Status | **Ready for confirmation** — execute after locking open decisions below |
-| Related | MVP DoD in [`01-requirements-and-domain-research.md`](01-requirements-and-domain-research.md) §11; backlog in [`04-feature-specs-and-user-stories.md`](04-feature-specs-and-user-stories.md) |
+| Status | **Approved** — decisions D1–D4 locked 2026-07-25 |
+| Related | MVP DoD in [`01-requirements-and-domain-research.md`](01-requirements-and-domain-research.md) §11; backlog in [`04-feature-specs-and-user-stories.md`](04-feature-specs-and-user-stories.md); deploy path in [`../holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md) |
 
 ## 1. Verdict on current state
 
-**Product MVP (code) is largely done.** R1 through R3 product stories and Sprints 1–15 are complete, including clinician/patient auth and production Compose. The remaining risk for the master’s submission is **not feature breadth** — it is **academic closeout, privacy evidence (anonymization), demo package, and tutor-facing documentation completeness**.
+**Product MVP (code) is largely done.** R1 through R3 product stories and Sprints 1–15 are complete, including clinician/patient auth and production Compose. The remaining risk for the master’s submission is **academic closeout, privacy evidence (anonymization), public deployment (same approach as the second delivery), and tutor-facing documentation**.
 
 | Area | Status | Gap vs DoD |
 |------|--------|------------|
 | 6 MVP features e2e (intake → plan → approve → sessions → diary → analytics) | **Done** (Sprint 11 UI + APIs) | Keep regression green for submission |
 | NOM-024 practitioner gate | **Done** (`pending_review`, no auto-activation) | Keep as non-negotiable demo talking point |
 | Prediction + memory bank (R3) | **Done** | Optional in live demo; cite as stretch |
-| Prod auth + Compose (R2+) | **Done** (Sprints 13–15) | SPA host still open if public URL required |
+| Prod auth + Compose (R2+) | **Done** (Sprints 13–15) | Need live host + SPA on Pages |
 | Phase 1 FR/NFR tables | **Stub / empty** | Must fill for academic DoD item 5 |
 | Phase 3 data dictionary & privacy | **Stub** | Must complete; anchors anonymization story |
 | RAG golden-eval thresholds (hit≥0.80, faith≥0.85) | Partial (AI quality smoke exists) | Need a short eval report artifact |
 | Practitioner collaborator feedback | Pilot GO/NO-GO still `IN_PROGRESS` | Need documented feedback or explicit synthetic-demo waiver |
-| Patient anonymization before LLM egress | **Missing** (R-02 / Q1) | **New Must for this delivery** (US-PRIV-001) |
+| Patient anonymization before LLM egress | **Missing** (R-02 / Q1) | **Must** (US-PRIV-001) |
+| Public hybrid deploy (API + SPA) | Partial (compose overlay only) | **Must** (US-OPS-SPA-HOST + DEPLOY-01) |
 | R4 mobile (`US-MOB-*`) | Planned | **Cut** from final window |
-| `US-OPS-SPA-HOST`, JWT harden, IdP | Planned | **Cut** unless tutor requires public URL |
+| JWT harden, IdP, password reset | Planned | **Cut** from final window |
 
-## 2. Open decisions (confirm before build)
+## 2. Decisions (locked 2026-07-25)
 
-| # | Decision | Recommended default | Why |
-|---|----------|---------------------|-----|
-| D1 | Anonymization scope for US-PRIV-001 | **LLM egress scrub + docs** (not full ARCO portal) | Closes R-02 for the thesis; ARCO UI is multi-sprint |
-| D2 | Public deploy vs local demo | **Local Docker + recorded walkthrough** unless tutor demands URL | SPA host is follow-on; Compose prod overlay already exists |
-| D3 | R4 mobile in submission | **Out of scope / future work** | Should/R4; consumes the whole remaining window |
-| D4 | Clinician sign-off evidence | Capture **one structured feedback form** (or document “synthetic-only demo + pending clinical alignment”) | DoD item 6; do not block code on a late co-design |
+| # | Decision | Locked choice | Notes |
+|---|----------|---------------|-------|
+| D1 | Anonymization scope for US-PRIV-001 | **LLM egress scrub + docs** (not full ARCO portal) | Closes R-02 for the thesis; ARCO UI remains deferred |
+| D2 | Public deploy vs local-only demo | **Public hybrid deployment** (same approach as second delivery) | Hetzner/VPS API + Neon + Cloudflare Pages SPA; local smoke remains a regression gate, not the submission surface |
+| D3 | R4 mobile in submission | **Out of scope / future work** | Should/R4 |
+| D4 | Clinician sign-off evidence | **One structured feedback form** or documented “pending clinical alignment” | DoD item 6; do not block code on a late co-design |
+
+### D2 topology (mandatory)
+
+Follow [`holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md):
+
+- **API:** `docker-compose.prod.yml` + Caddy TLS on VPS (Sprint 15 artifact)
+- **DB:** Managed Postgres + pgvector (Neon)
+- **SPA:** Cloudflare Pages with `VITE_API_BASE_URL` pointing at public API
+- **Auth:** `ALLOW_DEV_AUTH=false`; clinician password login + patient invite redeem
+- **Evidence:** public `https://app.…` and `https://api.…` URLs in submission notes + health/smoke from the internet
 
 ## 3. Final backlog slice (ordered)
 
@@ -44,11 +55,13 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 | ID | Work | Priority | Owner role | Exit criteria |
 |----|------|----------|------------|---------------|
 | **US-PRIV-001** | Patient anonymization / pseudonymization before external LLM calls | **Must** | Dev → QA | Failing tests first; no `patient_id` or contact-like PII in outbound LLM prompts; phase-3 privacy section updated |
+| **US-OPS-SPA-HOST** | Configurable SPA API base URL + Pages build contract | **Must** | Dev → QA | `VITE_API_BASE_URL` used in production build; `/api` remains valid for Vite proxy in local/dev; unit/contract tests green |
+| **DEPLOY-01** | Live public deploy (hybrid topology, second-delivery approach) | **Must** | Dev/Ops → QA | Public API `/health` 200; SPA loads against API; clinician login works with `ALLOW_DEV_AUTH=false`; CORS allows SPA origin; seed + corpus ingest done |
 | **DOC-CLOSE-01** | Complete Phase 1 §7 FR/NFR from implemented system | **Must** | Planning | Tables filled; MoSCoW aligned with backlog |
 | **DOC-CLOSE-02** | Complete Phase 3 data dictionary + privacy framework (LFPDPPP / NOM-024 mapping) | **Must** | Planning (+ Dev notes) | Entities/fields, sensitivity classes, anonymization control, ARCO *policy* (manual process OK) |
 | **DOC-CLOSE-03** | Mark phases 1–6 / guides consistent; fill owners/dates/status | **Must** | Planning | Checklists honest; cross-links valid |
 | **EVAL-01** | Short RAG evaluation / AI quality report for thesis | **Must** | QA | Document smoke metrics + known limits; link `ai_quality_smoke` + pilot cases |
-| **DEMO-01** | Submission demo package | **Must** | Dev/QA | `demo-smoke-checklist` green + scripted walkthrough notes (+ optional short recording) |
+| **DEMO-01** | Submission demo package **on public URLs** | **Must** | Dev/QA | Walkthrough against live app/API (+ optional recording); local `demo-smoke-checklist` still green as CI gate |
 | **FEEDBACK-01** | Clinician feedback artifact | **Must** | Planning | Completed [`pilot-clinician-feedback-form.md`](pilot-clinician-feedback-form.md) **or** explicit “pending clinical alignment” appendix |
 
 ### Track B — Strongly recommended if capacity remains
@@ -56,25 +69,24 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 | ID | Work | Priority | Notes |
 |----|------|----------|-------|
 | **US-PRIV-002** | Harden memory-bank de-identification (free-text scrub in snapshots) | Should | Extends Sprint 10 sanitize beyond stripping `patient_id` |
-| **PILOT-GO** | Close pilot GO/NO-GO with evidence pointers | Should | Mostly documentation if rehearsals already green |
+| **PILOT-GO** | Close pilot GO/NO-GO with evidence pointers | Should | Prefer closing after public deploy smoke |
 | **SYNTH-01** | Package existing pilot/synthetic cases as “dataset v1” appendix | Should | Do not regenerate 80–100 profiles unless required |
 
 ### Track C — Explicitly deferred (do not start)
 
 - `US-MOB-001` … `US-MOB-003` (R4)
-- `US-OPS-SPA-HOST` (Cloudflare Pages + `VITE_API_BASE_URL`)
 - JWT harden / refresh tokens / password reset / IdP / MFA
 - Admin audit UI (`US-INT-003` UI)
 - OTP email/SMS diary invites
 - Full automated ARCO cancellation workflow
-- Production monitoring / Sentry / formal SLOs
+- Production monitoring / Sentry / formal SLOs (optional nicety; not blocking if UptimeRobot free probe already noted)
 
 ### Track D — Submission packaging (last day)
 
 1. Freeze branch / tag `capstone-final` (or equivalent).
 2. Update `CHANGELOG.md` + `memory-bank/progress.md` + `active-context.md`.
-3. README “how to demo in 15 minutes” path (point to `docs/demo-smoke-checklist.md` + `docs/quickstart-clinician.md`).
-4. Thesis appendix index: phases 01–06, privacy, eval report, demo evidence, feedback form.
+3. README “how to demo” path includes **public URLs** + fallback local quickstart.
+4. Thesis appendix index: phases 01–06, privacy, eval report, **deploy evidence**, feedback form.
 
 ## 4. Story: US-PRIV-001 — Patient anonymization before LLM egress
 
@@ -137,7 +149,45 @@ Intake schema is already fairly minimized (no name/email fields), but free-text 
 - Apply the same free-text scrub when saving memory-bank snapshots.
 - Document retention/deletion runbook steps for admin.
 
-## 5. Documentation closeout checklist (Track A)
+## 5. Story: US-OPS-SPA-HOST — SPA static host + public API base URL
+
+### Problem
+
+`frontend/src/services/api.js` hardcodes `baseURL: "/api"` (Vite proxy). That works locally but **breaks on Cloudflare Pages**, which cannot proxy to the Hetzner API. Second delivery already used the hybrid topology; final delivery must match.
+
+### User story
+
+| Field | Value |
+|-------|--------|
+| Story ID | **US-OPS-SPA-HOST** |
+| Epic | Ops |
+| As a | Admin / deployer |
+| I want | the SPA to call a configurable absolute API base URL in production builds |
+| So that | Cloudflare Pages can serve the UI against the public API origin |
+| Priority | **Must** (final delivery — locked D2) |
+| Estimate | S–M |
+| Status | **Ready for dev** |
+
+### Acceptance criteria
+
+- Given `VITE_API_BASE_URL` is set at build time (e.g. `https://api.example.com`), when the SPA boots, then axios uses that origin (no reliance on Vite `/api` proxy).
+- Given `VITE_API_BASE_URL` is unset, when running local Vite, then the client falls back to `/api` (current proxy behavior preserved).
+- Given CORS on the API, when the SPA origin (`PUBLIC_APP_BASE_URL` / Pages domain) calls the API, then browser requests succeed for login and a smoke RAG path.
+- Given docs/runbook, when an operator follows Phase 5 of the deployment quickstart, then build settings and env vars are accurate for this repo.
+- Given unit/contract tests, when `api` base URL resolution is tested, then both configured and fallback modes pass.
+
+### Companion ops story: DEPLOY-01
+
+Not a long-lived backlog ID in product epics — an ops execution checklist tied to this sprint:
+
+1. Neon schema + pgvector; apply `infra/init.sql` (+ patches as needed).
+2. VPS: `docker-compose.prod.yml` + Caddy; replace `api.example.com`; secrets in `.env.prod`.
+3. Seed clinician; confirm `/auth/dev-login` → 404; `/auth/login` works.
+4. Cloudflare Pages project with `VITE_API_BASE_URL`; custom domain if available.
+5. Ingest synthetic corpus; run public health + clinician smoke.
+6. Record live URLs in `docs/demo-smoke-checklist.md` appendix or submission notes.
+
+## 6. Documentation closeout checklist (Track A)
 
 Map to Phase 1 DoD item 5 (“documentación académica … entregada”).
 
@@ -146,60 +196,66 @@ Map to Phase 1 DoD item 5 (“documentación académica … entregada”).
 | `01-requirements-and-domain-research.md` | Fill §7 FR/NFR from implemented features; update deliverable statuses; mark complete where honest |
 | `02-system-architecture.md` | Add ADR for egress anonymization; close privacy checklist items |
 | `03-data-dictionary-and-privacy-framework.md` | **Primary gap** — entities from ORM/schemas, sensitivity table, anonymization control, ARCO process (manual OK) |
-| `04-feature-specs-and-user-stories.md` | Add US-PRIV-001 (+ optional US-PRIV-002); release slice R-final |
-| `05-test-plan.md` | Add privacy/anonymization test row; point to new tests |
-| `06-deployment-and-ops-runbook.md` | Note anonymization is app-layer; DPA checklist remains ops |
+| `04-feature-specs-and-user-stories.md` | US-PRIV-001, US-OPS-SPA-HOST; release slice R-final |
+| `05-test-plan.md` | Add privacy/anonymization + SPA base URL test rows |
+| `06-deployment-and-ops-runbook.md` | Mark SPA host + public deploy as in-scope for final delivery; link live URL evidence |
 | `EVAL` short report | New `docs/rag-evaluation-report.md` (metrics + limits + commands) |
 | Guides 07–10 | Spot-fix only; no redesign |
 
-## 6. Suggested execution sequence (no calendar estimates)
+## 7. Suggested execution sequence (no calendar estimates)
 
 Work is ordered by dependency and submission risk, not by day counts.
 
 ```
-1) Confirm D1–D4 (this plan)
+1) D1–D4 locked (done)
 2) US-PRIV-001 — TDD anonymizer + pipeline wire-up + QA
-3) DOC-CLOSE-02 (Phase 3) in parallel with remaining US-PRIV-001 polish
-4) DOC-CLOSE-01 + DOC-CLOSE-03 (FR/NFR + consistency)
-5) EVAL-01 report from existing smoke/pilot artifacts
-6) DEMO-01 rehearsal + FEEDBACK-01 artifact
-7) Optional US-PRIV-002 / PILOT-GO if still green
-8) Tag + packaging (Track D)
+3) US-OPS-SPA-HOST — VITE_API_BASE_URL + tests + Pages docs
+4) DOC-CLOSE-02 (Phase 3) in parallel with code polish
+5) DOC-CLOSE-01 + DOC-CLOSE-03 (FR/NFR + consistency)
+6) DEPLOY-01 — public hybrid deploy (API + Pages) + internet smoke
+7) EVAL-01 report from smoke/pilot artifacts
+8) DEMO-01 on public URLs + FEEDBACK-01 artifact
+9) Optional US-PRIV-002 / PILOT-GO if still green
+10) Tag + packaging (Track D)
 ```
 
 ### Agent handoffs
 
 | Step | Owner | Handoff must include |
 |------|-------|----------------------|
-| Plan lock | Planning | D1–D4 answers; this doc status → Approved |
-| US-PRIV-001 impl | Development | Story ID, AC, test evidence (pytest) |
+| Plan lock | Planning | **Done** — D1–D4 approved |
+| US-PRIV-001 + US-OPS-SPA-HOST | Development | Story IDs, AC, test evidence |
+| DEPLOY-01 | Dev/Ops | Public URLs + health/login evidence |
 | Privacy/docs | Planning (+ Dev) | Phase 3 + backlog status |
-| Quality gate | QA | Pass/fail on anonymization + regression + demo smoke |
+| Quality gate | QA | Pass/fail on anonymization + SPA base URL + public smoke + regression |
 | Defects | Debugging | Only if QA fails |
 
-## 7. Definition of done — final master’s delivery
+## 8. Definition of done — final master’s delivery
 
 Aligned with Phase 1 §11, tightened for the remaining window:
 
 1. [ ] Six MVP features runnable e2e on synthetic data (regression suite green).
 2. [ ] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
 3. [ ] **US-PRIV-001** merged with tests proving LLM egress scrub.
-4. [ ] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
-5. [ ] Short RAG/AI quality report attached.
-6. [ ] Demo package reproducible from README/quickstart.
-7. [ ] Clinician feedback form **or** documented waiver for synthetic-only validation.
-8. [ ] Explicit out-of-scope list (mobile, SPA host, full ARCO automation) acknowledged in submission notes.
+4. [ ] **US-OPS-SPA-HOST** merged; SPA production build targets public API.
+5. [ ] **DEPLOY-01** complete: public app + API URLs reachable; clinician login on prod auth path.
+6. [ ] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
+7. [ ] Short RAG/AI quality report attached.
+8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate).
+9. [ ] Clinician feedback form **or** documented waiver for synthetic-only validation.
+10. [ ] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
 
-## 8. Risks
+## 9. Risks
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Scope creep (mobile / SPA / IdP) | Miss documentation + privacy | Hard cut list in Track C |
+| Scope creep (mobile / IdP) | Miss docs + privacy + deploy | Hard cut list in Track C |
 | Over-scrubbing harms clinical summary quality | Worse RAG plans | Scrub identifiers only; keep clinical fields; golden smoke after change |
-| Tutor expects live URL | Demo friction | Prepare Compose + Pages notes; fallback to localhost recording |
-| Legal Q1 unresolved | Cannot claim full LFPDPPP compliance | Document control + stated residual legal risk; synthetic-only for now |
-| Phase 3 under-specified | Academic reject | Prioritize dictionary + privacy mapping over new features |
+| Public deploy blocked (DNS/TLS/secrets) | No second-delivery parity | Start DEPLOY-01 early after SPA base URL lands; keep compose/Pages checklist tight |
+| CORS / cookie / mixed-content misconfig | SPA cannot call API | Explicit CORS allowlist for Pages origin; HTTPS both sides |
+| Legal Q1 unresolved | Cannot claim full LFPDPPP compliance | Document control + residual legal risk; synthetic-only for now |
+| Phase 3 under-specified | Academic reject | Prioritize dictionary + privacy mapping alongside deploy |
 
-## 9. Immediate next action
+## 10. Immediate next action
 
-**Planning → user confirmation on D1–D4**, then Development starts **US-PRIV-001** under TDD while Planning drafts Phase 3 from ORM/schemas.
+**Development Agent** starts **US-PRIV-001** (TDD) and **US-OPS-SPA-HOST** (TDD) as the next code slices. Planning drafts Phase 3 / FR-NFR in parallel. DEPLOY-01 follows once SPA base URL is mergeable.
