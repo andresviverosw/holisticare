@@ -73,7 +73,7 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 |----|------|----------|-------|
 | **US-PRIV-002** | Harden memory-bank de-identification (free-text scrub in snapshots) | Should | Extends Sprint 10 sanitize beyond stripping `patient_id` |
 | **PILOT-GO** | Close pilot GO/NO-GO with evidence pointers | Should | Prefer closing after public deploy smoke |
-| **SYNTH-01** | Package existing pilot/synthetic cases as “dataset v1” appendix | Should | Do not regenerate 80–100 profiles unless required |
+| **SYNTH-01** | End-to-end synthetic dataset v1 (intakes, plans, sessions, diaries, KPI/plateau/recovery cohorts, memory bank) + seed CLI | Should → **Must for demo richness** | Default 32 patients (8×4); optional `--variants 10` → 80. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md) |
 
 ### Track C — Explicitly deferred (do not start)
 

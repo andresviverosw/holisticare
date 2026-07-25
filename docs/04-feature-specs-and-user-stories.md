@@ -561,6 +561,7 @@ Test intent:
 | US-DIARY-AUTH-PROD | Should | R2+ | US-DIARY-UI-PATIENT | **Sprint 13 — Done.** Single-use invite link → patient JWT with `exp`. See `sprint-13.md`. |
 | US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Done.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
 | US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
+| SYNTH-01 | Should | R-final | US-INT-001…US-PRED-001, US-PLAN-004 | **Final delivery.** Deterministic synthetic corpus + DB seed exercising plans/diaries/KPIs. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md). |
 | US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Final delivery.** Anonymize/pseudonymize intake before Claude/OpenAI calls. See [`final-delivery-plan.md`](final-delivery-plan.md). |
 | US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
 | US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Final delivery (D2 Render).** `VITE_API_BASE_URL` + `render.yaml` / Static Site; companion ops **DEPLOY-01**. See [`deploy-final-demo.md`](deploy-final-demo.md). |
@@ -578,7 +579,25 @@ Release definition:
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
-- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public **Render** deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as Entrega 2), Phase 1/3 documentation completion, RAG eval report, public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md) and [`deploy-final-demo.md`](deploy-final-demo.md). Mobile / JWT harden / IdP remain deferred.
+- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public **Render** deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as Entrega 2), Phase 1/3 documentation completion, RAG eval report, synthetic demo corpus (**SYNTH-01**), public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md) and [`deploy-final-demo.md`](deploy-final-demo.md). Mobile / JWT harden / IdP remain deferred.
+
+### SYNTH-01 - End-to-end synthetic dataset for demo and KPIs
+
+- Given seed=42 and `--variants 4`, when the generator runs, then it emits 32 patients across 8 clinician archetypes and 4 trajectory cohorts (improving / high-pain plateau / worsening / short series).
+- Given generated intakes, diaries, and sessions, when validated, then they pass `generic_holistic_v0`, `patient_diary_v0`, and `clinical_session_v0` schemas.
+- Given generated plans, when inspected, then every plan has `requires_practitioner_review: true` and the package includes `approved`, `pending_review`, `rejected`, and `insufficient_evidence` examples.
+- Given improving / plateau / worsening / short cohorts, when analytics services run on diary series, then recovery labels and plateau flags match the intended cohort (or `insufficient_data` for short series).
+- Given memory-bank snapshots, when packaged, then `patient_id` is stripped and `memory_bank_snapshot` is set.
+- Given a live database, when `python -m scripts.seed_synthetic_dataset` runs twice, then upserts remain idempotent via deterministic UUIDs.
+
+Test intent:
+- Unit: `backend/tests/test_synthetic_dataset.py` + generate CLI smoke (no Docker / no API keys).
+- Ops: optional seed against Compose Postgres for demo readiness.
+
+Implementation notes:
+- Package: `backend/data/synthetic/v1/dataset.json`
+- Docs: [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md)
+- Optional full scale: `--variants 10` → 80 patients (README aspirational target).
 
 ### US-PRIV-001 - Anonymize patient data before external LLM calls
 

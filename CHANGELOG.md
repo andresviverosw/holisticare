@@ -11,6 +11,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **SYNTH-01:** End-to-end synthetic dataset v1 — deterministic generator (`app/synthetic/`), committed package (`backend/data/synthetic/v1/dataset.json`, 32 patients), generate/seed CLIs, analytics/plateau/recovery cohort coverage, docs appendix (`docs/synthetic-dataset-v1.md`).
 - **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** on **Render** (Entrega 2 parity: `render.yaml`, `docs/deploy-final-demo.md`); mobile/JWT-harden/IdP cut.
 - **Sprint 15 execution (US-OPS-PROD-COMPOSE):** `docker-compose.prod.yml`, `Caddyfile`, `.env.prod.example`, GHCR build workflow, `POSTGRES_SSL_REQUIRE` DSN flag.
 - **Sprint 15 QA:** compose contract tests + report (`docs/qa-sprint-15-report.md`).

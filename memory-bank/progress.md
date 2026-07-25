@@ -13,6 +13,7 @@
 
 ## Update History
 
+- [2026-07-25] Development/QA: **SYNTH-01** end-to-end synthetic dataset v1 (32 patients default, optional 80) + generate/seed CLIs + appendix docs; unit tests PASS.
 - [2026-07-25] Planning Agent: Corrected D2 topology — Entrega 2 was **Render** (`deploy-entrega2-demo.md` / `render.yaml`), not Hetzner/Pages; added `deploy-final-demo.md` and restored blueprint on planning branch.
 - [2026-07-25] Planning Agent: Locked D1–D4 — D2 = public deploy (initially mis-specified as Hetzner/Pages); promoted US-OPS-SPA-HOST + DEPLOY-01 to Must; plan status Approved / Sprint 16 ready for dev.
 - [2026-07-25] Planning Agent: Final delivery plan + Sprint 16 initial draft; added US-PRIV-001/002 to backlog; cut mobile/IdP from final window.

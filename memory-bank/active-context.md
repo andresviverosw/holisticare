@@ -7,6 +7,7 @@
   - Canonical: `docs/deploy-final-demo.md`
   - Historical: `docs/deploy-entrega2-demo.md`
   - Blueprint: `render.yaml`
+- **SYNTH-01 done (this branch):** end-to-end synthetic corpus + seed CLI for demo KPIs (`docs/synthetic-dataset-v1.md`).
 - Next code: **US-PRIV-001** + **US-OPS-SPA-HOST** (`VITE_API_BASE_URL` reintroduce from entrega2).
 - Companion Must: **DEPLOY-01** on Render, Phase 1/3 docs, RAG eval, public demo, feedback artifact.
 

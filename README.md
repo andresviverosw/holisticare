@@ -76,13 +76,14 @@ HolistiCare uses a five-layer RAG pipeline:
 
 To accelerate development while protecting patient privacy:
 
-- 8-10 clinician-validated patient archetypes
-- 6-12 variants each (~80-100 synthetic patients)
-- Schema-first JSON generation with strict field constraints
-- 8-12 week longitudinal session journeys
-- Daily diary entries (including Spanish free text)
-- Realism rules: non-linear improvement, adverse events (~5%), motivation-dependent recovery speed
-- Validation with Pydantic, clinician spot-checks, and distribution review
+- 8 clinician archetypes × 4 trajectory variants = **32 patients** in the shipped package (`backend/data/synthetic/v1/dataset.json`)
+- Optional full scale: `--variants 10` → **80 patients** (README target)
+- Schema-first JSON generation with Pydantic (`generic_holistic_v0`, `patient_diary_v0`, `clinical_session_v0`)
+- ~8 week longitudinal sessions + daily diary journeys
+- Trajectory cohorts exercise KPIs: improving, high-pain plateau, worsening, short/insufficient series
+- Realism rules: non-linear noise, ~15% missed diary days, adverse-event notes (~5%)
+- NOM-024: every plan keeps `requires_practitioner_review: true`
+- Generate / seed: see [`docs/synthetic-dataset-v1.md`](docs/synthetic-dataset-v1.md)
 
 ## Outcome instruments
 
