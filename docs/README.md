@@ -83,7 +83,7 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - **Recently completed:** Sprint 15 — US-OPS-PROD-COMPOSE — **complete / QA PASS** ([`sprint-15.md`](sprint-15.md), [`qa-sprint-15-report.md`](qa-sprint-15-report.md)); Sprint 14 clinician login; Sprint 13 invites.
 - **In final window (Must):**
   - `US-PRIV-001` — anonymize/pseudonymize before external LLM calls
-  - `US-OPS-SPA-HOST` + **DEPLOY-01** — public hybrid deploy (VPS API + Neon + Cloudflare Pages), same approach as second delivery
+  - `US-OPS-SPA-HOST` + **DEPLOY-01** — public **Render** deploy (Blueprint), same approach as Entrega 2 — [`deploy-final-demo.md`](deploy-final-demo.md)
   - Phase 1 FR/NFR + Phase 3 privacy dictionary closeout
   - RAG eval short report + **public** demo walkthrough + clinician feedback artifact
 - **Deferred (cut from final window):**
@@ -107,8 +107,10 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `sprint-13.md` - Sprint 13 (US-DIARY-AUTH-PROD patient invite-link auth) — **complete / QA PASS**
 - `sprint-14.md` - Sprint 14 (US-AUTH-CLINICIAN-PROD clinician password login) — **complete / QA PASS**
 - `sprint-15.md` - Sprint 15 (US-OPS-PROD-COMPOSE production Compose + Caddy) — **complete / QA PASS**
-- `sprint-16.md` - Sprint 16 (final delivery: US-PRIV-001 + US-OPS-SPA-HOST + public deploy) — **ready for dev**
-- `final-delivery-plan.md` - Capstone final-delivery plan (**Approved**; D1–D4 locked)
+- `sprint-16.md` - Sprint 16 (final delivery: US-PRIV-001 + US-OPS-SPA-HOST + Render deploy) — **ready for dev**
+- `final-delivery-plan.md` - Capstone final-delivery plan (**Approved**; D1–D4 locked; D2 = Render)
+- `deploy-entrega2-demo.md` - Entrega 2 Render deploy guide (historical)
+- `deploy-final-demo.md` - Entrega final Render deploy guide (canonical)
 
 ## Suggested cadence
 

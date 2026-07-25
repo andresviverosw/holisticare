@@ -6,7 +6,7 @@
 | Audience | Solo developer / product owner (Andrés) |
 | Horizon | Short final-submission window (aggressive scope control) |
 | Status | **Approved** — decisions D1–D4 locked 2026-07-25 |
-| Related | MVP DoD in [`01-requirements-and-domain-research.md`](01-requirements-and-domain-research.md) §11; backlog in [`04-feature-specs-and-user-stories.md`](04-feature-specs-and-user-stories.md); deploy path in [`../holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md) |
+| Related | MVP DoD in [`01-requirements-and-domain-research.md`](01-requirements-and-domain-research.md) §11; backlog in [`04-feature-specs-and-user-stories.md`](04-feature-specs-and-user-stories.md); deploy path in [`deploy-final-demo.md`](deploy-final-demo.md) (Render; same as Entrega 2) |
 
 ## 1. Verdict on current state
 
@@ -23,7 +23,7 @@
 | RAG golden-eval thresholds (hit≥0.80, faith≥0.85) | Partial (AI quality smoke exists) | Need a short eval report artifact |
 | Practitioner collaborator feedback | Pilot GO/NO-GO still `IN_PROGRESS` | Need documented feedback or explicit synthetic-demo waiver |
 | Patient anonymization before LLM egress | **Missing** (R-02 / Q1) | **Must** (US-PRIV-001) |
-| Public hybrid deploy (API + SPA) | Partial (compose overlay only) | **Must** (US-OPS-SPA-HOST + DEPLOY-01) |
+| Public Render deploy (API + SPA) | Entrega 2 path exists on `feature-entrega2-AVW`; not on `main` | **Must** (US-OPS-SPA-HOST + DEPLOY-01 on Render) |
 | R4 mobile (`US-MOB-*`) | Planned | **Cut** from final window |
 | JWT harden, IdP, password reset | Planned | **Cut** from final window |
 
@@ -32,19 +32,22 @@
 | # | Decision | Locked choice | Notes |
 |---|----------|---------------|-------|
 | D1 | Anonymization scope for US-PRIV-001 | **LLM egress scrub + docs** (not full ARCO portal) | Closes R-02 for the thesis; ARCO UI remains deferred |
-| D2 | Public deploy vs local-only demo | **Public hybrid deployment** (same approach as second delivery) | Hetzner/VPS API + Neon + Cloudflare Pages SPA; local smoke remains a regression gate, not the submission surface |
+| D2 | Public deploy vs local-only demo | **Public Render Blueprint** (same approach as Entrega 2) | Render Postgres + Docker API + Static Site SPA; see [`deploy-final-demo.md`](deploy-final-demo.md). Hetzner/Pages quickstart stays post-pilot only. |
 | D3 | R4 mobile in submission | **Out of scope / future work** | Should/R4 |
 | D4 | Clinician sign-off evidence | **One structured feedback form** or documented “pending clinical alignment” | DoD item 6; do not block code on a late co-design |
 
-### D2 topology (mandatory)
+### D2 topology (mandatory) — Render (Entrega 2 parity)
 
-Follow [`holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md):
+Follow [`deploy-final-demo.md`](deploy-final-demo.md) / [`deploy-entrega2-demo.md`](deploy-entrega2-demo.md):
 
-- **API:** `docker-compose.prod.yml` + Caddy TLS on VPS (Sprint 15 artifact)
-- **DB:** Managed Postgres + pgvector (Neon)
-- **SPA:** Cloudflare Pages with `VITE_API_BASE_URL` pointing at public API
-- **Auth:** `ALLOW_DEV_AUTH=false`; clinician password login + patient invite redeem
-- **Evidence:** public `https://app.…` and `https://api.…` URLs in submission notes + health/smoke from the internet
+- **Platform:** Render Blueprint from root [`render.yaml`](../render.yaml)
+- **DB:** Render PostgreSQL 16 (Neon fallback only if `vector` unavailable)
+- **API:** Docker web service `holisticare-api` (`backend/Dockerfile`)
+- **SPA:** Render Static Site with `VITE_API_BASE_URL` → API origin
+- **Auth (demo default):** `ALLOW_DEV_AUTH=true` for TA “Entrar desarrollo”, plus seeded clinician login documented
+- **Evidence:** public `*.onrender.com` (or custom) frontend + API `/health` in submission notes
+
+`docker-compose.prod.yml` / Hetzner+Cloudflare remain **alternate** ops paths, not the capstone demo host.
 
 ## 3. Final backlog slice (ordered)
 
@@ -56,7 +59,7 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 |----|------|----------|------------|---------------|
 | **US-PRIV-001** | Patient anonymization / pseudonymization before external LLM calls | **Must** | Dev → QA | Failing tests first; no `patient_id` or contact-like PII in outbound LLM prompts; phase-3 privacy section updated |
 | **US-OPS-SPA-HOST** | Configurable SPA API base URL + Pages build contract | **Must** | Dev → QA | `VITE_API_BASE_URL` used in production build; `/api` remains valid for Vite proxy in local/dev; unit/contract tests green |
-| **DEPLOY-01** | Live public deploy (hybrid topology, second-delivery approach) | **Must** | Dev/Ops → QA | Public API `/health` 200; SPA loads against API; clinician login works with `ALLOW_DEV_AUTH=false`; CORS allows SPA origin; seed + corpus ingest done |
+| **DEPLOY-01** | Live public deploy on **Render** (Entrega 2 approach) | **Must** | Dev/Ops → QA | Public API `/health` 200; SPA loads against API; demo login works; CORS allows Static Site origin; schema + seed + corpus ingest done; URLs in README |
 | **DOC-CLOSE-01** | Complete Phase 1 §7 FR/NFR from implemented system | **Must** | Planning | Tables filled; MoSCoW aligned with backlog |
 | **DOC-CLOSE-02** | Complete Phase 3 data dictionary + privacy framework (LFPDPPP / NOM-024 mapping) | **Must** | Planning (+ Dev notes) | Entities/fields, sensitivity classes, anonymization control, ARCO *policy* (manual process OK) |
 | **DOC-CLOSE-03** | Mark phases 1–6 / guides consistent; fill owners/dates/status | **Must** | Planning | Checklists honest; cross-links valid |
@@ -149,11 +152,11 @@ Intake schema is already fairly minimized (no name/email fields), but free-text 
 - Apply the same free-text scrub when saving memory-bank snapshots.
 - Document retention/deletion runbook steps for admin.
 
-## 5. Story: US-OPS-SPA-HOST — SPA static host + public API base URL
+## 5. Story: US-OPS-SPA-HOST — SPA API base URL for Render Static Site
 
 ### Problem
 
-`frontend/src/services/api.js` hardcodes `baseURL: "/api"` (Vite proxy). That works locally but **breaks on Cloudflare Pages**, which cannot proxy to the Hetzner API. Second delivery already used the hybrid topology; final delivery must match.
+On `main`, `frontend/src/services/api.js` hardcodes `baseURL: "/api"` (Vite proxy). That breaks on **Render Static Site** (same failure mode as Entrega 2 before the fix). Entrega 2 already solved this on `feature-entrega2-AVW` with `VITE_API_BASE_URL`; final delivery must reintroduce that on the delivery branch.
 
 ### User story
 
@@ -163,29 +166,29 @@ Intake schema is already fairly minimized (no name/email fields), but free-text 
 | Epic | Ops |
 | As a | Admin / deployer |
 | I want | the SPA to call a configurable absolute API base URL in production builds |
-| So that | Cloudflare Pages can serve the UI against the public API origin |
+| So that | the Render Static Site can call the Render API web service |
 | Priority | **Must** (final delivery — locked D2) |
 | Estimate | S–M |
 | Status | **Ready for dev** |
 
 ### Acceptance criteria
 
-- Given `VITE_API_BASE_URL` is set at build time (e.g. `https://api.example.com`), when the SPA boots, then axios uses that origin (no reliance on Vite `/api` proxy).
+- Given `VITE_API_BASE_URL` is set at build time (e.g. `https://holisticare-api.onrender.com`), when the SPA boots, then axios uses that origin (no reliance on Vite `/api` proxy).
 - Given `VITE_API_BASE_URL` is unset, when running local Vite, then the client falls back to `/api` (current proxy behavior preserved).
-- Given CORS on the API, when the SPA origin (`PUBLIC_APP_BASE_URL` / Pages domain) calls the API, then browser requests succeed for login and a smoke RAG path.
-- Given docs/runbook, when an operator follows Phase 5 of the deployment quickstart, then build settings and env vars are accurate for this repo.
+- Given CORS on the API, when the Render Static Site origin calls the API, then browser requests succeed for login and a smoke RAG path.
+- Given docs, when an operator follows [`deploy-final-demo.md`](deploy-final-demo.md), then `render.yaml`, env vars, and SPA rewrite/`_redirects` match this repo.
 - Given unit/contract tests, when `api` base URL resolution is tested, then both configured and fallback modes pass.
 
-### Companion ops story: DEPLOY-01
+### Companion ops story: DEPLOY-01 (Render)
 
-Not a long-lived backlog ID in product epics — an ops execution checklist tied to this sprint:
+Ops execution checklist (Entrega 2 parity):
 
-1. Neon schema + pgvector; apply `infra/init.sql` (+ patches as needed).
-2. VPS: `docker-compose.prod.yml` + Caddy; replace `api.example.com`; secrets in `.env.prod`.
-3. Seed clinician; confirm `/auth/dev-login` → 404; `/auth/login` works.
-4. Cloudflare Pages project with `VITE_API_BASE_URL`; custom domain if available.
-5. Ingest synthetic corpus; run public health + clinician smoke.
-6. Record live URLs in `docs/demo-smoke-checklist.md` appendix or submission notes.
+1. Render Blueprint from `render.yaml` (DB + API + Static Site).
+2. Apply `infra/init.sql` (+ needed patches) via External Database URL; enable `vector`.
+3. Set API secrets + `CORS_ORIGINS` = Static Site URL; set SPA `VITE_API_BASE_URL` = API URL.
+4. Seed clinician; ingest `data/mock`.
+5. Public smoke: `/health`, SPA load, login → generate → approve/reject.
+6. Record live URLs in README / submission notes (see Entrega 2 §8 pattern).
 
 ## 6. Documentation closeout checklist (Track A)
 
@@ -198,7 +201,7 @@ Map to Phase 1 DoD item 5 (“documentación académica … entregada”).
 | `03-data-dictionary-and-privacy-framework.md` | **Primary gap** — entities from ORM/schemas, sensitivity table, anonymization control, ARCO process (manual OK) |
 | `04-feature-specs-and-user-stories.md` | US-PRIV-001, US-OPS-SPA-HOST; release slice R-final |
 | `05-test-plan.md` | Add privacy/anonymization + SPA base URL test rows |
-| `06-deployment-and-ops-runbook.md` | Mark SPA host + public deploy as in-scope for final delivery; link live URL evidence |
+| `06-deployment-and-ops-runbook.md` | Point final public demo to Render (`deploy-final-demo.md`); keep Hetzner quickstart as post-pilot |
 | `EVAL` short report | New `docs/rag-evaluation-report.md` (metrics + limits + commands) |
 | Guides 07–10 | Spot-fix only; no redesign |
 
@@ -209,10 +212,10 @@ Work is ordered by dependency and submission risk, not by day counts.
 ```
 1) D1–D4 locked (done)
 2) US-PRIV-001 — TDD anonymizer + pipeline wire-up + QA
-3) US-OPS-SPA-HOST — VITE_API_BASE_URL + tests + Pages docs
+3) US-OPS-SPA-HOST — VITE_API_BASE_URL + tests + Render deploy docs (`render.yaml`, `_redirects`)
 4) DOC-CLOSE-02 (Phase 3) in parallel with code polish
 5) DOC-CLOSE-01 + DOC-CLOSE-03 (FR/NFR + consistency)
-6) DEPLOY-01 — public hybrid deploy (API + Pages) + internet smoke
+6) DEPLOY-01 — Render Blueprint public deploy + internet smoke
 7) EVAL-01 report from smoke/pilot artifacts
 8) DEMO-01 on public URLs + FEEDBACK-01 artifact
 9) Optional US-PRIV-002 / PILOT-GO if still green
@@ -238,7 +241,7 @@ Aligned with Phase 1 §11, tightened for the remaining window:
 2. [ ] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
 3. [ ] **US-PRIV-001** merged with tests proving LLM egress scrub.
 4. [ ] **US-OPS-SPA-HOST** merged; SPA production build targets public API.
-5. [ ] **DEPLOY-01** complete: public app + API URLs reachable; clinician login on prod auth path.
+5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works.
 6. [ ] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
 7. [ ] Short RAG/AI quality report attached.
 8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate).
@@ -251,8 +254,8 @@ Aligned with Phase 1 §11, tightened for the remaining window:
 |------|--------|------------|
 | Scope creep (mobile / IdP) | Miss docs + privacy + deploy | Hard cut list in Track C |
 | Over-scrubbing harms clinical summary quality | Worse RAG plans | Scrub identifiers only; keep clinical fields; golden smoke after change |
-| Public deploy blocked (DNS/TLS/secrets) | No second-delivery parity | Start DEPLOY-01 early after SPA base URL lands; keep compose/Pages checklist tight |
-| CORS / cookie / mixed-content misconfig | SPA cannot call API | Explicit CORS allowlist for Pages origin; HTTPS both sides |
+| Public deploy blocked (Render free cold start / secrets / pgvector) | No Entrega 2 parity | Follow `deploy-final-demo.md`; Neon fallback if Render lacks `vector`; warn TA about cold start |
+| CORS / Static Site misconfig | SPA cannot call API | Exact Static Site origin in `CORS_ORIGINS`; `VITE_API_BASE_URL` set at build |
 | Legal Q1 unresolved | Cannot claim full LFPDPPP compliance | Document control + residual legal risk; synthetic-only for now |
 | Phase 3 under-specified | Academic reject | Prioritize dictionary + privacy mapping alongside deploy |
 

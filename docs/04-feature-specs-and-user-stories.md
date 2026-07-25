@@ -96,7 +96,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-OPS-PROD-COMPOSE | Ops | Admin | to run the API with a production Compose overlay (Caddy TLS, no dev auth) | I can deploy without the unsafe bind-mount/reload stack | Should | M | **Done (Sprint 15)** |
 | US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Ready for dev (final delivery)** |
 | US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
-| US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Cloudflare Pages can serve the UI against the public API (second-delivery hybrid topology) | Must | S–M | **Ready for dev (final delivery — D2 locked)** |
+| US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Ready for dev (final delivery — D2 locked Render)** |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned (deferred — final delivery cut) |
@@ -563,7 +563,7 @@ Test intent:
 | US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
 | US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Final delivery.** Anonymize/pseudonymize intake before Claude/OpenAI calls. See [`final-delivery-plan.md`](final-delivery-plan.md). |
 | US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
-| US-OPS-SPA-HOST | Must | R-final | US-OPS-PROD-COMPOSE | **Final delivery (D2).** `VITE_API_BASE_URL` + Cloudflare Pages contract; companion ops **DEPLOY-01** for live hybrid URLs. |
+| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Final delivery (D2 Render).** `VITE_API_BASE_URL` + `render.yaml` / Static Site; companion ops **DEPLOY-01**. See [`deploy-final-demo.md`](deploy-final-demo.md). |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |
@@ -578,7 +578,7 @@ Release definition:
 - R2 (MVP+): risk flags, AI note completion, plateau detection, operational load of the curated clinical corpus into the vector store with verification (**US-RAG-002 — done**), **nutrition corpus + profile-aware eat/avoid guidance in generated plans (US-RAG-003 — done)**, clinician-facing structured intake on the plan generator with save/load (**US-INT-004 — done**), **config-driven nutrition safety dictionaries (US-RAG-004 — done, Sprint 8)**, **auto patient UUID + recent selection + validation (US-INT-005 — done, Sprint 9)**.
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
-- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public hybrid deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as second delivery), Phase 1/3 documentation completion, RAG eval report, public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md). Mobile / JWT harden / IdP remain deferred.
+- **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public **Render** deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as Entrega 2), Phase 1/3 documentation completion, RAG eval report, public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md) and [`deploy-final-demo.md`](deploy-final-demo.md). Mobile / JWT harden / IdP remain deferred.
 
 ### US-PRIV-001 - Anonymize patient data before external LLM calls
 
@@ -597,21 +597,21 @@ Implementation notes:
 - Local DB remains identified by UUID (egress pseudonymization, not record erasure).
 - Full story + sequencing: [`final-delivery-plan.md`](final-delivery-plan.md) §4.
 
-### US-OPS-SPA-HOST - SPA static host + public API base URL
+### US-OPS-SPA-HOST - SPA API base URL for Render Static Site
 
 - Given `VITE_API_BASE_URL` is set at build time, when the SPA boots, then the HTTP client uses that absolute API origin.
 - Given `VITE_API_BASE_URL` is unset, when running local Vite, then the client falls back to `/api` (proxy-compatible).
-- Given production CORS allowlist includes the Pages origin, when the SPA calls login and a smoke RAG path, then browser requests succeed.
-- Given deployment docs, when an operator follows Cloudflare Pages Phase 5 in `holisticare_deployment_quickstart.md`, then build command, output dir, and env vars match this repo.
+- Given production CORS allowlist includes the Render Static Site origin, when the SPA calls login and a smoke RAG path, then browser requests succeed.
+- Given deployment docs, when an operator follows [`deploy-final-demo.md`](deploy-final-demo.md), then `render.yaml`, env vars, and SPA rewrites match this repo.
 
 Test intent:
 - Unit: base URL resolution helper (configured vs fallback).
-- Integration/contract: optional axios factory test; CORS documented in `.env.prod.example`.
-- Ops: **DEPLOY-01** public health + clinician login smoke (not CI-blocking for unit suite).
+- Integration/contract: optional axios factory test; CORS documented for Render.
+- Ops: **DEPLOY-01** Render public health + demo login smoke (not CI-blocking for unit suite).
 
 Implementation notes:
-- Today `frontend/src/services/api.js` hardcodes `baseURL: "/api"` — must become env-driven.
-- Companion live deploy checklist: [`final-delivery-plan.md`](final-delivery-plan.md) §5 DEPLOY-01.
+- On `main`, `frontend/src/services/api.js` hardcodes `baseURL: "/api"` — reintroduce Entrega 2 pattern: `import.meta.env.VITE_API_BASE_URL || "/api"`.
+- Companion live deploy checklist: [`deploy-final-demo.md`](deploy-final-demo.md).
 
 ## 8. Definition of ready / done
 

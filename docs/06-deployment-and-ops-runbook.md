@@ -120,7 +120,9 @@ Deploy order:
 5. Seed clinician: `docker compose -f docker-compose.prod.yml exec backend python -m scripts.seed_clinician` with `SEED_CLINICIAN_*` set.
 6. Smoke: `curl -fsS https://<api-host>/health` and `curl -s -o /dev/null -w '%{http_code}\n' -X POST https://<api-host>/auth/dev-login` → **404**.
 
-SPA hosting (Cloudflare Pages / static) and `VITE_API_BASE_URL` are **in scope for final delivery** (`US-OPS-SPA-HOST` + ops checklist **DEPLOY-01** in [`final-delivery-plan.md`](final-delivery-plan.md)); follow [`../holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md) Phase 5.
+**Final delivery public demo (canonical):** Render Blueprint — [`deploy-final-demo.md`](deploy-final-demo.md) (same approach as Entrega 2 [`deploy-entrega2-demo.md`](deploy-entrega2-demo.md); root `render.yaml`). Stories: `US-OPS-SPA-HOST` + **DEPLOY-01**.
+
+Post-pilot alternate topology (Hetzner + Neon + Cloudflare Pages): [`../holisticare_deployment_quickstart.md`](../holisticare_deployment_quickstart.md) — **not** the capstone demo host.
 
 ### HolistiCare future deployment plan (post-pilot)
 
