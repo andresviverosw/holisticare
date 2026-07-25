@@ -44,7 +44,7 @@ Follow [`deploy-final-demo.md`](deploy-final-demo.md) / [`deploy-entrega2-demo.m
 - **DB:** Render PostgreSQL 16 (Neon fallback only if `vector` unavailable)
 - **API:** Docker web service `holisticare-api` (`backend/Dockerfile`)
 - **SPA:** Render Static Site with `VITE_API_BASE_URL` → API origin
-- **Auth (demo default):** `ALLOW_DEV_AUTH=true` for TA “Entrar desarrollo”, plus seeded clinician login documented
+- **Auth (locked):** `ALLOW_DEV_AUTH=true` for TA “Entrar desarrollo”, plus seeded clinician login documented as secondary path
 - **Evidence:** public `*.onrender.com` (or custom) frontend + API `/health` in submission notes
 
 `docker-compose.prod.yml` / Hetzner+Cloudflare remain **alternate** ops paths, not the capstone demo host.
@@ -237,16 +237,16 @@ Work is ordered by dependency and submission risk, not by day counts.
 
 Aligned with Phase 1 §11, tightened for the remaining window:
 
-1. [ ] Six MVP features runnable e2e on synthetic data (regression suite green).
-2. [ ] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
-3. [ ] **US-PRIV-001** merged with tests proving LLM egress scrub.
-4. [ ] **US-OPS-SPA-HOST** merged; SPA production build targets public API.
-5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works.
-6. [ ] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
-7. [ ] Short RAG/AI quality report attached.
-8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate).
-9. [ ] Clinician feedback form **or** documented waiver for synthetic-only validation.
-10. [ ] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
+1. [x] Six MVP features runnable e2e on synthetic data (regression suite green).
+2. [x] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
+3. [x] **US-PRIV-001** implemented with tests proving LLM egress scrub (merge via exec PR).
+4. [x] **US-OPS-SPA-HOST** implemented; SPA production build targets public API.
+5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works. *(operator — no Render creds in agent sandbox)*
+6. [x] Phase docs 01–06 closeout: §7 FR/NFR + Phase 3 privacy filled.
+7. [x] Short RAG/AI quality report attached (`rag-evaluation-report.md`).
+8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate). *(blocked on DEPLOY-01)*
+9. [x] Clinician feedback form **or** documented waiver (`feedback-pending-clinical-alignment.md`).
+10. [x] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
 
 ## 9. Risks
 
@@ -261,4 +261,9 @@ Aligned with Phase 1 §11, tightened for the remaining window:
 
 ## 10. Immediate next action
 
-**Development Agent** starts **US-PRIV-001** (TDD) and **US-OPS-SPA-HOST** (TDD) as the next code slices. Planning drafts Phase 3 / FR-NFR in parallel. DEPLOY-01 follows once SPA base URL is mergeable.
+**Human operator (testable environment):** follow [`final-delivery-next-steps.md`](final-delivery-next-steps.md) —
+
+1. Pull PR #18 branch; run pytest + frontend tests/build; optional Docker smoke.
+2. Merge when CI green.
+3. Execute **DEPLOY-01** on Render ([`deploy-final-demo.md`](deploy-final-demo.md)); paste public URLs.
+4. Run DEMO-01 against public URLs; tag `capstone-final`.

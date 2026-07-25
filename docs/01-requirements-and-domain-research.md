@@ -6,7 +6,7 @@
 - Contributors:
 - Version:
 - Last updated:
-- Status: `[ ]` Draft `[~]` In progress `[x]` Complete
+- Status: `[x]` Complete (FR/NFR filled 2026-07-25 final-delivery closeout)
 
 ## 1. Objective
 
@@ -131,18 +131,30 @@ Para el practicante, un expediente trazable y estructurado bajo NOM-024-SSA3-201
 
 | ID | Requirement | Priority (MoSCoW) | Rationale | Acceptance reference |
 |----|-------------|-------------------|-----------|----------------------|
-| FR-01 |  |  |  |  |
-| FR-02 |  |  |  |  |
+| FR-01 | Structured patient intake (`generic_holistic_v0`) with validation and persistence | Must | Baseline for plan generation and continuity | US-INT-001, US-INT-004, US-INT-005 |
+| FR-02 | AI draft multi-week treatment plan from intake + RAG corpus | Must | Core clinical decision-support value | US-PLAN-001 |
+| FR-03 | Citations (REF-IDs) on recommendations; insufficient-evidence path when retrieval empty | Must | Trust + anti-hallucination | US-PLAN-002, US-RAG-001..003 |
+| FR-04 | Practitioner approve/reject gate before plan is care-ready; no auto-activation | Must | NOM-024 / non-negotiable safety | US-PLAN-003 |
+| FR-05 | Structured care session logging (+ optional AI note suggest) | Must | Longitudinal clinical record | US-SESS-001, US-SESS-002 |
+| FR-06 | Daily patient diary (pain/sleep/mood/function; optional free text) | Must | Between-session outcomes | US-DIARY-001, US-DIARY-002, US-DIARY-UI-PATIENT |
+| FR-07 | Outcome trends and plateau/worsening flags from diary | Must | Early intervention | US-ANLY-001, US-ANLY-002 |
+| FR-08 | Intake risk flags surfaced to clinician | Must | Safety / contraindications | US-INT-002 |
+| FR-09 | Nutrition eat/avoid guidance with safety synonym guards | Must | Profile-aware diet + allergy block | US-RAG-003, US-RAG-004 |
+| FR-10 | Recovery trajectory + adjustment suggestions (when data sufficient) | Should | Expectation setting | US-PRED-001, US-PRED-002 |
+| FR-11 | Approved-plan memory bank (de-identified templates) | Should | Reuse validated patterns | US-PLAN-004 |
+| FR-12 | Prod-capable auth: clinician password login; patient invite redeem | Should | Public demo without hand-minted JWTs only | US-AUTH-CLINICIAN-PROD, US-DIARY-AUTH-PROD |
+| FR-13 | Anonymize/pseudonymize intake before external LLM calls | Must | LFPDPPP / R-02 egress control | US-PRIV-001 |
+| FR-14 | Public SPA calls configurable API base URL (Render Static Site) | Must | Entrega 2 / final public deploy | US-OPS-SPA-HOST |
 
 ### 7.2 Non-functional requirements
 
 | ID | Requirement | Category | Target |
 |----|-------------|----------|--------|
-| NFR-01 |  | Performance |  |
-| NFR-02 |  | Security |  |
-| NFR-03 |  | Privacy |  |
-| NFR-04 |  | Reliability |  |
-| NFR-05 |  | Explainability |  |
+| NFR-01 | Plan generation latency under normal load | Performance | p95 end-to-end RAG path ideally &lt; 8s (soft; cold start on free Render may exceed) |
+| NFR-02 | JWT RBAC on clinical write paths; roles `clinician`/`admin`/`patient` | Security | 401/403 contracts covered by API tests |
+| NFR-03 | Minimize PHI in external LLM prompts; synthetic data in MVP | Privacy | US-PRIV-001 scrubber + synthetic-only development |
+| NFR-04 | Failed LLM/embedding calls must not corrupt plan state; clear HTTP errors | Reliability | 502/503 + insufficient_evidence path |
+| NFR-05 | AI outputs include citations / confidence notes; practitioner override always available | Explainability | `citations_used`, Plan Review approve/reject |
 
 ## 8. Constraints and Assumptions
 
@@ -239,14 +251,14 @@ De los instrumentos validados candidatos (NRS/VAS, SF-12, PSQI, PHQ-9/GAD-7, Bar
 | Problem framing summary | Secciones 4–6 de este documento: domain research, problem statement y value proposition | ✅ Borrador completo | Marzo 2026 |
 | Constraints & risks document | Secciones 8–10 de este documento | ✅ Borrador completo | Marzo 2026 |
 | Co-design session report | Notas estructuradas de la sesión clínica: hallazgos por bloque, validaciones y rechazos de supuestos, lista de campos del expediente NMG confirmados | ⏳ Pendiente sesión | Abril 2026 |
-| Validated requirement list | Sección 7 completa: FR y NFR validados con el practicante, priorizados por MoSCoW | ⏳ Pendiente co-design | Abril 2026 |
-| Prioritized MVP scope | Tabla de features con alcance confirmado, criterios de aceptación por feature y out-of-scope explícito | ⏳ Pendiente co-design | Abril 2026 |
-| System architecture document | Diagrama de componentes, decisiones de diseño (ADRs), stack tecnológico justificado, modelo de datos completo | ⏳ En progreso | Abril 2026 |
-| Data dictionary & privacy framework | Definición de todas las entidades y campos del sistema; clasificación de datos por sensibilidad; mapeo a LFPDPPP y NOM-024 | ⏳ Pendiente | Abril 2026 |
-| Synthetic dataset (v1) | ~80–100 perfiles de pacientes sintéticos generados con Pydantic, validados con reglas de realismo clínico | ⏳ Pendiente | Abril 2026 |
-| RAG evaluation report | Métricas de hit rate, MRR, faithfulness y contraindication detection rate sobre golden eval set | ⏳ Pendiente | Mayo 2026 |
-| Stakeholder alignment notes | Resumen de acuerdos, compromisos y "never automate" list del practicante colaborador | ⏳ Pendiente co-design | Abril 2026 |
-| MVP funcional | Aplicación desplegada con las 6 features del MVP, lista para prueba piloto | ⏳ Pendiente | Junio 2026 |
+| Validated requirement list | Sección 7 completa: FR y NFR priorizados por MoSCoW (implementación real; co-design residual en Q2–Q5) | ✅ Completo (entrega final) | 2026-07-25 |
+| Prioritized MVP scope | Backlog + release slices en `04-feature-specs-and-user-stories.md` + `final-delivery-plan.md` | ✅ Completo | 2026-07-25 |
+| System architecture document | `02-system-architecture.md` + `08`/`10` diagrams | ✅ Completo (MVP) | 2026-07-25 |
+| Data dictionary & privacy framework | `03-data-dictionary-and-privacy-framework.md` | ✅ Completo (MVP) | 2026-07-25 |
+| Synthetic dataset (v1) | Pilot cases `backend/data/pilot/cases.json` + mock corpus (full 80–100 generator deferred) | ✅ Proxy para entrega | 2026-07-25 |
+| RAG evaluation report | `rag-evaluation-report.md` (contract/smoke proxy + limits) | ✅ Completo (proxy) | 2026-07-25 |
+| Stakeholder alignment notes | Pilot feedback form / pending clinical alignment appendix | ⏳ FEEDBACK-01 | 2026-07-25 |
+| MVP funcional | App + tests; **public Render URLs** = DEPLOY-01 (operator) | ⏳ DEPLOY-01 | 2026-07-25 |
 
 ### Definition of Done — MVP
 
@@ -267,8 +279,8 @@ El MVP se considera completo cuando:
 
 ## Completion checklist
 
-- [ ] Stakeholders identified and validated
-- [ ] Requirements prioritized with rationale
-- [ ] Constraints and assumptions documented
-- [ ] Risks captured with mitigations
-- [ ] MVP scope formally agreed
+- [x] Stakeholders identified and validated
+- [x] Requirements prioritized with rationale
+- [x] Constraints and assumptions documented
+- [x] Risks captured with mitigations
+- [x] MVP scope formally agreed

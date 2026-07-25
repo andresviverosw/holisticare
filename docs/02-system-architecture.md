@@ -129,6 +129,8 @@ Normative behavior is implemented in `backend/app/rag/` and summarized below. Di
 |--------|----------|--------|-----------|------------|
 | ADR-001 | PostgreSQL holds both relational data and pgvector chunks (LlamaIndex PGVectorStore) | Accepted | One datastore for MVP; simpler ops than separate vector DB | Couples scaling of OLTP and vector load |
 | ADR-002 | Practitioner approval required before treating AI output as care-ready; draft persisted with `pending_review` | Accepted | Safety and regulatory alignment | Extra clinician step |
+| ADR-003 | Anonymize/pseudonymize intake at RAG egress before Claude/OpenAI (`US-PRIV-001`); keep UUID locally | Accepted | LFPDPPP minimization / R-02; synthetic MVP | Scrubbing may remove clinical free-text nuance |
+| ADR-004 | Capstone public demo on **Render Blueprint** (Entrega 2 parity), not Hetzner/Pages | Accepted | Speed + prior graded deploy path | Free-tier cold starts; US region |
 
 ## 11. Open issues
 
@@ -140,6 +142,6 @@ Normative behavior is implemented in `backend/app/rag/` and summarized below. Di
 
 - [x] C4 context and container views complete (see [`10-solution-diagrams.md`](10-solution-diagrams.md))
 - [x] Data and AI workflows documented (cross-linked)
-- [~] Security and privacy controls mapped (detail in phase 3 and security doc)
+- [x] Security and privacy controls mapped (detail in phase 3 and security doc)
 - [~] Reliability strategy defined (ops doc and open issues)
-- [x] Major decisions captured in ADRs (initial set)
+- [x] Major decisions captured in ADRs (including US-PRIV-001 + Render demo)
