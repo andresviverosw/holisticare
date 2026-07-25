@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format is based on 
 
 - **US-PRIV-001:** anonymize/pseudonymize intake before Claude/OpenAI calls (`patient_anonymizer` + pipeline choke point; generator uses `PATIENT_TOKEN`).
 - **US-OPS-SPA-HOST:** `resolveApiBaseUrl(VITE_API_BASE_URL)` with `/api` Vite fallback for Render Static Site.
-- **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** on **Render** (Entrega 2 parity: `render.yaml`, `docs/deploy-final-demo.md`); mobile/JWT-harden/IdP cut; Render demo keeps `ALLOW_DEV_AUTH=true`.
+- **DOC-CLOSE / EVAL-01 / FEEDBACK-01:** Phase 1 FR/NFR filled; Phase 3 privacy framework completed; `rag-evaluation-report.md`; `feedback-pending-clinical-alignment.md`; DEPLOY-01 operator checklist strengthened.
 
 ### Fixed
 

@@ -79,16 +79,11 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 
 ## Active sprint
 
-- **Current focus:** **Final delivery / capstone closeout** — [`final-delivery-plan.md`](final-delivery-plan.md) (**Approved**; D1–D4 locked).
-- **Recently completed:** Sprint 15 — US-OPS-PROD-COMPOSE — **complete / QA PASS** ([`sprint-15.md`](sprint-15.md), [`qa-sprint-15-report.md`](qa-sprint-15-report.md)); Sprint 14 clinician login; Sprint 13 invites.
-- **In final window (Must):**
-  - `US-PRIV-001` — anonymize/pseudonymize before external LLM calls
-  - `US-OPS-SPA-HOST` + **DEPLOY-01** — public **Render** deploy (Blueprint), same approach as Entrega 2 — [`deploy-final-demo.md`](deploy-final-demo.md)
-  - Phase 1 FR/NFR + Phase 3 privacy dictionary closeout
-  - RAG eval short report + **public** demo walkthrough + clinician feedback artifact
-- **Deferred (cut from final window):**
-  - JWT harden / password reset / IdP
-  - R4 mobile (`US-MOB-001..003`)
+- **Current focus:** **Final delivery / capstone closeout** — [`final-delivery-plan.md`](final-delivery-plan.md) (**Approved**).
+- **Code done:** `US-PRIV-001`, `US-OPS-SPA-HOST` (exec branch / PR).
+- **Docs done:** Phase 1 FR/NFR, Phase 3 privacy, [`rag-evaluation-report.md`](rag-evaluation-report.md), [`feedback-pending-clinical-alignment.md`](feedback-pending-clinical-alignment.md).
+- **Operator next:** **DEPLOY-01** on Render — [`deploy-final-demo.md`](deploy-final-demo.md) (needs Render account; not runnable from agent sandbox without credentials).
+- **Deferred (cut from final window):** JWT harden / IdP; R4 mobile (`US-MOB-001..003`).
 
 ### Sprint history (reference)
 
@@ -111,6 +106,8 @@ GitHub Actions runs `backend/scripts/ai_quality_smoke.py` in the `ai-quality-smo
 - `final-delivery-plan.md` - Capstone final-delivery plan (**Approved**; D1–D4 locked; D2 = Render)
 - `deploy-entrega2-demo.md` - Entrega 2 Render deploy guide (historical)
 - `deploy-final-demo.md` - Entrega final Render deploy guide (canonical)
+- `rag-evaluation-report.md` - EVAL-01 AI quality / RAG proxy report
+- `feedback-pending-clinical-alignment.md` - FEEDBACK-01 waiver until live clinician form
 
 ## Suggested cadence
 

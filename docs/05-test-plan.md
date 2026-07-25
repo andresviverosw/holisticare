@@ -69,17 +69,21 @@ Define how HolistiCare will be verified for functional correctness, AI quality, 
 
 ## 7. Non-functional testing
 
-- Performance and load:
-- Reliability and recovery:
-- Security testing:
-- Privacy and access control tests:
+- Performance and load: soft RAG &lt;8s target; Render free cold start documented as exception.
+- Reliability and recovery: insufficient_evidence path; LLM auth/rate-limit API tests.
+- Security testing: JWT RBAC contracts; `pip-audit` / `npm audit` / bandit in CI `security-audit`.
+- Privacy and access control tests: **US-PRIV-001** — `tests/test_patient_anonymizer.py`, `tests/test_pipeline_anonymization.py` (no raw `patient_id`/email/phone in LLM payloads; local rebind of UUID).
 
 ## 8. Traceability matrix
 
 | Requirement ID | Test case ID | Type | Status |
 |----------------|--------------|------|--------|
-| FR-01 | TS-001 | Functional |  |
-| NFR-01 | NFT-001 | Performance |  |
+| FR-01 Intake | `test_plan_generate_api` / intake schema tests | Functional | Pass |
+| FR-02/03 Plan+citations | `ai_quality_smoke` + RAG tests | AI quality | Pass (proxy) |
+| FR-04 Approval gate | plan approve/reject API tests | Functional | Pass |
+| FR-13 Privacy egress | `test_patient_anonymizer` / `test_pipeline_anonymization` | Privacy | Pass |
+| FR-14 SPA API base | `apiBaseUrl.test.js` | Functional | Pass |
+| NFR-02 Security | auth + diary invite tests; CI security-audit | Security | Pass |
 
 ## 9. Defect management
 

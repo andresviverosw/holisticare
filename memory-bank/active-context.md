@@ -2,17 +2,16 @@
 
 ## Ongoing Tasks
 
-- **Final delivery Approved** (D1–D4 + `ALLOW_DEV_AUTH=true` for Render demo).
-- **US-PRIV-001** + **US-OPS-SPA-HOST** implemented on `cursor/final-delivery-plan-e84e` (tests green).
-- Next: **DEPLOY-01** on Render; DOC-CLOSE Phase 3 / FR-NFR; EVAL/DEMO/FEEDBACK.
+- Exec branch `cursor/final-delivery-exec-e84e`: US-PRIV-001 + US-OPS-SPA-HOST + DOC-CLOSE + EVAL-01 + FEEDBACK waiver.
+- **DEPLOY-01 blocked in agent sandbox** (no Render credentials). Operator must follow `docs/deploy-final-demo.md` and paste live URLs.
 
 ## Known Issues
 
-- Render free tier cold starts (~50s+) — document for TA.
-- Phase 3 privacy doc and Phase 1 §7 FR/NFR tables still stubs (academic DoD gap).
+- PR #17 closed (messy rebase); replace with exec-branch PR.
+- Render free-tier cold start ~50s+.
 
 ## Next Steps
 
-1. QA: confirm US-PRIV-001 / US-OPS-SPA-HOST acceptance on PR.
-2. Ops: DEPLOY-01 via Render Blueprint (`docs/deploy-final-demo.md`).
-3. Planning: DOC-CLOSE Phase 3 + FR/NFR in parallel.
+1. Human: run DEPLOY-01 on Render; fill URL log in `deploy-final-demo.md` + README.
+2. Optional: complete live clinician feedback form to replace waiver.
+3. Tag `capstone-final` after public smoke green.

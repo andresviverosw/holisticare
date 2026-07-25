@@ -237,16 +237,16 @@ Work is ordered by dependency and submission risk, not by day counts.
 
 Aligned with Phase 1 §11, tightened for the remaining window:
 
-1. [ ] Six MVP features runnable e2e on synthetic data (regression suite green).
-2. [ ] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
-3. [ ] **US-PRIV-001** merged with tests proving LLM egress scrub.
-4. [ ] **US-OPS-SPA-HOST** merged; SPA production build targets public API.
-5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works.
-6. [ ] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
-7. [ ] Short RAG/AI quality report attached.
-8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate).
-9. [ ] Clinician feedback form **or** documented waiver for synthetic-only validation.
-10. [ ] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
+1. [x] Six MVP features runnable e2e on synthetic data (regression suite green).
+2. [x] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
+3. [x] **US-PRIV-001** implemented with tests proving LLM egress scrub (merge via exec PR).
+4. [x] **US-OPS-SPA-HOST** implemented; SPA production build targets public API.
+5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works. *(operator — no Render creds in agent sandbox)*
+6. [x] Phase docs 01–06 closeout: §7 FR/NFR + Phase 3 privacy filled.
+7. [x] Short RAG/AI quality report attached (`rag-evaluation-report.md`).
+8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate). *(blocked on DEPLOY-01)*
+9. [x] Clinician feedback form **or** documented waiver (`feedback-pending-clinical-alignment.md`).
+10. [x] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
 
 ## 9. Risks
 

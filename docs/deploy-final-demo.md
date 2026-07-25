@@ -12,6 +12,18 @@ Plan: [`final-delivery-plan.md`](final-delivery-plan.md) (D2 locked → Render)
 
 ---
 
+## 0. Estado DEPLOY-01
+
+| Item | Estado |
+|------|--------|
+| Código `US-OPS-SPA-HOST` (`VITE_API_BASE_URL`) | En rama de ejecución / PR |
+| Código `US-PRIV-001` (anonymizer) | En rama de ejecución / PR |
+| `render.yaml` + `_redirects` | En `main` (PR #16) |
+| Live URLs en este entorno de agente | **Bloqueado** — no hay `RENDER_API_KEY` / cuenta Render en el sandbox |
+| Operador humano | Debe ejecutar §§1–7 abajo y pegar URLs en README |
+
+---
+
 ## 1. Qué reutilizar de Entrega 2
 
 | Pieza | Entrega 2 | Entrega final |
@@ -19,40 +31,52 @@ Plan: [`final-delivery-plan.md`](final-delivery-plan.md) (D2 locked → Render)
 | Hosting | Render Blueprint | **Igual** |
 | DB | Render Postgres 16 (+ Neon fallback si falta `vector`) | **Igual** |
 | API | Docker web service `holisticare-api` | **Igual** |
-| SPA | Static Site + `VITE_API_BASE_URL` | **Igual** (re-aplicar en `main` — hoy `api.js` hardcodea `/api`) |
+| SPA | Static Site + `VITE_API_BASE_URL` | **Igual** |
 | SPA routing | rewrite `/* → /index.html` + `frontend/public/_redirects` | **Igual** |
-| Schema bootstrap | `psql` + `infra/init.sql` (manual) | **Igual** (+ patches nuevos si aplica, p.ej. memory bank / invites / `app_users`) |
+| Schema bootstrap | `psql` + `infra/init.sql` (manual) | **Igual** — `init.sql` actual ya incluye invites, `app_users`, memory bank |
 | Corpus | `POST /rag/ingest` con `data/mock` | **Igual** (sintético) |
 
 ---
 
-## 2. Deltas respecto a Entrega 2 (producto actual)
+## 2. Decisiones bloqueadas (2026-07-25)
 
-Desde Entrega 2 el producto añadió auth “prod” (Sprints 13–14). Para la demo académica en Render:
-
-| Tema | Decisión bloqueada (2026-07-25) |
-|------|----------------------------------|
-| `ALLOW_DEV_AUTH` | **`true`** en el Blueprint demo (mismo flujo TA: “Entrar desarrollo”), *y* documentar login username/password con usuario seed como path secundario |
-| Clinician seed | Ejecutar `backend/scripts/seed_clinician.py` (o equivalente) tras schema |
-| Patient diary | Invite redeem (`US-DIARY-AUTH-PROD`) además del path clinician-proxy |
-| Anonymization | Deploy **después** de merge de **US-PRIV-001** |
+| Tema | Decisión |
+|------|----------|
+| `ALLOW_DEV_AUTH` | **`true`** en Blueprint demo (flujo TA “Entrar desarrollo”) + seed clinician documentado como path secundario |
+| Clinician seed | `backend/scripts/seed_clinician.py` tras schema |
+| Anonymization | Deploy con **US-PRIV-001** mergeado |
 | Cold start | Tier free ~50 s+; aviso en README / Typeform |
-
-Solo cambiar a `ALLOW_DEV_AUTH=false` si el tutor lo exige explícitamente (entonces demo vía `/auth/login` + seed).
 
 ---
 
-## 3. Pasos (resumen — detalle en Entrega 2)
+## 3. Pasos operativos
 
-1. **New → Blueprint** en Render; conectar repo; rama de entrega final; detectar `render.yaml`.
-2. Setear secretos en **holisticare-api**: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `CORS_ORIGINS` (URL exacta del Static Site).
-3. Setear en **holisticare-frontend**: `VITE_API_BASE_URL=https://<api-host>`.
-4. Aplicar schema: `CREATE EXTENSION vector;` + `infra/init.sql` (+ patches listados en `docs/setup.md` si no están en init).
-5. Seed clinician; ingest `data/mock`.
-6. Verificar: `curl https://<api>/health` → 200; abrir SPA; login; generar + aprobar plan.
-7. Pegar URLs en README sección proyecto / notas de entrega.
+1. **New → Blueprint** en Render; conectar repo; rama con US-PRIV-001 + US-OPS-SPA-HOST; detectar `render.yaml`.
+2. Secretos en **holisticare-api**: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `CORS_ORIGINS` = URL exacta del Static Site (sin `/` final).
+3. En **holisticare-frontend**: `VITE_API_BASE_URL=https://<api-host>` (sin `/` final) → **Trigger Redeploy** del Static Site tras setear (Vite bake-time).
+4. Schema:
+   ```bash
+   psql "<EXTERNAL_DATABASE_URL>" -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+   psql "<EXTERNAL_DATABASE_URL>" -f infra/init.sql
+   ```
+5. Seed clinician (compose/exec o one-off):
+   ```bash
+   # Example inside API container — adjust to Render shell
+   python scripts/seed_clinician.py
+   ```
+6. Ingest:
+   ```bash
+   TOKEN=$(curl -s -X POST https://<api>/auth/dev-login \
+     -H 'Content-Type: application/json' \
+     -d '{"role":"admin","sub":"demo-admin"}' | jq -r .access_token)
+   curl -X POST https://<api>/rag/ingest \
+     -H "Authorization: Bearer $TOKEN" \
+     -H 'Content-Type: application/json' \
+     -d '{"source_dir":"data/mock","force_reindex":false}'
+   ```
+7. Verificar checklist §4; pegar URLs en README § proyecto.
 
-Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo.md) §10 (CORS, cold start, SSL Postgres, schema missing).
+Troubleshooting: [`deploy-entrega2-demo.md`](deploy-entrega2-demo.md) §10.
 
 ---
 
@@ -61,16 +85,24 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 - [ ] Frontend público responde (SPA carga).
 - [ ] API `/health` pública 200.
 - [ ] CORS permite origen del Static Site.
-- [ ] Flujo demo: login → intake → generar plan → review → approve/reject.
+- [ ] `VITE_API_BASE_URL` correcto (Network tab → API host, no Static Site `/api`).
+- [ ] Flujo demo: Entrar desarrollo → intake → generar plan → review → approve/reject.
+- [ ] (Secundario) login username/password con usuario seed.
 - [ ] URLs documentadas en README / paquete de entrega.
-- [ ] Nota de cold start free tier si aplica.
+- [ ] Nota de cold start free tier.
+
+### URL log (llenar al desplegar)
+
+| Service | URL |
+|---------|-----|
+| Frontend | `https://________________.onrender.com` |
+| API health | `https://________________.onrender.com/health` |
+| Deployed git SHA | |
 
 ---
 
 ## 5. Relación con US-OPS-SPA-HOST
 
-Código Must antes/en paralelo al redeploy:
-
-- `frontend/src/services/api.js` debe usar `import.meta.env.VITE_API_BASE_URL || "/api"` (ya existía en `feature-entrega2-AVW`; reintroducir en la rama de entrega final con tests).
-- `frontend/public/_redirects` para SPA deep links.
-- `render.yaml` versionado en raíz (este repo).
+- `frontend/src/services/api.js` → `resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL)`.
+- `frontend/public/_redirects` + `render.yaml` routes rewrite.
+- Sin `VITE_API_BASE_URL`, el Static Site llama `/api` en su propio dominio y falla.

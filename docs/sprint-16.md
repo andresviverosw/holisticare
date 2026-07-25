@@ -10,7 +10,7 @@
 | Priority | Must (final master’s delivery) |
 | Scope | LLM egress anonymization; SPA `VITE_API_BASE_URL` + **Render** public deploy (Entrega 2 parity); privacy docs; submission package |
 | Owner | Planning → Development (TDD) → Ops deploy → QA |
-| Status | **In progress** (owner approved plan + `ALLOW_DEV_AUTH=true` demo; US-PRIV-001 + US-OPS-SPA-HOST coding) |
+| Status | **Code + docs complete; DEPLOY-01 awaiting operator Render deploy** |
 | Plan of record | [`final-delivery-plan.md`](final-delivery-plan.md) |
 
 ## Problem statement
