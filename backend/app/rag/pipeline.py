@@ -20,6 +20,7 @@ from app.rag.retrieval.reranker import get_reranker
 from app.rag.generation.generator import PlanGenerator
 from app.rag.nutrition_safety_config import get_nutrition_synonym_groups, normalize_nutrition_text
 from app.core.config import get_settings
+from app.services.patient_anonymizer import anonymize_intake_for_llm
 
 settings = get_settings()
 
@@ -163,8 +164,11 @@ class RAGPipeline:
         Returns:
             plan dict with status='pending_review', ready for DB insertion.
         """
+        # US-PRIV-001 — scrub PII before any external LLM call; keep real id locally.
+        safe_intake = anonymize_intake_for_llm(intake_json)
+
         # Phase 2 — Query construction
-        clinical_summary = self.query_builder.build_clinical_summary(intake_json)
+        clinical_summary = self.query_builder.build_clinical_summary(safe_intake)
         queries = self.query_builder.expand_queries(clinical_summary)
 
         # Phase 3 — Retrieval
@@ -188,7 +192,7 @@ class RAGPipeline:
         )
 
         if not reranked:
-            return build_insufficient_evidence_plan(
+            plan = build_insufficient_evidence_plan(
                 patient_id,
                 message_es=(
                     "No se recuperó evidencia clínica indexada suficiente para generar un plan "
@@ -199,6 +203,8 @@ class RAGPipeline:
                 candidates_retrieved=len(candidates),
                 reranker_backend=settings.reranker_backend,
             )
+            plan["retrieval_metadata"]["anonymization_applied"] = True
+            return plan
 
         # Phase 4 — Generation
         plan = self.generator.generate(
@@ -215,7 +221,9 @@ class RAGPipeline:
             "candidates_retrieved": len(candidates),
             "chunks_passed_to_llm": len(reranked),
             "reranker_backend": settings.reranker_backend,
+            "anonymization_applied": True,
         }
+        # Safety guards use original intake (local only — not sent to LLM).
         plan = apply_nutrition_safety_guards(plan, intake_json)
 
         return plan

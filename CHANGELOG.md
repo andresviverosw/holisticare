@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Added
+
+- **US-PRIV-001:** anonymize/pseudonymize intake before Claude/OpenAI calls (`patient_anonymizer` + pipeline choke point; generator uses `PATIENT_TOKEN`).
+- **US-OPS-SPA-HOST:** `resolveApiBaseUrl(VITE_API_BASE_URL)` with `/api` Vite fallback for Render Static Site.
+
 ### Fixed
 
 - **CI backend-tests:** `test_redeem_invite_200_returns_patient_jwt_with_exp` used a fixed July-16 `expires_at`, which became expired vs wall-clock `datetime.now(UTC)` after that date (410 instead of 200).

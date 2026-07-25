@@ -30,15 +30,15 @@ Plan: [`final-delivery-plan.md`](final-delivery-plan.md) (D2 locked → Render)
 
 Desde Entrega 2 el producto añadió auth “prod” (Sprints 13–14). Para la demo académica en Render:
 
-| Tema | Recomendación para entrega final |
+| Tema | Decisión bloqueada (2026-07-25) |
 |------|----------------------------------|
-| `ALLOW_DEV_AUTH` | Mantener **`true`** en el Blueprint demo (mismo flujo TA: “Entrar desarrollo”), *y* documentar login username/password con usuario seed |
+| `ALLOW_DEV_AUTH` | **`true`** en el Blueprint demo (mismo flujo TA: “Entrar desarrollo”), *y* documentar login username/password con usuario seed como path secundario |
 | Clinician seed | Ejecutar `backend/scripts/seed_clinician.py` (o equivalente) tras schema |
 | Patient diary | Invite redeem (`US-DIARY-AUTH-PROD`) además del path clinician-proxy |
 | Anonymization | Deploy **después** de merge de **US-PRIV-001** |
 | Cold start | Tier free ~50 s+; aviso en README / Typeform |
 
-Si el tutor exige `ALLOW_DEV_AUTH=false` en la URL pública, cambiar solo esa variable, seed clinician, y demo vía `/auth/login` (no `/auth/dev-login`).
+Solo cambiar a `ALLOW_DEV_AUTH=false` si el tutor lo exige explícitamente (entonces demo vía `/auth/login` + seed).
 
 ---
 
