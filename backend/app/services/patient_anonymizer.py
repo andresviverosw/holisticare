@@ -6,7 +6,7 @@ import copy
 import re
 from typing import Any
 
-PATIENT_TOKEN = "PATIENT_TOKEN"
+PATIENT_TOKEN = "PATIENT_TOKEN"  # nosec B105 — LLM prompt placeholder, not a credential
 
 # Clinical fields allowed in LLM prompts (generic_holistic_v0 projection).
 _ALLOWED_TOP_LEVEL = frozenset(
