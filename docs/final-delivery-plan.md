@@ -261,4 +261,9 @@ Aligned with Phase 1 §11, tightened for the remaining window:
 
 ## 10. Immediate next action
 
-**Development Agent** starts **US-PRIV-001** (TDD) and **US-OPS-SPA-HOST** (TDD) as the next code slices. Planning drafts Phase 3 / FR-NFR in parallel. DEPLOY-01 follows once SPA base URL is mergeable.
+**Human operator (testable environment):** follow [`final-delivery-next-steps.md`](final-delivery-next-steps.md) —
+
+1. Pull PR #18 branch; run pytest + frontend tests/build; optional Docker smoke.
+2. Merge when CI green.
+3. Execute **DEPLOY-01** on Render ([`deploy-final-demo.md`](deploy-final-demo.md)); paste public URLs.
+4. Run DEMO-01 against public URLs; tag `capstone-final`.

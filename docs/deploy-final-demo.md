@@ -21,6 +21,7 @@ Plan: [`final-delivery-plan.md`](final-delivery-plan.md) (D2 locked → Render)
 | `render.yaml` + `_redirects` | En `main` (PR #16) |
 | Live URLs en este entorno de agente | **Bloqueado** — no hay `RENDER_API_KEY` / cuenta Render en el sandbox |
 | Operador humano | Debe ejecutar §§1–7 abajo y pegar URLs en README |
+| Handoff completo (local → Render) | [`final-delivery-next-steps.md`](final-delivery-next-steps.md) |
 
 ---
 

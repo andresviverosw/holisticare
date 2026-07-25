@@ -2,16 +2,17 @@
 
 ## Ongoing Tasks
 
-- Exec branch `cursor/final-delivery-exec-e84e`: US-PRIV-001 + US-OPS-SPA-HOST + DOC-CLOSE + EVAL-01 + FEEDBACK waiver.
-- **DEPLOY-01 blocked in agent sandbox** (no Render credentials). Operator must follow `docs/deploy-final-demo.md` and paste live URLs.
+- PR #18 (`cursor/final-delivery-exec-e84e`): code + academic docs ready.
+- **Handoff doc:** `docs/final-delivery-next-steps.md` — operator continues in local/Render testable env.
+- Remaining: DEPLOY-01 (Render) + public DEMO-01 + merge/tag.
 
 ## Known Issues
 
-- PR #17 closed (messy rebase); replace with exec-branch PR.
-- Render free-tier cold start ~50s+.
+- Agent sandbox has no Render credentials — live deploy is human-owned.
+- Node ≥ 22.22 required for frontend (RR8).
 
 ## Next Steps
 
-1. Human: run DEPLOY-01 on Render; fill URL log in `deploy-final-demo.md` + README.
-2. Optional: complete live clinician feedback form to replace waiver.
-3. Tag `capstone-final` after public smoke green.
+1. Human: follow `docs/final-delivery-next-steps.md`.
+2. Merge PR #18 after CI green.
+3. Render Blueprint + URL log; tag `capstone-final`.
