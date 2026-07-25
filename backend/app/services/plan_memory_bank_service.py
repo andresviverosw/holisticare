@@ -9,31 +9,13 @@ from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.plan_memory_bank import PlanMemoryBankEntry
+from app.services.plan_deidentify import (
+    extract_therapy_types,
+    sanitize_plan_for_memory_bank,
+)
 from app.services.plan_persistence import get_persisted_plan, persist_generated_plan
 
-
-def extract_therapy_types(plan: dict[str, Any]) -> list[str]:
-    out: set[str] = set()
-    for week in plan.get("weeks") or []:
-        if not isinstance(week, dict):
-            continue
-        for t in week.get("therapies") or []:
-            if isinstance(t, dict):
-                typ = t.get("type")
-                if isinstance(typ, str) and typ.strip():
-                    out.add(typ.strip().lower())
-    return sorted(out)
-
-
-def sanitize_plan_for_memory_bank(plan: dict[str, Any]) -> dict[str, Any]:
-    """De-identify plan JSON for storage as a reusable template snapshot."""
-    snap = copy.deepcopy(plan)
-    snap.pop("patient_id", None)
-    snap.pop("retrieval_metadata", None)
-    snap.pop("practitioner_notes", None)
-    snap.pop("nutrition_safety_flags", None)
-    snap["memory_bank_snapshot"] = True
-    return snap
+# Re-export pure helpers for existing imports/tests.
 
 
 def build_draft_from_template(

@@ -44,6 +44,15 @@ python -m scripts.seed_clinician
 
 Idempotent: re-running updates the password/role for the same username. Never commit real passwords. Apply `app_users` DDL from `infra/init.sql` on existing databases first.
 
+### Seed synthetic demo patients (ops) — SYNTH-01
+
+```bash
+cd backend
+python -m scripts.seed_synthetic_dataset
+```
+
+Loads 32 synthetic patients (intakes, plans, sessions, diaries, memory-bank templates) so Dashboard trend/plateau panels have data. See `docs/synthetic-dataset-v1.md`.
+
 ### Invite patient to diary (clinician) — US-DIARY-AUTH-PROD
 
 1. On the Dashboard, set a valid patient UUID v4.

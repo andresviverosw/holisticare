@@ -83,6 +83,19 @@ python -m scripts.seed_clinician
 
 Patients continue to use invite redeem (`US-DIARY-AUTH-PROD`), not password accounts.
 
+### 3.1b) Synthetic clinical corpus (`SYNTH-01`)
+
+After schema + clinician seed, load the longitudinal demo dataset (intakes, plans, sessions, diaries, memory bank):
+
+```bash
+cd backend
+python -m scripts.seed_synthetic_dataset
+# Regenerate package first (optional):
+# python -m scripts.generate_synthetic_dataset --variants 4 --seed 42
+```
+
+Details, cohort meanings, and thesis appendix notes: `docs/synthetic-dataset-v1.md`.
+
 ### 3.1c) Production Compose overlay (`US-OPS-PROD-COMPOSE`)
 
 Do **not** run the root `docker-compose.yml` (dev bind-mount/`--reload`) as production.
