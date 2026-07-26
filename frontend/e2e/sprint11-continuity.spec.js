@@ -142,6 +142,47 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
     });
   });
 
+  await page.route(`**/api/rag/analytics/patient/${PATIENT}/recovery-trajectory**`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        patient_id: PATIENT,
+        analysis_status: "insufficient_data",
+        reason: "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+        trajectory: null,
+        data_points_used: 1,
+      }),
+    });
+  });
+
+  await page.route(`**/api/rag/analytics/patient/${PATIENT}/recovery-recommendations**`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        patient_id: PATIENT,
+        recommendation_status: "insufficient_data",
+        reason: "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+        recommendations: [],
+        safety_notes: [],
+        prediction: {
+          analysis_status: "insufficient_data",
+          reason: "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+          trajectory: null,
+        },
+      }),
+    });
+  });
+
+  await page.route(`**/api/rag/intake/${PATIENT}`, async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
+      return;
+    }
+    await route.fallback();
+  });
+
   await page.route("**/api/rag/sessions/suggest-note", async (route) => {
     await route.fulfill({
       status: 200,
@@ -208,10 +249,11 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
   await expect(page.getByText("Check-in de diario guardado")).toBeVisible();
   await expect(page.getByText(/dolor 5/)).toBeVisible();
 
-  // US-ANLY-UI
+  // US-ANLY-UI — chart replaces tabular series
   await page.getByRole("button", { name: "Cargar progreso" }).click();
   await expect(page.getByText("Estado: datos insuficientes")).toBeVisible();
-  await expect(page.getByRole("cell", { name: "2026-07-16" })).toBeVisible();
+  await expect(page.getByTestId("outcome-trend-chart")).toBeVisible();
+  await expect(page.getByTestId("outcome-trend-chart").getByText("2026-07-16")).toBeVisible();
 
   // US-SESS-UI — fill description in session section
   const sessionHeading = page.getByText("Sesión clínica (US-SESS-UI)");
