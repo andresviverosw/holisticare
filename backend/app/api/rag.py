@@ -44,6 +44,7 @@ from app.services.analytics_service import (
 )
 from app.services.diary_service import list_diary_entries_for_patient, upsert_diary_entry
 from app.services.diary_invite_service import InviteError, create_diary_invite
+from app.services.patient_anonymizer import AnonymizationError
 from app.services.session_service import create_care_session, list_care_sessions_for_patient
 from app.services.session_note_service import suggest_session_note
 from app.services.plan_memory_bank_service import (
@@ -544,6 +545,14 @@ async def generate_plan(
             available_therapies=request.available_therapies,
             preferred_language=request.preferred_language,
         )
+    except AnonymizationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "No se pudo anonimizar el perfil del paciente antes de llamar al modelo. "
+                f"{exc!s}. Revise texto libre del intake (correos, teléfonos, identificadores)."
+            ),
+        ) from exc
     except anthropic.AuthenticationError as exc:
         raise HTTPException(
             status_code=503,

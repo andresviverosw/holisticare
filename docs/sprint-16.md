@@ -10,7 +10,7 @@
 | Priority | Must (final master’s delivery) |
 | Scope | LLM egress anonymization; SPA `VITE_API_BASE_URL` + **Render** public deploy (Entrega 2 parity); privacy docs; submission package |
 | Owner | Planning → Development (TDD) → Ops deploy → QA |
-| Status | **Ready for dev** (D1–D4 locked 2026-07-25) |
+| Status | **In progress** — US-PRIV-001 + US-OPS-SPA-HOST code Done; DEPLOY-01 + packaging remaining |
 | Plan of record | [`final-delivery-plan.md`](final-delivery-plan.md) |
 
 ## Problem statement
@@ -42,7 +42,10 @@ HolistiCare’s MVP product loop is implemented through Sprint 15, but Phase 1 r
 - [x] Story IDs, AC, test intent in [`04-feature-specs-and-user-stories.md`](04-feature-specs-and-user-stories.md)
 - [x] Sequence and cut list in [`final-delivery-plan.md`](final-delivery-plan.md)
 - [x] User confirmed D1–D4 (D2 = public deploy)
-- [ ] Development starts Red tests for scrubber + API base URL helper
+- [x] Development starts Red tests for scrubber + API base URL helper
+- [x] US-PRIV-001 + US-OPS-SPA-HOST merged with tests (2026-07-26)
+- [ ] DEPLOY-01 public Render smoke + URLs in README
+- [x] DOC-CLOSE Phase 1 §7 / Phase 3 privacy + EVAL-01 + FEEDBACK-01 waiver
 
 ## Handoff
 

@@ -94,9 +94,9 @@ Translate requirements into implementable product specifications, user stories, 
 | US-DIARY-AUTH-PROD | Patient diary | Clinician / Patient | to invite a patient with a single-use link that issues a patient JWT | patients can use `/diario` without `ALLOW_DEV_AUTH` or UUID-as-password | Should | M | **Done (Sprint 13)** |
 | US-AUTH-CLINICIAN-PROD | Auth | Clinician / Admin | to sign in with username and password when dev auth is off | I can use the SPA in staging/production without minting JWTs by hand | Should | M | **Done (Sprint 14)** |
 | US-OPS-PROD-COMPOSE | Ops | Admin | to run the API with a production Compose overlay (Caddy TLS, no dev auth) | I can deploy without the unsafe bind-mount/reload stack | Should | M | **Done (Sprint 15)** |
-| US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Ready for dev (final delivery)** |
+| US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Done (Sprint 16)** |
 | US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
-| US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Ready for dev (final delivery — D2 locked Render)** |
+| US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Done (Sprint 16)** |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned (deferred — final delivery cut) |
@@ -561,10 +561,10 @@ Test intent:
 | US-DIARY-AUTH-PROD | Should | R2+ | US-DIARY-UI-PATIENT | **Sprint 13 — Done.** Single-use invite link → patient JWT with `exp`. See `sprint-13.md`. |
 | US-AUTH-CLINICIAN-PROD | Should | R2+ | JWT RBAC | **Sprint 14 — Done.** Username/password + seed clinician → JWT with `exp`. See `sprint-14.md`. |
 | US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
-| SYNTH-01 | Should | R-final | US-INT-001…US-PRED-001, US-PLAN-004 | **Final delivery.** Deterministic synthetic corpus + DB seed exercising plans/diaries/KPIs. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md). |
-| US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Final delivery.** Anonymize/pseudonymize intake before Claude/OpenAI calls. See [`final-delivery-plan.md`](final-delivery-plan.md). |
+| SYNTH-01 | Should | R-final | US-INT-001…US-PRED-001, US-PLAN-004 | **Done.** Deterministic synthetic corpus + DB seed. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md). |
+| US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Done (Sprint 16).** Anonymize/pseudonymize intake before Claude/OpenAI calls. |
 | US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
-| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Final delivery (D2 Render).** `VITE_API_BASE_URL` + `render.yaml` / Static Site; companion ops **DEPLOY-01**. See [`deploy-final-demo.md`](deploy-final-demo.md). |
+| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Done (Sprint 16).** `VITE_API_BASE_URL` + tests; companion ops **DEPLOY-01** still required for live URLs. |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |

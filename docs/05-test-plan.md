@@ -23,29 +23,31 @@ Define how HolistiCare will be verified for functional correctness, AI quality, 
 
 | Level | Scope | Owner | Tooling |
 |-------|-------|-------|---------|
-| Unit |  |  |  |
-| Integration |  |  |  |
-| API contract |  |  |  |
-| End-to-end |  |  |  |
-| AI evaluation |  |  |  |
-| Security and privacy |  |  |  |
+| Unit | Services, scrubber, SPA helpers | Dev | pytest, Vitest |
+| Integration | Pipeline with mocked LLM | Dev | pytest |
+| API contract | FastAPI routes with stubbed DB | Dev/QA | pytest + TestClient |
+| End-to-end | Login → diary → continuity flows | QA | Playwright |
+| AI evaluation | Plan contract smoke + known limits | QA | `ai_quality_smoke.py` + [`rag-evaluation-report.md`](rag-evaluation-report.md) |
+| Security and privacy | US-PRIV-001 egress; RBAC; npm/pip audit CI | Dev/QA | pytest anonymizer + CI audits |
 
 ## 4. Test environments
 
-- Local development:
-- Staging:
-- Pre-production:
-- Test data approach:
+- Local development: Docker Compose + Vite proxy `/api`
+- Staging / public demo: Render Blueprint (`render.yaml`)
+- Pre-production: optional `docker-compose.prod.yml` + Caddy
+- Test data approach: synthetic only (SYNTH-01); never real PHI
 
 ## 5. Functional test scenarios
 
 | Scenario ID | Feature | Preconditions | Steps | Expected result |
 |-------------|---------|---------------|-------|-----------------|
-| TS-001 | Intake |  |  |  |
-| TS-002 | Treatment plan |  |  |  |
-| TS-003 | Session logger |  |  |  |
-| TS-004 | Diary |  |  |  |
-| TS-005 | Analytics |  |  |  |
+| TS-001 | Intake | Clinician JWT | Save/get intake | 200 + audit on patch |
+| TS-002 | Treatment plan | Corpus ingested | Generate → approve/reject | `pending_review` then status change |
+| TS-003 | Session logger | Patient UUID | Create session + note assist | Persisted session_json |
+| TS-004 | Diary | Patient or clinician | Upsert check-in | One row per day |
+| TS-005 | Analytics | Diary history | Trends + plateau | Flags when rules match |
+| TS-006 | Privacy egress | Dirty free-text intake | Generate with mocked LLM | No email/phone/UUID in LLM args |
+| TS-007 | SPA host | `VITE_API_BASE_URL` set | Build/boot | axios uses absolute API origin |
 
 ## 6. AI quality and safety tests
 

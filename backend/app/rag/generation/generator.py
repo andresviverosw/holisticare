@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 
 from app.core.config import get_settings
 from app.rag.llm_chat import complete_claude_or_openai
+from app.services.patient_anonymizer import PATIENT_TOKEN
 
 settings = get_settings()
 
@@ -127,7 +128,8 @@ Include profile-aware dietary guidance in a diet_recommendations object with:
 Your output must be a valid JSON object matching this schema:
 {json.dumps(PLAN_SCHEMA_EXAMPLE, indent=2)}
 
-Replace 'uuid' values with actual UUIDs. patient_id = {patient_id}.
+Replace 'uuid' values with actual UUIDs. Use patient_id placeholder = {PATIENT_TOKEN}
+(the service layer will bind the real local patient identifier; do not invent contact data).
 Only cite REF-IDs that appear in the RETRIEVED CLINICAL CONTEXT above."""
 
         raw = complete_claude_or_openai(

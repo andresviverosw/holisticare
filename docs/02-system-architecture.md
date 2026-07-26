@@ -129,17 +129,19 @@ Normative behavior is implemented in `backend/app/rag/` and summarized below. Di
 |--------|----------|--------|-----------|------------|
 | ADR-001 | PostgreSQL holds both relational data and pgvector chunks (LlamaIndex PGVectorStore) | Accepted | One datastore for MVP; simpler ops than separate vector DB | Couples scaling of OLTP and vector load |
 | ADR-002 | Practitioner approval required before treating AI output as care-ready; draft persisted with `pending_review` | Accepted | Safety and regulatory alignment | Extra clinician step |
+| ADR-003 | Pseudonymize at LLM egress (`prepare_intake_for_llm` / `PATIENT_TOKEN`); keep UUID identity in local DB | Accepted | Closes R-02 international-transfer control for capstone without full ARCO portal | Regex scrub may miss novel PII shapes; over-scrub risk to clinical text |
+| ADR-004 | Capstone public demo on Render Blueprint (API Docker + Static Site + `VITE_API_BASE_URL`) | Accepted | Entrega 2 parity; tutor-reachable URLs | Free-tier cold starts; CORS must match Static Site origin |
 
 ## 11. Open issues
 
 - Formal SLO/SLA and production monitoring stack.
-- Retention/deletion automation versus [`03-data-dictionary-and-privacy-framework.md`](03-data-dictionary-and-privacy-framework.md) completion.
+- Automated ARCO deletion across all tables (manual policy documented in phase 3).
 - Optional: split `rag.py` router for maintainability (see [`engineering-solid-dry-review.md`](engineering-solid-dry-review.md)).
 
 ## Completion checklist
 
 - [x] C4 context and container views complete (see [`10-solution-diagrams.md`](10-solution-diagrams.md))
 - [x] Data and AI workflows documented (cross-linked)
-- [~] Security and privacy controls mapped (detail in phase 3 and security doc)
+- [x] Security and privacy controls mapped (phase 3 + ADR-003)
 - [~] Reliability strategy defined (ops doc and open issues)
-- [x] Major decisions captured in ADRs (initial set)
+- [x] Major decisions captured in ADRs (including egress anonymization + Render demo)

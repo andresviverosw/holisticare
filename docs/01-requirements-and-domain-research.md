@@ -131,18 +131,28 @@ Para el practicante, un expediente trazable y estructurado bajo NOM-024-SSA3-201
 
 | ID | Requirement | Priority (MoSCoW) | Rationale | Acceptance reference |
 |----|-------------|-------------------|-----------|----------------------|
-| FR-01 |  |  |  |  |
-| FR-02 |  |  |  |  |
+| FR-01 | Clinician captures structured holistic intake (`generic_holistic_v0`) and persists per `patient_id` | Must | Baseline for RAG and analytics | US-INT-001, US-INT-004, US-INT-005 |
+| FR-02 | System flags intake risk/contraindication indicators for early review | Must | Safety before plan generation | US-INT-002 (+ UI Sprint 11) |
+| FR-03 | RAG generates multi-week draft plan with REF-ID citations and `pending_review` | Must | Core CDS value; NOM-024 gate | US-PLAN-001…003, US-RAG-001…003 |
+| FR-04 | Practitioner must approve or reject before plan is care-ready; no auto-activation | Must | Non-negotiable regulatory control | US-PLAN-003; generator hard-rule |
+| FR-05 | Clinician logs structured care sessions; optional LLM note assist | Must | Continuity between visits | US-SESS-001, US-SESS-002 (+ UI) |
+| FR-06 | Patient (or clinician proxy) submits daily diary check-ins; invite-link patient auth | Must | Between-session outcomes | US-DIARY-001/002, US-DIARY-UI-PATIENT, US-DIARY-AUTH-PROD |
+| FR-07 | Clinician views outcome trends and automatic plateau/worsening flags | Must | Early intervention | US-ANLY-001, US-ANLY-002 (+ UI) |
+| FR-08 | Optional recovery trajectory + adjustment suggestions from history | Should | Stretch R3 personalization | US-PRED-001, US-PRED-002 |
+| FR-09 | Approved-plan memory bank search/reuse with de-identified snapshots | Should | Speed drafting similar cases | US-PLAN-004 |
+| FR-10 | Nutrition safety guards block diet items matching allergy/contraindication terms | Must | Patient safety on LLM diet output | US-RAG-003/004 + pipeline guards |
+| FR-11 | Patient-identifying data scrubbed before external LLM calls | Must | LFPDPPP international-transfer mitigation (R-02) | US-PRIV-001 |
+| FR-12 | SPA configurable API base URL for public Static Site hosting | Must | Capstone public demo (Render) | US-OPS-SPA-HOST, DEPLOY-01 |
 
 ### 7.2 Non-functional requirements
 
 | ID | Requirement | Category | Target |
 |----|-------------|----------|--------|
-| NFR-01 |  | Performance |  |
-| NFR-02 |  | Security |  |
-| NFR-03 |  | Privacy |  |
-| NFR-04 |  | Reliability |  |
-| NFR-05 |  | Explainability |  |
+| NFR-01 | End-to-end plan generation latency under normal load | Performance | ≤ 8s p95 aspirational; demo tolerates cold start on free Render (~50s+) |
+| NFR-02 | JWT RBAC (`clinician` / `admin` / `patient`); secrets via env; no prod `ALLOW_DEV_AUTH` for real PHI | Security | Roles enforced in `deps.py`; bcrypt clinician passwords (Sprint 14) |
+| NFR-03 | Minimize PHI in third-party LLM prompts; synthetic data in development | Privacy | US-PRIV-001 egress scrub; synthetic corpus SYNTH-01; no real PHI in capstone |
+| NFR-04 | Explicit insufficient-evidence path when retrieval empty; CI-safe unit suite without live LLM | Reliability | `insufficient_evidence` plan; pytest stubs in `conftest.py` |
+| NFR-05 | Every recommendation cites retrieved REF-IDs; hallucinated refs stripped | Explainability | Generator citation integrity + Plan Sources UI |
 
 ## 8. Constraints and Assumptions
 
@@ -267,8 +277,9 @@ El MVP se considera completo cuando:
 
 ## Completion checklist
 
-- [ ] Stakeholders identified and validated
-- [ ] Requirements prioritized with rationale
-- [ ] Constraints and assumptions documented
-- [ ] Risks captured with mitigations
-- [ ] MVP scope formally agreed
+- [x] Stakeholders identified and validated
+- [x] Requirements prioritized with rationale
+- [x] Constraints and assumptions documented
+- [x] Risks captured with mitigations
+- [x] MVP scope formally agreed
+- [x] §7 FR/NFR filled from implemented system (DOC-CLOSE-01, 2026-07-26)

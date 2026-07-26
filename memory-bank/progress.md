@@ -13,6 +13,7 @@
 
 ## Update History
 
+- [2026-07-26 2:13:36 PM] [Unknown User] - Sprint 16 code + docs progress: US-PRIV-001 (patient_anonymizer + pipeline choke point + tests) and US-OPS-SPA-HOST (resolveApiBaseUrl + Vitest) Done. DOC-CLOSE-01/02/03 partial: Phase 1 FR/NFR filled, Phase 3 privacy complete, ADR-003/004, EVAL-01 report, FEEDBACK-01 synthetic waiver. Remaining: DEPLOY-01 Render public URLs, DEMO-01 walkthrough against live host, Track D tag/README URLs.
 - [2026-07-25] Development/QA: **SYNTH-01** end-to-end synthetic dataset v1 (32 patients default, optional 80) + generate/seed CLIs + appendix docs; unit tests PASS.
 - [2026-07-25] Planning Agent: Corrected D2 topology — Entrega 2 was **Render** (`deploy-entrega2-demo.md` / `render.yaml`), not Hetzner/Pages; added `deploy-final-demo.md` and restored blueprint on planning branch.
 - [2026-07-25] Planning Agent: Locked D1–D4 — D2 = public deploy (initially mis-specified as Hetzner/Pages); promoted US-OPS-SPA-HOST + DEPLOY-01 to Must; plan status Approved / Sprint 16 ready for dev.

@@ -19,7 +19,7 @@ Plan: [`final-delivery-plan.md`](final-delivery-plan.md) (D2 locked → Render)
 | Hosting | Render Blueprint | **Igual** |
 | DB | Render Postgres 16 (+ Neon fallback si falta `vector`) | **Igual** |
 | API | Docker web service `holisticare-api` | **Igual** |
-| SPA | Static Site + `VITE_API_BASE_URL` | **Igual** (re-aplicar en `main` — hoy `api.js` hardcodea `/api`) |
+| SPA | Static Site + `VITE_API_BASE_URL` | **Igual** (`resolveApiBaseUrl` / US-OPS-SPA-HOST Done on `main`) |
 | SPA routing | rewrite `/* → /index.html` + `frontend/public/_redirects` | **Igual** |
 | Schema bootstrap | `psql` + `infra/init.sql` (manual) | **Igual** (+ patches nuevos si aplica, p.ej. memory bank / invites / `app_users`) |
 | Corpus | `POST /rag/ingest` con `data/mock` | **Igual** (sintético) |
@@ -69,8 +69,8 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 
 ## 5. Relación con US-OPS-SPA-HOST
 
-Código Must antes/en paralelo al redeploy:
+Código Must (Done en Sprint 16):
 
-- `frontend/src/services/api.js` debe usar `import.meta.env.VITE_API_BASE_URL || "/api"` (ya existía en `feature-entrega2-AVW`; reintroducir en la rama de entrega final con tests).
+- `frontend/src/utils/apiBaseUrl.js` + `api.js` usan `VITE_API_BASE_URL` con fallback `/api`.
 - `frontend/public/_redirects` para SPA deep links.
 - `render.yaml` versionado en raíz (este repo).

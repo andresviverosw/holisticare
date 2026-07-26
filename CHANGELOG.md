@@ -4,12 +4,18 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Added
+
+- **Sprint 16 / US-PRIV-001:** LLM egress anonymization (`patient_anonymizer.py`) — clinical projection + email/phone/UUID redaction; `PATIENT_TOKEN` in generator prompts; fail-closed API 422; unit + pipeline tests.
+- **Sprint 16 / US-OPS-SPA-HOST:** `resolveApiBaseUrl` + `VITE_API_BASE_URL` for Render Static Site (fallback `/api`).
+- **DOC-CLOSE / EVAL / FEEDBACK:** Phase 1 §7 FR/NFR, Phase 3 privacy framework, ADR-003/004, `docs/rag-evaluation-report.md`, `docs/feedback-01-synthetic-demo-waiver.md`.
+
 ### Fixed
 
 - **CI backend-tests:** `test_redeem_invite_200_returns_patient_jwt_with_exp` used a fixed July-16 `expires_at`, which became expired vs wall-clock `datetime.now(UTC)` after that date (410 instead of 200).
 - **CI security-audit:** bump `pypdf` `6.13.3` → `6.14.2` (CVE-2026-59935..59938); frontend `npm audit` via React 19 + `react-router@8.3.0`, `brace-expansion@5.0.8` / `minimatch@10` overrides; CI Node `22.22`.
 
-### Added
+### Added (prior)
 
 - **SYNTH-01:** End-to-end synthetic dataset v1 — deterministic generator (`app/synthetic/`), committed package (`backend/data/synthetic/v1/dataset.json`, 32 patients), generate/seed CLIs, analytics/plateau/recovery cohort coverage, docs appendix (`docs/synthetic-dataset-v1.md`).
 - **Final delivery planning (Approved):** `docs/final-delivery-plan.md` + `docs/sprint-16.md` — D1–D4 locked; Must tracks **US-PRIV-001**, **US-OPS-SPA-HOST** + **DEPLOY-01** on **Render** (Entrega 2 parity: `render.yaml`, `docs/deploy-final-demo.md`); mobile/JWT-harden/IdP cut.

@@ -164,6 +164,19 @@ docker compose exec backend python -m scripts.ingest --source data/mock
 # API docs:  http://localhost:8000/docs
 ```
 
+## Capstone public demo (Render)
+
+Final master’s demo hosts on **Render** (same approach as Entrega 2). Blueprint: [`render.yaml`](render.yaml). Operator guide: [`docs/deploy-final-demo.md`](docs/deploy-final-demo.md).
+
+| Service | Public URL | Notes |
+|---------|------------|-------|
+| SPA | _pending DEPLOY-01_ | Set `VITE_API_BASE_URL` at Static Site build |
+| API | _pending DEPLOY-01_ | Expect `/health` → 200; cold start on free tier |
+
+Local fallback: Quick start above + `docs/demo-smoke-checklist.md` (if present).
+
+Privacy / eval / feedback package: [`docs/03-data-dictionary-and-privacy-framework.md`](docs/03-data-dictionary-and-privacy-framework.md), [`docs/rag-evaluation-report.md`](docs/rag-evaluation-report.md), [`docs/feedback-01-synthetic-demo-waiver.md`](docs/feedback-01-synthetic-demo-waiver.md).
+
 ## Test command
 
 Local CI-safe suite (no Docker or API keys required):
