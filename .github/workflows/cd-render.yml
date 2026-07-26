@@ -20,7 +20,7 @@ on:
 
 concurrency:
   group: cd-render-main
-  # Do not cancel in-flight deploys when a newer CI finishes — avoids empty/partial Render API responses.
+  # Do not cancel in-flight deploys when a newer CI finishes.
   cancel-in-progress: false
 
 jobs:
@@ -47,105 +47,6 @@ jobs:
           echo "API_SERVICE_ID=${API_SERVICE_ID:-srv-d98oj6mcjfls73f14aug}" >> "$GITHUB_ENV"
           echo "FE_SERVICE_ID=${FE_SERVICE_ID:-srv-d98oiiecjfls73f12u2g}" >> "$GITHUB_ENV"
 
-      - name: Trigger Render deploys (clear cache)
-        run: |
-          set -euo pipefail
-          trigger_one() {
-            local sid="$1"
-            local out="/tmp/deploy-${sid}.json"
-            local attempt code
-            echo "Deploying $sid ..."
-            for attempt in 1 2 3; do
-              code=$(curl -sS -o "$out" -w "%{http_code}" -X POST \
-                -H "Authorization: Bearer ${RENDER_API_KEY}" \
-                -H "Content-Type: application/json" \
-                -d '{"clearCache":"clear"}' \
-                "https://api.render.com/v1/services/${sid}/deploys" || echo "000")
-              echo "attempt=${attempt} HTTP=${code}"
-              echo "body=$(head -c 500 "$out" || true)"
-              if python3 - "$out" <<'PY'
-import json, sys
-path = sys.argv[1]
-try:
-    data = json.load(open(path, encoding="utf-8"))
-except Exception as exc:
-    print(f"json_error: {exc}")
-    raise SystemExit(1)
-dep_id = data.get("id") if isinstance(data, dict) else None
-if not dep_id:
-    print("missing deploy id in create response")
-    raise SystemExit(1)
-print(f"created deploy id={dep_id}")
-PY
-              then
-                return 0
-              fi
-
-              echo "Create failed; adopting latest deploy for ${sid}..."
-              curl -sS -H "Authorization: Bearer ${RENDER_API_KEY}" \
-                "https://api.render.com/v1/services/${sid}/deploys?limit=1" \
-                -o "/tmp/latest-${sid}.json" || true
-              if python3 - "$out" "/tmp/latest-${sid}.json" <<'PY'
-import json, sys
-out_path, latest_path = sys.argv[1], sys.argv[2]
-try:
-    raw = json.load(open(latest_path, encoding="utf-8"))
-except Exception as exc:
-    print(f"latest_json_error: {exc}")
-    raise SystemExit(1)
-item = raw[0] if isinstance(raw, list) and raw else raw
-if isinstance(item, dict) and "deploy" in item:
-    dep = item["deploy"]
-elif isinstance(item, dict):
-    dep = item
-else:
-    print(f"unexpected latest payload type: {type(item)}")
-    raise SystemExit(1)
-if not isinstance(dep, dict) or not dep.get("id"):
-    print(f"latest deploy missing id: {dep!r}")
-    raise SystemExit(1)
-json.dump(dep, open(out_path, "w", encoding="utf-8"))
-print(f"adopted deploy id={dep['id']} status={dep.get('status')}")
-PY
-              then
-                return 0
-              fi
-              sleep 8
-            done
-            echo "Failed to trigger or adopt a deploy for ${sid}"
-            return 1
-          }
-          trigger_one "$API_SERVICE_ID"
-          trigger_one "$FE_SERVICE_ID"
-
-      - name: Wait until both deploys are live
-        run: |
-          set -euo pipefail
-          wait_one() {
-            local sid="$1"
-            local dep
-            dep=$(python3 -c "import json; print(json.load(open('/tmp/deploy-${sid}.json'))['id'])")
-            echo "Waiting for $sid deploy $dep ..."
-            for i in $(seq 1 60); do
-              status=$(curl -sS -H "Authorization: Bearer ${RENDER_API_KEY}" \
-                "https://api.render.com/v1/services/${sid}/deploys/${dep}" \
-                | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))")
-              echo "[$i] $sid=$status"
-              case "$status" in
-                live) return 0 ;;
-                build_failed|update_failed|canceled|deactivated)
-                  echo "Deploy failed: $status"
-                  return 1
-                  ;;
-              esac
-              sleep 15
-            done
-            echo "Timed out waiting for $sid"
-            return 1
-          }
-          wait_one "$API_SERVICE_ID"
-          wait_one "$FE_SERVICE_ID"
-
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
@@ -154,6 +55,14 @@ PY
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Trigger Render deploys (clear cache)
+        working-directory: backend
+        run: python scripts/trigger_render_deploys.py trigger
+
+      - name: Wait until both deploys are live
+        working-directory: backend
+        run: python scripts/trigger_render_deploys.py wait
 
       - name: Install smoke dependencies
         working-directory: backend
