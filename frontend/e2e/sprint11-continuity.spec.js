@@ -151,7 +151,7 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
       });
       return;
     }
-    await route.fallback();
+    await route.fulfill({ status: 405, contentType: "application/json", body: "{}" });
   });
 
   await page.route(`**/api/rag/diary/patient/${PATIENT}**`, async (route) => {
@@ -244,12 +244,12 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
     });
   });
 
-  await page.route(`**/api/rag/intake/${PATIENT}`, async (route) => {
+  await page.route(new RegExp(`/api/rag/intake/${PATIENT}/?$`), async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
       return;
     }
-    await route.fallback();
+    await route.fulfill({ status: 405, contentType: "application/json", body: "{}" });
   });
 
   await page.route("**/api/rag/sessions/suggest-note", async (route) => {
@@ -281,7 +281,7 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
       });
       return;
     }
-    await route.fallback();
+    await route.fulfill({ status: 405, contentType: "application/json", body: "{}" });
   });
 
   await page.route(`**/api/rag/sessions/patient/${PATIENT}**`, async (route) => {
@@ -323,7 +323,12 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
   await progressSection.getByRole("button", { name: "Cargar progreso" }).click();
   await expect(progressSection.getByText("Estado: datos insuficientes")).toBeVisible();
   await expect(progressSection.getByTestId("outcome-trend-chart")).toBeVisible();
-  await expect(progressSection.getByTestId("outcome-trend-chart").getByText("2026-07-16")).toBeVisible();
+  await expect(
+    progressSection.getByTestId("outcome-trend-chart").getByText(/1 registro del diario/),
+  ).toBeVisible();
+  await expect(
+    progressSection.getByTestId("outcome-trend-chart").locator("svg"),
+  ).toHaveAttribute("aria-label", /Tendencia de dolor/);
 
   // US-SESS-UI — fill description in session section
   const sessionHeading = page.getByText("Sesión clínica (US-SESS-UI)");
