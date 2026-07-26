@@ -58,12 +58,14 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 
 ## 4. Evidencia para DoD (DEPLOY-01)
 
-- [ ] Frontend público responde (SPA carga).
-- [ ] API `/health` pública 200.
-- [ ] CORS permite origen del Static Site.
+- [x] Frontend público responde (SPA carga).
+- [x] API `/health` pública 200.
+- [x] CORS permite origen del Static Site.
 - [ ] Flujo demo: login → intake → generar plan → review → approve/reject.
-- [ ] URLs documentadas en README / paquete de entrega.
-- [ ] Nota de cold start free tier si aplica.
+- [x] URLs documentadas en README / paquete de entrega.
+- [x] Nota de cold start free tier si aplica.
+
+**Live (2026-07-26):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main` @ `af7ec4b`.
 
 ---
 

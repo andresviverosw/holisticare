@@ -170,8 +170,8 @@ Final master’s demo hosts on **Render** (same approach as Entrega 2). Blueprin
 
 | Service | Public URL | Notes |
 |---------|------------|-------|
-| SPA | _pending DEPLOY-01_ | Set `VITE_API_BASE_URL` at Static Site build |
-| API | _pending DEPLOY-01_ | Expect `/health` → 200; cold start on free tier |
+| SPA | https://holisticare-frontend.onrender.com | `VITE_API_BASE_URL` → API |
+| API | https://holisticare-api.onrender.com | `/health` → 200; free-tier cold start ~50s+ |
 
 Local fallback: Quick start above + `docs/demo-smoke-checklist.md` (if present).
 

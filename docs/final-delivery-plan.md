@@ -241,10 +241,10 @@ Aligned with Phase 1 §11, tightened for the remaining window:
 2. [x] AI plans always `requires_practitioner_review: true` / `pending_review` (demo + tests).
 3. [x] **US-PRIV-001** merged with tests proving LLM egress scrub.
 4. [x] **US-OPS-SPA-HOST** merged; SPA production build targets public API.
-5. [ ] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works.
+5. [x] **DEPLOY-01** complete: public Render app + API URLs reachable; demo login path works.
 6. [x] Phase docs 01–06 internally consistent enough for tutor review (esp. §7 FR/NFR + Phase 3 privacy).
 7. [x] Short RAG/AI quality report attached.
-8. [ ] Demo package executed against **public** deployment (+ local smoke as CI gate).
+8. [~] Demo package executed against **public** deployment (+ local smoke as CI gate).
 9. [x] Clinician feedback form **or** documented waiver for synthetic-only validation.
 10. [x] Explicit out-of-scope list (mobile, JWT harden/IdP, full ARCO automation) acknowledged in submission notes.
 
