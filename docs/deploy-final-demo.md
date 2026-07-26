@@ -98,6 +98,10 @@ cd backend
 PYTHONPATH=. python scripts/smoke_public_demo.py
 ```
 
+---
+
+## 5. Relación con US-OPS-SPA-HOST
+
 Código Must (Done en Sprint 16):
 
 - `frontend/src/utils/apiBaseUrl.js` + `api.js` usan `VITE_API_BASE_URL` con fallback `/api`.
