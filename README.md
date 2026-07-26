@@ -173,7 +173,9 @@ Final master’s demo hosts on **Render** (same approach as Entrega 2). Blueprin
 | SPA | https://holisticare-frontend.onrender.com | `VITE_API_BASE_URL` → API |
 | API | https://holisticare-api.onrender.com | `/health` → 200; free-tier cold start ~50s+ |
 
-Local fallback: Quick start above + `docs/demo-smoke-checklist.md` (if present).
+**CD:** pushes to `main` that pass CI trigger [`.github/workflows/cd-render.yml`](.github/workflows/cd-render.yml) (Render `autoDeploy` off). Requires GitHub secret `RENDER_API_KEY` — see deploy doc §6.
+
+Local fallback: Quick start above + smoke script `backend/scripts/smoke_public_demo.py`.
 
 Privacy / eval / feedback package: [`docs/03-data-dictionary-and-privacy-framework.md`](docs/03-data-dictionary-and-privacy-framework.md), [`docs/rag-evaluation-report.md`](docs/rag-evaluation-report.md), [`docs/feedback-01-synthetic-demo-waiver.md`](docs/feedback-01-synthetic-demo-waiver.md).
 

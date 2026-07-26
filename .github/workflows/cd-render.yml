@@ -1,0 +1,113 @@
+# Continuous delivery to Render (CI-gated).
+# Deploys only after the CI workflow succeeds on main, then runs public smoke.
+#
+# Required GitHub Actions secrets:
+#   RENDER_API_KEY          — Render account API key
+# Optional (defaults match Entrega 2 / final demo services):
+#   RENDER_API_SERVICE_ID   — default srv-d98oj6mcjfls73f14aug
+#   RENDER_FE_SERVICE_ID    — default srv-d98oiiecjfls73f12u2g
+#
+# Render autoDeploy should be OFF so this workflow owns deploys.
+
+name: CD Render
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-render-main
+  cancel-in-progress: true
+
+jobs:
+  deploy-and-smoke:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      API_SERVICE_ID: ${{ secrets.RENDER_API_SERVICE_ID }}
+      FE_SERVICE_ID: ${{ secrets.RENDER_FE_SERVICE_ID }}
+      API_BASE: https://holisticare-api.onrender.com
+      SPA_BASE: https://holisticare-frontend.onrender.com
+    steps:
+      - name: Require RENDER_API_KEY
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "Missing secret RENDER_API_KEY. Add it under repo Settings → Secrets."
+            exit 1
+          fi
+          echo "API_SERVICE_ID=${API_SERVICE_ID:-srv-d98oj6mcjfls73f14aug}" >> "$GITHUB_ENV"
+          echo "FE_SERVICE_ID=${FE_SERVICE_ID:-srv-d98oiiecjfls73f12u2g}" >> "$GITHUB_ENV"
+
+      - name: Trigger Render deploys (clear cache)
+        run: |
+          set -euo pipefail
+          payload='{"clearCache":"clear"}'
+          for sid in "$API_SERVICE_ID" "$FE_SERVICE_ID"; do
+            echo "Deploying $sid ..."
+            resp=$(curl -sS -X POST \
+              -H "Authorization: Bearer ${RENDER_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "$payload" \
+              "https://api.render.com/v1/services/${sid}/deploys")
+            echo "$resp" | tee "/tmp/deploy-${sid}.json"
+            echo "$resp" | grep -q '"id"'
+          done
+
+      - name: Wait until both deploys are live
+        run: |
+          set -euo pipefail
+          wait_one() {
+            local sid="$1"
+            local dep
+            dep=$(python3 -c "import json; print(json.load(open('/tmp/deploy-${sid}.json'))['id'])")
+            echo "Waiting for $sid deploy $dep ..."
+            for i in $(seq 1 60); do
+              status=$(curl -sS -H "Authorization: Bearer ${RENDER_API_KEY}" \
+                "https://api.render.com/v1/services/${sid}/deploys/${dep}" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))")
+              echo "[$i] $sid=$status"
+              case "$status" in
+                live) return 0 ;;
+                build_failed|update_failed|canceled|deactivated)
+                  echo "Deploy failed: $status"
+                  return 1
+                  ;;
+              esac
+              sleep 15
+            done
+            echo "Timed out waiting for $sid"
+            return 1
+          }
+          wait_one "$API_SERVICE_ID"
+          wait_one "$FE_SERVICE_ID"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install smoke dependencies
+        working-directory: backend
+        run: pip install --upgrade pip && pip install httpx
+
+      - name: Public demo smoke
+        working-directory: backend
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/smoke_public_demo.py \
+            --api-base "$API_BASE" \
+            --spa-base "$SPA_BASE" \
+            --origin "$SPA_BASE"

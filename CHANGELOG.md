@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **CD Render (CI-gated):** `.github/workflows/cd-render.yml` deploys API+SPA after CI succeeds on `main`, then runs `scripts/smoke_public_demo.py`. Render `autoDeploy` disabled.
 - **Sprint 16 / US-PRIV-001:** LLM egress anonymization (`patient_anonymizer.py`) — clinical projection + email/phone/UUID redaction; `PATIENT_TOKEN` in generator prompts; fail-closed API 422; unit + pipeline tests.
 - **Sprint 16 / US-OPS-SPA-HOST:** `resolveApiBaseUrl` + `VITE_API_BASE_URL` for Render Static Site (fallback `/api`).
 - **DOC-CLOSE / EVAL / FEEDBACK:** Phase 1 §7 FR/NFR, Phase 3 privacy framework, ADR-003/004, `docs/rag-evaluation-report.md`, `docs/feedback-01-synthetic-demo-waiver.md`.

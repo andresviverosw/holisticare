@@ -65,11 +65,38 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 - [x] URLs documentadas en README / paquete de entrega.
 - [x] Nota de cold start free tier si aplica.
 
-**Live (2026-07-26):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main` @ `af7ec4b`.
+**Live (2026-07-26):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main`.
 
 ---
 
-## 5. Relación con US-OPS-SPA-HOST
+## 6. CI-gated CD (GitHub Actions)
+
+After Sprint 16, deploys are owned by [`.github/workflows/cd-render.yml`](../.github/workflows/cd-render.yml):
+
+1. **CI** workflow must succeed on a **push** to `main`.
+2. **CD Render** triggers API + Static Site deploys via Render API (clear cache).
+3. Waits until both are `live`, then runs `backend/scripts/smoke_public_demo.py` (health, SPA, CORS, `dev-login`).
+
+**Render `autoDeploy` is OFF** on both services so pushes do not double-deploy.
+
+### One-time GitHub secret
+
+Repo → **Settings → Secrets and variables → Actions** → add:
+
+| Secret | Value |
+|--------|--------|
+| `RENDER_API_KEY` | Render Account API key (**rotate** if it was pasted in chat) |
+| `RENDER_API_SERVICE_ID` | optional — defaults to `srv-d98oj6mcjfls73f14aug` |
+| `RENDER_FE_SERVICE_ID` | optional — defaults to `srv-d98oiiecjfls73f12u2g` |
+
+Manual run: Actions → **CD Render** → **Run workflow**.
+
+Local smoke:
+
+```bash
+cd backend
+PYTHONPATH=. python scripts/smoke_public_demo.py
+```
 
 Código Must (Done en Sprint 16):
 
