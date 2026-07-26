@@ -8,6 +8,87 @@ const { test, expect } = require("@playwright/test");
 const PATIENT = "550e8400-e29b-41d4-a716-446655440000";
 
 async function loginAndOpenDashboard(page) {
+  // Register first so later test-specific routes take precedence (Playwright: last match wins).
+  // Keeps Dashboard patient auto-reload off the missing backend in e2e.
+  await page.route("**/api/rag/**", async (route) => {
+    const url = route.request().url();
+    const method = route.request().method();
+    if (method === "GET" && url.includes("/plan/memory-bank")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ items: [] }),
+      });
+      return;
+    }
+    if (method === "GET" && url.includes("/risk-flags")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ risk_flags: [] }),
+      });
+      return;
+    }
+    if (method === "GET" && url.includes("/outcomes-trend")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ series: [] }),
+      });
+      return;
+    }
+    if (method === "GET" && url.includes("/plateau-flags")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ analysis_status: "insufficient_data", flags: [] }),
+      });
+      return;
+    }
+    if (method === "GET" && url.includes("/recovery-trajectory")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          analysis_status: "insufficient_data",
+          reason: "Se requieren al menos 5 registros con dolor para estimar trayectoria.",
+          trajectory: null,
+        }),
+      });
+      return;
+    }
+    if (method === "GET" && url.includes("/recovery-recommendations")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          recommendation_status: "insufficient_data",
+          recommendations: [],
+          safety_notes: [],
+          prediction: { analysis_status: "insufficient_data", trajectory: null },
+        }),
+      });
+      return;
+    }
+    if (method === "GET" && (url.includes("/diary/patient/") || url.includes("/sessions/patient/"))) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ items: [] }),
+      });
+      return;
+    }
+    if (method === "GET" && /\/rag\/intake\/[^/?]+$/.test(new URL(url).pathname.replace(/^\/api/, ""))) {
+      await route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: "{}",
+    });
+  });
+
   await page.route("**/api/auth/dev-login", async (route) => {
     await route.fulfill({
       status: 200,
@@ -17,18 +98,6 @@ async function loginAndOpenDashboard(page) {
         token_type: "bearer",
       }),
     });
-  });
-
-  await page.route("**/api/rag/plan/memory-bank**", async (route) => {
-    if (route.request().method() === "GET") {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ items: [] }),
-      });
-      return;
-    }
-    await route.fallback();
   });
 
   await page.goto("/login");
@@ -119,7 +188,7 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
         source: "patient_diary_v0",
         series: [
           {
-            entry_date: "2026-07-16",
+            date: "2026-07-16",
             pain_nrs_0_10: 5,
             sleep_quality_0_10: 5,
             mood_0_10: 5,
@@ -249,11 +318,12 @@ test("Sprint 11 continuity: risk flags, diary, progress, session", async ({ page
   await expect(page.getByText("Check-in de diario guardado")).toBeVisible();
   await expect(page.getByText(/dolor 5/)).toBeVisible();
 
-  // US-ANLY-UI — chart replaces tabular series
-  await page.getByRole("button", { name: "Cargar progreso" }).click();
-  await expect(page.getByText("Estado: datos insuficientes")).toBeVisible();
-  await expect(page.getByTestId("outcome-trend-chart")).toBeVisible();
-  await expect(page.getByTestId("outcome-trend-chart").getByText("2026-07-16")).toBeVisible();
+  // US-ANLY-UI — chart replaces tabular series (scope to Progreso; prediction panels share "datos insuficientes")
+  const progressSection = page.locator("section").filter({ hasText: "Progreso (US-ANLY-UI)" });
+  await progressSection.getByRole("button", { name: "Cargar progreso" }).click();
+  await expect(progressSection.getByText("Estado: datos insuficientes")).toBeVisible();
+  await expect(progressSection.getByTestId("outcome-trend-chart")).toBeVisible();
+  await expect(progressSection.getByTestId("outcome-trend-chart").getByText("2026-07-16")).toBeVisible();
 
   // US-SESS-UI — fill description in session section
   const sessionHeading = page.getByText("Sesión clínica (US-SESS-UI)");

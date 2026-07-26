@@ -287,6 +287,8 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
+    // Patient-scoped reload; clear/apply helpers are stable for this effect's purpose.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on patient id only
   }, [trimmedPatientId, patientIdReady]);
 
   async function handleUseTemplate(templateId) {
