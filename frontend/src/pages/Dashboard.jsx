@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import OutcomeTrendChart from "../components/OutcomeTrendChart";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
 import { formatOutcomeSeries, formatPlateauPayload } from "../utils/analyticsDisplay";
@@ -501,17 +502,30 @@ export default function Dashboard() {
     setAnalyticsError(null);
     if (!requirePatientUuidForAction()) return;
     setAnalyticsLoading(true);
+    setPredictionLoading(true);
     try {
-      const [trendRes, plateauRes] = await Promise.all([
+      const [trendRes, plateauRes, trajectoryRes] = await Promise.allSettled([
         ragApi.getOutcomesTrend(trimmedPatientId),
         ragApi.getPlateauFlags(trimmedPatientId),
+        ragApi.getRecoveryTrajectory(trimmedPatientId),
       ]);
-      setOutcomeRows(formatOutcomeSeries(trendRes.data.series));
-      setPlateauView(formatPlateauPayload(plateauRes.data));
-    } catch (err) {
-      setAnalyticsError(formatApiError(err, { fallback: "No se pudo cargar el progreso." }));
+
+      if (trendRes.status !== "fulfilled" || plateauRes.status !== "fulfilled") {
+        const err = trendRes.status === "rejected" ? trendRes.reason : plateauRes.reason;
+        setAnalyticsError(formatApiError(err, { fallback: "No se pudo cargar el progreso." }));
+        return;
+      }
+
+      setOutcomeRows(formatOutcomeSeries(trendRes.value.data.series));
+      setPlateauView(formatPlateauPayload(plateauRes.value.data));
+
+      if (trajectoryRes.status === "fulfilled") {
+        setPredictionResult(trajectoryRes.value.data);
+        setPredictionError(null);
+      }
     } finally {
       setAnalyticsLoading(false);
+      setPredictionLoading(false);
     }
   }
 
@@ -1039,7 +1053,7 @@ export default function Dashboard() {
             <div>
               <p className="text-sm font-semibold text-neutral-800">Progreso (US-ANLY-UI)</p>
               <p className="text-xs text-neutral-500 mt-0.5">
-                Tendencias del diario y banderas de meseta/empeoramiento (ventana por defecto del API).
+                Tendencias del diario (dolor, sueño, ánimo, función) y banderas de meseta/empeoramiento.
               </p>
             </div>
             <button
@@ -1057,29 +1071,13 @@ export default function Dashboard() {
             </div>
           )}
           {outcomeRows.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-xs text-left text-neutral-700">
-                <thead>
-                  <tr className="border-b border-neutral-200 text-neutral-500">
-                    <th className="py-1 pr-3 font-medium">Fecha</th>
-                    <th className="py-1 pr-3 font-medium">Dolor</th>
-                    <th className="py-1 pr-3 font-medium">Sueño</th>
-                    <th className="py-1 pr-3 font-medium">Ánimo</th>
-                    <th className="py-1 font-medium">Función</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {outcomeRows.map((row) => (
-                    <tr key={row.date} className="border-b border-neutral-100">
-                      <td className="py-1 pr-3">{row.date}</td>
-                      <td className="py-1 pr-3">{row.pain ?? "—"}</td>
-                      <td className="py-1 pr-3">{row.sleep ?? "—"}</td>
-                      <td className="py-1 pr-3">{row.mood ?? "—"}</td>
-                      <td className="py-1">{row.functionScore ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="rounded-lg border border-neutral-200 bg-white p-3">
+              <OutcomeTrendChart
+                rows={outcomeRows}
+                trajectory={
+                  predictionResult?.analysis_status === "ok" ? predictionResult.trajectory : null
+                }
+              />
             </div>
           )}
           {plateauView && (
