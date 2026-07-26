@@ -20,7 +20,8 @@ on:
 
 concurrency:
   group: cd-render-main
-  cancel-in-progress: true
+  # Do not cancel in-flight deploys when a newer CI finishes — avoids empty/partial Render API responses.
+  cancel-in-progress: false
 
 jobs:
   deploy-and-smoke:
@@ -49,17 +50,73 @@ jobs:
       - name: Trigger Render deploys (clear cache)
         run: |
           set -euo pipefail
-          payload='{"clearCache":"clear"}'
-          for sid in "$API_SERVICE_ID" "$FE_SERVICE_ID"; do
+          trigger_one() {
+            local sid="$1"
+            local out="/tmp/deploy-${sid}.json"
+            local attempt code
             echo "Deploying $sid ..."
-            resp=$(curl -sS -X POST \
-              -H "Authorization: Bearer ${RENDER_API_KEY}" \
-              -H "Content-Type: application/json" \
-              -d "$payload" \
-              "https://api.render.com/v1/services/${sid}/deploys")
-            echo "$resp" | tee "/tmp/deploy-${sid}.json"
-            echo "$resp" | grep -q '"id"'
-          done
+            for attempt in 1 2 3; do
+              code=$(curl -sS -o "$out" -w "%{http_code}" -X POST \
+                -H "Authorization: Bearer ${RENDER_API_KEY}" \
+                -H "Content-Type: application/json" \
+                -d '{"clearCache":"clear"}' \
+                "https://api.render.com/v1/services/${sid}/deploys" || echo "000")
+              echo "attempt=${attempt} HTTP=${code}"
+              echo "body=$(head -c 500 "$out" || true)"
+              if python3 - "$out" <<'PY'
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path, encoding="utf-8"))
+except Exception as exc:
+    print(f"json_error: {exc}")
+    raise SystemExit(1)
+dep_id = data.get("id") if isinstance(data, dict) else None
+if not dep_id:
+    print("missing deploy id in create response")
+    raise SystemExit(1)
+print(f"created deploy id={dep_id}")
+PY
+              then
+                return 0
+              fi
+
+              echo "Create failed; adopting latest deploy for ${sid}..."
+              curl -sS -H "Authorization: Bearer ${RENDER_API_KEY}" \
+                "https://api.render.com/v1/services/${sid}/deploys?limit=1" \
+                -o "/tmp/latest-${sid}.json" || true
+              if python3 - "$out" "/tmp/latest-${sid}.json" <<'PY'
+import json, sys
+out_path, latest_path = sys.argv[1], sys.argv[2]
+try:
+    raw = json.load(open(latest_path, encoding="utf-8"))
+except Exception as exc:
+    print(f"latest_json_error: {exc}")
+    raise SystemExit(1)
+item = raw[0] if isinstance(raw, list) and raw else raw
+if isinstance(item, dict) and "deploy" in item:
+    dep = item["deploy"]
+elif isinstance(item, dict):
+    dep = item
+else:
+    print(f"unexpected latest payload type: {type(item)}")
+    raise SystemExit(1)
+if not isinstance(dep, dict) or not dep.get("id"):
+    print(f"latest deploy missing id: {dep!r}")
+    raise SystemExit(1)
+json.dump(dep, open(out_path, "w", encoding="utf-8"))
+print(f"adopted deploy id={dep['id']} status={dep.get('status')}")
+PY
+              then
+                return 0
+              fi
+              sleep 8
+            done
+            echo "Failed to trigger or adopt a deploy for ${sid}"
+            return 1
+          }
+          trigger_one "$API_SERVICE_ID"
+          trigger_one "$FE_SERVICE_ID"
 
       - name: Wait until both deploys are live
         run: |
