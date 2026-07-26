@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.patient_diary_entry import PatientDiaryEntry
-from app.services.diary_service import list_diary_entries_in_date_range
+from app.services.diary_service import get_latest_diary_entry_date, list_diary_entries_in_date_range
 from app.services.plateau_service import analyze_diary_plateau
 
 MAX_RANGE_DAYS = 731
@@ -30,6 +30,21 @@ def resolve_analytics_date_window(
     if (date_to - date_from).days > MAX_RANGE_DAYS:
         raise ValueError(f"El rango no puede superar {MAX_RANGE_DAYS} días.")
     return date_from, date_to
+
+
+def resolve_analytics_date_window_for_anchor(
+    date_from: date | None,
+    date_to: date | None,
+    *,
+    latest_diary_date: date | None,
+) -> tuple[date, date]:
+    """
+    When both bounds omitted, anchor `date_to` on the patient's latest diary day
+    (not wall-clock today) so longitudinal synthetic / historical series remain visible.
+    """
+    if date_from is None and date_to is None and latest_diary_date is not None:
+        return resolve_analytics_date_window(None, latest_diary_date)
+    return resolve_analytics_date_window(date_from, date_to)
 
 
 def diary_entries_to_outcome_series(rows: list[PatientDiaryEntry]) -> list[dict[str, Any]]:
@@ -183,6 +198,23 @@ def derive_recovery_recommendations(prediction: dict[str, Any]) -> dict[str, Any
     }
 
 
+async def _resolved_window_for_patient(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+    date_from: date | None,
+    date_to: date | None,
+) -> tuple[date, date]:
+    latest = None
+    if date_from is None and date_to is None:
+        latest = await get_latest_diary_entry_date(db, patient_id=patient_id)
+    return resolve_analytics_date_window_for_anchor(
+        date_from,
+        date_to,
+        latest_diary_date=latest,
+    )
+
+
 async def get_patient_outcomes_trend_payload(
     db: AsyncSession,
     *,
@@ -190,7 +222,12 @@ async def get_patient_outcomes_trend_payload(
     date_from: date | None,
     date_to: date | None,
 ) -> dict[str, Any]:
-    d0, d1 = resolve_analytics_date_window(date_from, date_to)
+    d0, d1 = await _resolved_window_for_patient(
+        db,
+        patient_id=patient_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
     rows = await list_diary_entries_in_date_range(
         db,
         patient_id=patient_id,
@@ -213,7 +250,12 @@ async def get_patient_plateau_flags_payload(
     date_from: date | None,
     date_to: date | None,
 ) -> dict[str, Any]:
-    d0, d1 = resolve_analytics_date_window(date_from, date_to)
+    d0, d1 = await _resolved_window_for_patient(
+        db,
+        patient_id=patient_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
     rows = await list_diary_entries_in_date_range(
         db,
         patient_id=patient_id,
@@ -240,7 +282,12 @@ async def get_patient_recovery_trajectory_payload(
     date_from: date | None,
     date_to: date | None,
 ) -> dict[str, Any]:
-    d0, d1 = resolve_analytics_date_window(date_from, date_to)
+    d0, d1 = await _resolved_window_for_patient(
+        db,
+        patient_id=patient_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
     rows = await list_diary_entries_in_date_range(
         db,
         patient_id=patient_id,

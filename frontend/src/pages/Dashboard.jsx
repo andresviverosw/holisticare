@@ -10,6 +10,13 @@ import {
   parseCsvList,
   validateIntakeForm,
 } from "../utils/intakeBuilder";
+import {
+  createClearedPatientDerivedState,
+  createClearedPatientResultPanels,
+  DEFAULT_INTAKE_FORM,
+  defaultDiaryForm,
+  defaultSessionForm,
+} from "../utils/patientWorkspace";
 import { addRecentPatient, listRecentPatients } from "../utils/recentPatients";
 import { normalizeRiskFlags, riskFlagsEmptyLabel } from "../utils/riskFlags";
 import {
@@ -19,52 +26,10 @@ import {
 } from "../utils/sessionBuilder";
 import { isValidUuid, newPatientUuid } from "../utils/uuidV4";
 
-const SAMPLE_INTAKE_FORM = {
-  ageRange: "40-50",
-  sexAtBirth: "F",
-  chiefComplaint: "Dolor lumbar crónico con irradiación a pierna izquierda.",
-  conditions: "lumbalgia crónica",
-  goals: "Reducir dolor, Mejorar movilidad",
-  contraindications: "",
-  currentMedications: "ibuprofeno 400 mg",
-  allergies: "",
-  baselinePain: "7",
-  baselineNotes: "FUNC afectada para cargas",
-  psychosocialSummary: "",
-  priorInterventions: "fisioterapia convencional",
-};
-
-function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function defaultDiaryForm() {
-  return {
-    checkinDate: todayIsoDate(),
-    pain: "5",
-    sleep: "5",
-    mood: "5",
-    functionScore: "5",
-    notesEs: "",
-  };
-}
-
-function defaultSessionForm() {
-  const now = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  const local = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  return {
-    sessionAt: local,
-    interventions: [{ therapyType: "fisioterapia", description: "", durationMinutes: "" }],
-    observations: "",
-    patientReportedResponse: "",
-  };
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const [patientId, setPatientId] = useState("");
-  const [intakeForm, setIntakeForm] = useState(SAMPLE_INTAKE_FORM);
+  const [intakeForm, setIntakeForm] = useState(() => ({ ...DEFAULT_INTAKE_FORM }));
   const [therapies, setTherapies] = useState("acupuntura, fisioterapia, hidroterapia");
   const [language, setLanguage] = useState("es");
   const [loading, setLoading] = useState(false);
@@ -104,6 +69,7 @@ export default function Dashboard() {
   const [sessionNotice, setSessionNotice] = useState(null);
   const memoryBankQueryRef = useRef(memoryBankQuery);
   memoryBankQueryRef.current = memoryBankQuery;
+  const patientLoadGenRef = useRef(0);
 
   const trimmedPatientId = patientId.trim();
   const patientIdReady = trimmedPatientId !== "" && isValidUuid(trimmedPatientId);
@@ -143,6 +109,184 @@ export default function Dashboard() {
   useEffect(() => {
     loadMemoryBank();
   }, [loadMemoryBank]);
+
+  function applyClearedPatientResultPanels() {
+    const cleared = createClearedPatientResultPanels();
+    setError(cleared.error);
+    setIntakeNotice(cleared.intakeNotice);
+    setPredictionError(cleared.predictionError);
+    setPredictionResult(cleared.predictionResult);
+    setRecommendationError(cleared.recommendationError);
+    setRecommendationResult(cleared.recommendationResult);
+    setRiskFlags(cleared.riskFlags);
+    setRiskFlagsError(cleared.riskFlagsError);
+    setDiaryItems(cleared.diaryItems);
+    setDiaryError(cleared.diaryError);
+    setDiaryNotice(cleared.diaryNotice);
+    setInviteError(cleared.inviteError);
+    setInviteLink(cleared.inviteLink);
+    setInviteCopied(cleared.inviteCopied);
+    setOutcomeRows(cleared.outcomeRows);
+    setPlateauView(cleared.plateauView);
+    setAnalyticsError(cleared.analyticsError);
+    setSessionItems(cleared.sessionItems);
+    setSessionError(cleared.sessionError);
+    setSessionNotice(cleared.sessionNotice);
+  }
+
+  function applyClearedPatientDerivedState() {
+    const cleared = createClearedPatientDerivedState();
+    setIntakeForm(cleared.intakeForm);
+    setDiaryForm(cleared.diaryForm);
+    setSessionForm(cleared.sessionForm);
+    applyClearedPatientResultPanels();
+  }
+
+  useEffect(() => {
+    const gen = ++patientLoadGenRef.current;
+    if (!patientIdReady) {
+      applyClearedPatientResultPanels();
+      setRiskFlagsLoading(false);
+      setDiaryLoading(false);
+      setAnalyticsLoading(false);
+      setSessionLoading(false);
+      setPredictionLoading(false);
+      setRecommendationLoading(false);
+      return;
+    }
+
+    applyClearedPatientDerivedState();
+
+    const pid = trimmedPatientId;
+    let cancelled = false;
+
+    async function reloadPatientWorkspace() {
+      setRiskFlagsLoading(true);
+      setDiaryLoading(true);
+      setAnalyticsLoading(true);
+      setSessionLoading(true);
+      setPredictionLoading(true);
+      setRecommendationLoading(true);
+
+      const stillCurrent = () => !cancelled && gen === patientLoadGenRef.current;
+
+      try {
+        const [
+          intakeRes,
+          riskRes,
+          diaryRes,
+          trendRes,
+          plateauRes,
+          sessionsRes,
+          predictionRes,
+          recommendationRes,
+        ] = await Promise.allSettled([
+          ragApi.getIntake(pid),
+          ragApi.getIntakeRiskFlags(pid),
+          ragApi.listDiary(pid, { limit: 14 }),
+          ragApi.getOutcomesTrend(pid),
+          ragApi.getPlateauFlags(pid),
+          ragApi.listSessions(pid, { limit: 20 }),
+          ragApi.getRecoveryTrajectory(pid),
+          ragApi.getRecoveryRecommendations(pid),
+        ]);
+
+        if (!stillCurrent()) return;
+
+        if (intakeRes.status === "fulfilled") {
+          const next = formStateFromIntakeJson(intakeRes.value.data.intake_json);
+          if (next) {
+            setIntakeForm(next);
+            addRecentPatient({
+              id: pid,
+              label: next.chiefComplaint?.trim().slice(0, 120) || "",
+            });
+            setRecentPatients(listRecentPatients());
+            setIntakeNotice("Datos del paciente recargados.");
+          }
+        } else if (intakeRes.reason?.response?.status !== 404) {
+          setError(
+            formatApiError(intakeRes.reason, {
+              fallback: "No se pudo cargar el intake del paciente.",
+            }),
+          );
+        }
+
+        if (riskRes.status === "fulfilled") {
+          setRiskFlags(normalizeRiskFlags(riskRes.value.data));
+        } else if (riskRes.reason?.response?.status !== 404) {
+          setRiskFlagsError(
+            formatApiError(riskRes.reason, {
+              fallback: "No se pudieron cargar las banderas de riesgo.",
+            }),
+          );
+        }
+
+        if (diaryRes.status === "fulfilled") {
+          setDiaryItems(diaryRes.value.data.items || []);
+        } else {
+          setDiaryError(
+            formatApiError(diaryRes.reason, { fallback: "No se pudo cargar el diario." }),
+          );
+        }
+
+        if (trendRes.status === "fulfilled" && plateauRes.status === "fulfilled") {
+          setOutcomeRows(formatOutcomeSeries(trendRes.value.data.series));
+          setPlateauView(formatPlateauPayload(plateauRes.value.data));
+        } else {
+          const err = trendRes.status === "rejected" ? trendRes.reason : plateauRes.reason;
+          setAnalyticsError(formatApiError(err, { fallback: "No se pudo cargar el progreso." }));
+        }
+
+        if (sessionsRes.status === "fulfilled") {
+          setSessionItems(sessionsRes.value.data.items || []);
+        } else {
+          setSessionError(
+            formatApiError(sessionsRes.reason, {
+              fallback: "No se pudo cargar el historial de sesiones.",
+            }),
+          );
+        }
+
+        if (predictionRes.status === "fulfilled") {
+          setPredictionResult(predictionRes.value.data);
+        } else {
+          setPredictionError(
+            formatApiError(predictionRes.reason, {
+              fallback: "No se pudo estimar la trayectoria de recuperación.",
+            }),
+          );
+        }
+
+        if (recommendationRes.status === "fulfilled") {
+          setRecommendationResult(recommendationRes.value.data);
+          if (recommendationRes.value.data?.prediction) {
+            setPredictionResult((prev) => prev || recommendationRes.value.data.prediction);
+          }
+        } else {
+          setRecommendationError(
+            formatApiError(recommendationRes.reason, {
+              fallback: "No se pudieron cargar recomendaciones de recuperación.",
+            }),
+          );
+        }
+      } finally {
+        if (stillCurrent()) {
+          setRiskFlagsLoading(false);
+          setDiaryLoading(false);
+          setAnalyticsLoading(false);
+          setSessionLoading(false);
+          setPredictionLoading(false);
+          setRecommendationLoading(false);
+        }
+      }
+    }
+
+    void reloadPatientWorkspace();
+    return () => {
+      cancelled = true;
+    };
+  }, [trimmedPatientId, patientIdReady]);
 
   async function handleUseTemplate(templateId) {
     setMemoryBankError(null);

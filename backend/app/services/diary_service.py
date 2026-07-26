@@ -77,3 +77,18 @@ async def list_diary_entries_in_date_range(
     )
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def get_latest_diary_entry_date(
+    db: AsyncSession,
+    *,
+    patient_id: uuid.UUID,
+) -> date | None:
+    stmt = (
+        select(PatientDiaryEntry.entry_date)
+        .where(PatientDiaryEntry.patient_id == patient_id)
+        .order_by(PatientDiaryEntry.entry_date.desc())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
