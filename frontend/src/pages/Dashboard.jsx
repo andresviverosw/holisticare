@@ -110,10 +110,10 @@ export default function Dashboard() {
 
   const patientIdHint = useMemo(() => {
     if (trimmedPatientId === "") {
-      return "Usa «Nuevo paciente» para generar un UUID, pega uno existente, o elige en «Pacientes recientes».";
+      return "Usa «Nuevo paciente» para generar un UUID, pega uno existente (incl. pacientes sintéticos), o elige en «Pacientes recientes».";
     }
     if (!isValidUuid(trimmedPatientId)) {
-      return "El ID debe ser un UUID versión 4 válido (formato 8-4-4-4-12).";
+      return "El ID debe ser un UUID válido (formato 8-4-4-4-12). Se aceptan UUID v4 y v5 (dataset sintético).";
     }
     return null;
   }, [trimmedPatientId]);
@@ -165,12 +165,12 @@ export default function Dashboard() {
 
   function requirePatientUuidForAction() {
     if (trimmedPatientId === "") {
-      setError("Indica un ID de paciente: genera uno nuevo o pega un UUID v4.");
+      setError("Indica un ID de paciente: genera uno nuevo o pega un UUID existente.");
       return false;
     }
     if (!isValidUuid(trimmedPatientId)) {
       setError(
-        "El ID de paciente no es un UUID versión 4 válido. Corrige el formato o usa «Nuevo paciente».",
+        "El ID de paciente no es un UUID válido. Corrige el formato o usa «Nuevo paciente».",
       );
       return false;
     }
@@ -567,22 +567,24 @@ export default function Dashboard() {
       </div>
 
       <div className="card space-y-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
-          <div className="flex-1 min-w-0">
-            <label className="label" htmlFor="patient-id-input">ID del paciente (UUID v4)</label>
+        <div className="space-y-3">
+          <div className="w-full min-w-0">
+            <label className="label" htmlFor="patient-id-input">
+              ID del paciente (UUID)
+            </label>
             <input
               id="patient-id-input"
               type="text"
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
-              className="input font-mono text-sm"
+              className="input font-mono text-sm w-full max-w-full"
               spellCheck={false}
               autoComplete="off"
               aria-invalid={trimmedPatientId !== "" && !isValidUuid(trimmedPatientId)}
               placeholder="Genera un ID nuevo o pega un UUID existente"
             />
             {patientIdHint && (
-              <p className="mt-1 text-xs text-neutral-500">{patientIdHint}</p>
+              <p className="mt-1 text-xs text-neutral-500 break-words">{patientIdHint}</p>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -594,7 +596,7 @@ export default function Dashboard() {
               className="btn-secondary text-sm px-3 py-2"
               onClick={handleCopyPatientId}
               disabled={!patientIdReady}
-              title={!patientIdReady ? "Necesitas un UUID v4 válido para copiar" : "Copiar al portapapeles"}
+              title={!patientIdReady ? "Necesitas un UUID válido para copiar" : "Copiar al portapapeles"}
             >
               Copiar ID
             </button>
@@ -605,7 +607,7 @@ export default function Dashboard() {
               disabled={!patientIdReady || inviteLoading}
               title={
                 !patientIdReady
-                  ? "Indica un UUID v4 de paciente válido"
+                  ? "Indica un UUID de paciente válido"
                   : "Crear enlace de invitación de un solo uso para el diario"
               }
             >
@@ -632,7 +634,7 @@ export default function Dashboard() {
               className="btn-secondary text-sm px-3 py-2"
               onClick={loadRiskFlagsForPatient}
               disabled={!patientIdReady || riskFlagsLoading}
-              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+              title={!patientIdReady ? "Indica un UUID de paciente válido" : undefined}
             >
               {riskFlagsLoading ? "Cargando riesgos…" : "Ver riesgos"}
             </button>
