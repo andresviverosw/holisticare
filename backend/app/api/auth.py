@@ -22,9 +22,9 @@ auth_router = APIRouter()
 # Included by `create_app()` only when `Settings.allow_dev_auth` is true.
 dev_auth_router = APIRouter()
 
-# RFC-4122 UUID version 4 (matches frontend `isValidUuidV4` / US-DIARY-UI-PATIENT).
-_UUID_V4 = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+# RFC-4122 UUID (any version) — SYNTH-01 uses uuid5; new patients remain v4.
+_UUID = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
 
@@ -34,9 +34,9 @@ class DevLoginRequest(BaseModel):
     sub: str = Field(default="dev-clinician", min_length=1, max_length=128)
 
     @model_validator(mode="after")
-    def patient_sub_must_be_uuid_v4(self) -> DevLoginRequest:
-        if self.role == "patient" and not _UUID_V4.match(self.sub.strip()):
-            raise ValueError("patient role requires sub to be a UUID version 4")
+    def patient_sub_must_be_uuid(self) -> DevLoginRequest:
+        if self.role == "patient" and not _UUID.match(self.sub.strip()):
+            raise ValueError("patient role requires sub to be an RFC-4122 UUID")
         return self
 
 

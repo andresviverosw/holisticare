@@ -1,4 +1,4 @@
-import { isValidUuidV4 } from "./uuidV4";
+import { isValidUuid } from "./uuidV4";
 
 export const RECENT_PATIENTS_STORAGE_KEY = "holisticare_recent_patients_v1";
 export const RECENT_PATIENTS_MAX = 10;
@@ -20,7 +20,7 @@ function safeParseList(raw) {
 function normalizeEntry(entry) {
   if (!entry || typeof entry !== "object") return null;
   const id = typeof entry.id === "string" ? entry.id.trim() : "";
-  if (!isValidUuidV4(id)) return null;
+  if (!isValidUuid(id)) return null;
   const label = typeof entry.label === "string" ? entry.label.trim().slice(0, 120) : "";
   const savedAt = typeof entry.savedAt === "string" ? entry.savedAt : new Date().toISOString();
   return { id, label, savedAt };

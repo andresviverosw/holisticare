@@ -49,8 +49,8 @@ def test_dev_login_rejects_unknown_role(monkeypatch):
     assert r.status_code == 422
 
 
-def test_dev_login_patient_requires_uuid_v4_sub(monkeypatch):
-    """US-DIARY-UI-PATIENT: patient tokens must bind to a UUID v4 patient id."""
+def test_dev_login_patient_requires_uuid_sub(monkeypatch):
+    """Patient tokens must bind to an RFC-4122 UUID patient id."""
     monkeypatch.setenv("ALLOW_DEV_AUTH", "true")
     get_settings.cache_clear()
     client = TestClient(create_app())
@@ -72,3 +72,14 @@ def test_dev_login_patient_200_with_uuid_v4_sub(monkeypatch):
     payload = jwt.decode(body["access_token"], get_settings().secret_key, algorithms=["HS256"])
     assert payload["sub"] == PATIENT_UUID
     assert payload["role"] == "patient"
+
+
+def test_dev_login_patient_200_with_synth_uuid5_sub(monkeypatch):
+    """SYNTH-01 deterministic patient ids are UUID v5 — still accepted."""
+    monkeypatch.setenv("ALLOW_DEV_AUTH", "true")
+    get_settings.cache_clear()
+    client = TestClient(create_app())
+    synth = "be2ecd39-2ac6-5a8b-84af-b22f8fa7a4a8"
+    r = client.post("/auth/dev-login", json={"role": "patient", "sub": synth})
+    assert r.status_code == 200
+    assert r.json()["sub"] == synth

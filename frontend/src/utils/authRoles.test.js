@@ -25,9 +25,16 @@ describe("authRoles", () => {
     expect(canAccessClinicianRoutes({ isAuthenticated: false, role: "clinician" })).toBe(false);
   });
 
-  it("gates patient routes to patient role + UUID v4 sub", () => {
+  it("gates patient routes to patient role + UUID sub", () => {
     expect(
       canAccessPatientRoutes({ isAuthenticated: true, role: "patient", sub: PATIENT }),
+    ).toBe(true);
+    expect(
+      canAccessPatientRoutes({
+        isAuthenticated: true,
+        role: "patient",
+        sub: "be2ecd39-2ac6-5a8b-84af-b22f8fa7a4a8",
+      }),
     ).toBe(true);
     expect(
       canAccessPatientRoutes({ isAuthenticated: true, role: "patient", sub: "not-uuid" }),

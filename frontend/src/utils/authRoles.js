@@ -1,7 +1,7 @@
 /**
  * US-DIARY-UI-PATIENT — role predicates for SPA route eligibility.
  */
-import { isValidUuidV4 } from "./uuidV4";
+import { isValidUuid } from "./uuidV4";
 
 export function isClinicianRole(role) {
   return role === "clinician" || role === "admin";
@@ -16,7 +16,7 @@ export function canAccessClinicianRoutes({ isAuthenticated, role }) {
 }
 
 export function canAccessPatientRoutes({ isAuthenticated, role, sub }) {
-  return Boolean(isAuthenticated) && isPatientRole(role) && isValidUuidV4(sub || "");
+  return Boolean(isAuthenticated) && isPatientRole(role) && isValidUuid(sub || "");
 }
 
 /** Default post-login home for a JWT role. */

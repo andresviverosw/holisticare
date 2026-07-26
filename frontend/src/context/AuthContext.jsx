@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
 import { authApi, getStoredToken, setStoredToken } from "../services/api";
-import { isValidUuidV4 } from "../utils/uuidV4";
+import { isValidUuid } from "../utils/uuidV4";
 
 const AuthContext = createContext(null);
 
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
   /** US-DIARY-UI-PATIENT — patient JWT with UUID v4 `sub`. */
   const loginDevPatient = useCallback(async (patientUuid) => {
     const sub = String(patientUuid || "").trim();
-    if (!isValidUuidV4(sub)) {
+    if (!isValidUuid(sub)) {
       throw new Error("El ID de paciente debe ser un UUID versión 4 válido.");
     }
     const res = await authApi.devLogin({ role: "patient", sub });

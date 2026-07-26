@@ -17,7 +17,7 @@ import {
   buildSessionLog,
   validateSessionForm,
 } from "../utils/sessionBuilder";
-import { isValidUuidV4, newPatientUuid } from "../utils/uuidV4";
+import { isValidUuid, newPatientUuid } from "../utils/uuidV4";
 
 const SAMPLE_INTAKE_FORM = {
   ageRange: "40-50",
@@ -106,13 +106,13 @@ export default function Dashboard() {
   memoryBankQueryRef.current = memoryBankQuery;
 
   const trimmedPatientId = patientId.trim();
-  const patientIdReady = trimmedPatientId !== "" && isValidUuidV4(trimmedPatientId);
+  const patientIdReady = trimmedPatientId !== "" && isValidUuid(trimmedPatientId);
 
   const patientIdHint = useMemo(() => {
     if (trimmedPatientId === "") {
       return "Usa «Nuevo paciente» para generar un UUID, pega uno existente, o elige en «Pacientes recientes».";
     }
-    if (!isValidUuidV4(trimmedPatientId)) {
+    if (!isValidUuid(trimmedPatientId)) {
       return "El ID debe ser un UUID versión 4 válido (formato 8-4-4-4-12).";
     }
     return null;
@@ -168,7 +168,7 @@ export default function Dashboard() {
       setError("Indica un ID de paciente: genera uno nuevo o pega un UUID v4.");
       return false;
     }
-    if (!isValidUuidV4(trimmedPatientId)) {
+    if (!isValidUuid(trimmedPatientId)) {
       setError(
         "El ID de paciente no es un UUID versión 4 válido. Corrige el formato o usa «Nuevo paciente».",
       );
@@ -578,7 +578,7 @@ export default function Dashboard() {
               className="input font-mono text-sm"
               spellCheck={false}
               autoComplete="off"
-              aria-invalid={trimmedPatientId !== "" && !isValidUuidV4(trimmedPatientId)}
+              aria-invalid={trimmedPatientId !== "" && !isValidUuid(trimmedPatientId)}
               placeholder="Genera un ID nuevo o pega un UUID existente"
             />
             {patientIdHint && (

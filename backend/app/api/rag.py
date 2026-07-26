@@ -6,7 +6,9 @@ import anthropic
 import openai
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import Response
-from pydantic import BaseModel, UUID4, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
@@ -73,8 +75,8 @@ class IngestResponse(BaseModel):
 class PlanGenerateRequest(BaseModel):
     """Draft plan generation — intake must match generic_holistic_v0 (see docs/sprint-01.md)."""
 
-    patient_id: UUID4
-    practitioner_id: Optional[UUID4] = None
+    patient_id: UUID
+    practitioner_id: Optional[UUID] = None
     intake_json: GenericHolisticIntakeV0
     available_therapies: list[str] = Field(..., min_length=1)
     preferred_language: str = Field(default="es", pattern="^(es|en)$")
@@ -105,35 +107,35 @@ class PlanApprovalRequest(BaseModel):
 class MemoryBankAddRequest(BaseModel):
     """Save an approved plan snapshot into the reusable template library (US-PLAN-004)."""
 
-    source_plan_id: UUID4
+    source_plan_id: UUID
     title: str = Field(..., min_length=1, max_length=200)
     tags: list[str] = Field(default_factory=list)
 
 
 class MemoryBankInstantiateRequest(BaseModel):
-    patient_id: UUID4
-    practitioner_id: Optional[UUID4] = None
+    patient_id: UUID
+    practitioner_id: Optional[UUID] = None
 
 
 class IntakeSaveRequest(BaseModel):
-    patient_id: UUID4
-    practitioner_id: Optional[UUID4] = None
+    patient_id: UUID
+    practitioner_id: Optional[UUID] = None
     intake_json: GenericHolisticIntakeV0
 
 
 class IntakeUpdateRequest(BaseModel):
-    practitioner_id: Optional[UUID4] = None
+    practitioner_id: Optional[UUID] = None
     intake_json: GenericHolisticIntakeV0
 
 
 class SessionCreateRequest(BaseModel):
-    patient_id: UUID4
-    practitioner_id: Optional[UUID4] = None
+    patient_id: UUID
+    practitioner_id: Optional[UUID] = None
     session_log: ClinicalSessionLogV0
 
 
 class DiarySaveRequest(BaseModel):
-    patient_id: UUID4
+    patient_id: UUID
     checkin: PatientDiaryCheckinV0
 
 
@@ -188,7 +190,7 @@ async def save_intake(
 
 @router.get("/intake/{patient_id}")
 async def get_intake(
-    patient_id: UUID4,
+    patient_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     row = await get_intake_profile(db, patient_id=patient_id)
@@ -203,7 +205,7 @@ async def get_intake(
 
 @router.patch("/intake/{patient_id}")
 async def update_intake(
-    patient_id: UUID4,
+    patient_id: UUID,
     request: IntakeUpdateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: AuthUser = Depends(require_roles("admin")),
@@ -226,7 +228,7 @@ async def update_intake(
 
 @router.get("/intake/{patient_id}/risk-flags")
 async def get_intake_risk_flags(
-    patient_id: UUID4,
+    patient_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     row = await get_intake_profile(db, patient_id=patient_id)
@@ -247,7 +249,7 @@ async def get_intake_risk_flags(
 
 @router.get("/intake/{patient_id}/audit")
 async def get_intake_audit(
-    patient_id: UUID4,
+    patient_id: UUID,
     db: AsyncSession = Depends(get_db),
     _current_user: AuthUser = Depends(require_roles("admin")),
 ) -> dict[str, Any]:
@@ -285,7 +287,7 @@ async def create_session(
 
 @router.get("/sessions/patient/{patient_id}")
 async def list_patient_sessions(
-    patient_id: UUID4,
+    patient_id: UUID,
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -351,7 +353,7 @@ async def save_diary_checkin(
 
 
 class DiaryInviteCreateRequest(BaseModel):
-    patient_id: UUID4
+    patient_id: UUID
 
 
 @router.post("/diary/invites")
@@ -390,7 +392,7 @@ async def create_patient_diary_invite(
 
 @router.get("/diary/patient/{patient_id}")
 async def list_patient_diary(
-    patient_id: UUID4,
+    patient_id: UUID,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     limit: int = Query(default=50, ge=1, le=100),
@@ -425,7 +427,7 @@ async def list_patient_diary(
 
 @router.get("/analytics/patient/{patient_id}/outcomes-trend")
 async def get_outcomes_trend(
-    patient_id: UUID4,
+    patient_id: UUID,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
@@ -445,7 +447,7 @@ async def get_outcomes_trend(
 
 @router.get("/analytics/patient/{patient_id}/plateau-flags")
 async def get_plateau_flags(
-    patient_id: UUID4,
+    patient_id: UUID,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
@@ -465,7 +467,7 @@ async def get_plateau_flags(
 
 @router.get("/analytics/patient/{patient_id}/recovery-trajectory")
 async def get_recovery_trajectory(
-    patient_id: UUID4,
+    patient_id: UUID,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
@@ -485,7 +487,7 @@ async def get_recovery_trajectory(
 
 @router.get("/analytics/patient/{patient_id}/recovery-recommendations")
 async def get_recovery_recommendations(
-    patient_id: UUID4,
+    patient_id: UUID,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
@@ -616,7 +618,7 @@ async def generate_plan(
 
 @router.patch("/plan/{plan_id}/approve")
 async def approve_plan(
-    plan_id: UUID4,
+    plan_id: UUID,
     request: PlanApprovalRequest,
     db: AsyncSession = Depends(get_db),
     _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
@@ -696,7 +698,7 @@ async def memory_bank_list(
 
 @router.post("/plan/memory-bank/{template_id}/instantiate")
 async def memory_bank_instantiate(
-    template_id: UUID4,
+    template_id: UUID,
     request: MemoryBankInstantiateRequest,
     db: AsyncSession = Depends(get_db),
     _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
@@ -715,7 +717,7 @@ async def memory_bank_instantiate(
 
 @router.get("/plan/{plan_id}")
 async def get_plan(
-    plan_id: UUID4,
+    plan_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve a treatment plan including its citations."""
@@ -727,7 +729,7 @@ async def get_plan(
 
 @router.get("/plan/{plan_id}/sources")
 async def get_plan_sources(
-    plan_id: UUID4,
+    plan_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -742,7 +744,7 @@ async def get_plan_sources(
 
 @router.get("/plan/{plan_id}/pdf")
 async def download_approved_plan_pdf(
-    plan_id: UUID4,
+    plan_id: UUID,
     db: AsyncSession = Depends(get_db),
     _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ):

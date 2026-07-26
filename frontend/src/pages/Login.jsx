@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { formatApiError } from "../utils/apiErrors";
 import { homePathForRole } from "../utils/authRoles";
 import { inviteTokenFromSearch } from "../utils/inviteUrl";
-import { isValidUuidV4 } from "../utils/uuidV4";
+import { isValidUuid } from "../utils/uuidV4";
 
 export default function Login() {
   const {
@@ -96,7 +96,7 @@ export default function Login() {
     setPatientLoading(true);
     setError(null);
     const uuid = patientUuid.trim();
-    if (!isValidUuidV4(uuid)) {
+    if (!isValidUuid(uuid)) {
       setError("Pegue un UUID versión 4 de paciente válido (el mismo que usa el clínico).");
       setPatientLoading(false);
       return;
