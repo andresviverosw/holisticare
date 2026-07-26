@@ -113,7 +113,7 @@ export default function Dashboard() {
       return "Usa «Nuevo paciente» para generar un UUID, pega uno existente (incl. pacientes sintéticos), o elige en «Pacientes recientes».";
     }
     if (!isValidUuid(trimmedPatientId)) {
-      return "El ID debe ser un UUID válido (formato 8-4-4-4-12). Se aceptan UUID v4 y v5 (dataset sintético).";
+      return "El ID debe ser un UUID válido (formato 8-4-4-4-12). Se aceptan UUID y v5 (dataset sintético).";
     }
     return null;
   }, [trimmedPatientId]);
@@ -760,7 +760,7 @@ export default function Dashboard() {
                     className="btn-primary text-sm px-3 py-2 shrink-0"
                     onClick={() => handleUseTemplate(item.id)}
                     disabled={memoryBankLoading || !patientIdReady}
-                    title={!patientIdReady ? "Indica un UUID v4 de paciente arriba" : "Crear borrador para este paciente"}
+                    title={!patientIdReady ? "Indica un UUID de paciente arriba" : "Crear borrador para este paciente"}
                     aria-label={`Usar plantilla «${item.title}» como borrador para el paciente actual`}
                   >
                     Usar como borrador
@@ -1108,7 +1108,7 @@ export default function Dashboard() {
               className="btn-secondary text-sm px-3 py-2"
               onClick={handleLoadRecoveryPrediction}
               disabled={predictionLoading || !patientIdReady}
-              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+              title={!patientIdReady ? "Indica un UUID de paciente válido" : undefined}
             >
               {predictionLoading ? "Calculando…" : "Calcular trayectoria"}
             </button>
@@ -1157,7 +1157,7 @@ export default function Dashboard() {
               className="btn-secondary text-sm px-3 py-2"
               onClick={handleLoadRecoveryRecommendations}
               disabled={recommendationLoading || !patientIdReady}
-              title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+              title={!patientIdReady ? "Indica un UUID de paciente válido" : undefined}
             >
               {recommendationLoading ? "Cargando…" : "Cargar recomendaciones"}
             </button>
@@ -1436,7 +1436,7 @@ export default function Dashboard() {
             onClick={handleGenerate}
             disabled={loading || !patientIdReady}
             className="btn-primary min-w-[160px]"
-            title={!patientIdReady ? "Indica un UUID v4 de paciente válido" : undefined}
+            title={!patientIdReady ? "Indica un UUID de paciente válido" : undefined}
           >
             {loading ? "Generando…" : "Generar plan IA"}
           </button>
