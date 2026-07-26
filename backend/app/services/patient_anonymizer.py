@@ -12,7 +12,7 @@ import json
 import re
 from typing import Any
 
-PATIENT_TOKEN = "PATIENT_TOKEN"
+PATIENT_TOKEN = "PATIENT_TOKEN"  # nosec B105 — LLM egress placeholder, not a credential
 
 # Clinical-only keys from GenericHolisticIntakeV0 (+ nested). Drop everything else.
 _CLINICAL_TOP_LEVEL_KEYS = frozenset(
