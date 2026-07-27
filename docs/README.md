@@ -11,6 +11,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
 | End-to-end synthetic dataset v1 (SYNTH-01) | `synthetic-dataset-v1.md` |
 | Final delivery plan (capstone closeout) | `final-delivery-plan.md` |
+| **Entrega final consolidada (MD + PDF)** | `entrega-final-capstone.md` → `node docs/scripts/build-entrega-pdf.mjs` |
 | Pilot go/no-go decision gate | `pilot-go-no-go.md` |
 | Pilot rehearsal run history template | `pilot-rehearsal-log.md` |
 | Clinician pilot feedback template | `pilot-clinician-feedback-form.md` |

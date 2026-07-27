@@ -2,9 +2,29 @@
 
 AI-powered holistic rehabilitation platform for continuity of care, data-driven treatment personalization, and measurable patient outcomes.
 
-Master's final project for AI4devs (March 2026), and the first consulting deliverable for clinics in the holistic and integrative medicine sector in Mexico.
+Master's **final project** for AI4devs — branch `finalproject-AVW` · tag `v1.0-final-AVW`.
 
 **Source repository:** [github.com/andresviverosw/holisticare](https://github.com/andresviverosw/holisticare)
+
+| Entrega | Enlace |
+|---------|--------|
+| Rama final | https://github.com/andresviverosw/holisticare/tree/finalproject-AVW |
+| Tag release | https://github.com/andresviverosw/holisticare/releases/tag/v1.0-final-AVW |
+| SPA (demo público) | https://holisticare-frontend.onrender.com |
+| API (demo público) | https://holisticare-api.onrender.com (`/health`) |
+| Documento de entrega (MD/PDF) | [`docs/entrega-final-capstone.md`](docs/entrega-final-capstone.md) · [`docs/entrega-final-capstone.pdf`](docs/entrega-final-capstone.pdf) |
+| Prompts (plantilla AI4devs) | [`prompts.md`](prompts.md) |
+
+### Demo rápida (clínico)
+
+1. Abrir la SPA → **Entrar (desarrollo — clínico)** o usuario sembrado `clinician` (password en `docs/deploy-final-demo.md`).
+2. Pegar paciente sintético *improving*: `be2ecd39-2ac6-5a8b-84af-b22f8fa7a4a8`.
+3. Revisar intake, diario, gráfico de progreso (con proyección), trayectoria y recomendaciones.
+4. Vista paciente: cerrar sesión → login desarrollo paciente con el mismo UUID → `/diario`.
+
+> Free tier Render: cold start de API puede tardar ~50s+.
+
+---
 
 ## Problem
 
@@ -46,16 +66,16 @@ Every AI-generated recommendation is reviewed and approved by a practitioner bef
 
 | Layer | Technology |
 |-------|-----------|
-| LLM | Claude API (claude-sonnet) |
+| LLM | Anthropic Claude (primary) + optional OpenAI chat fallback |
 | Embeddings | OpenAI text-embedding-3-small |
-| RAG and orchestration | LangChain or LlamaIndex |
-| Vector store | PostgreSQL + pgvector (or Chroma for experimentation) |
-| Optional reranker | Cohere Rerank |
-| Backend | Python + FastAPI |
-| Frontend | React + Tailwind CSS + Vite |
-| ML models | scikit-learn / XGBoost |
-| Auth and privacy | JWT + encryption at rest |
-| Deployment | Docker + GCP or AWS |
+| RAG | Custom pipeline (`app/rag/`) + LlamaIndex PGVectorStore (ingest) |
+| Vector store | PostgreSQL 16 + pgvector |
+| Optional reranker | Cross-encoder (local) or Cohere |
+| Backend | Python + FastAPI + SQLAlchemy 2 async |
+| Frontend | React 19 + Tailwind CSS + Vite |
+| Auth | JWT HS256 (clinician password, patient invite, optional dev login) |
+| Deployment | Docker; **public demo on Render** (API + Static Site + Postgres) |
+| CI/CD | GitHub Actions → CI gate → `cd-render.yml` |
 
 ## RAG architecture overview
 
@@ -193,11 +213,17 @@ Inside the backend container:
 docker compose exec backend pytest tests/ -v
 ```
 
-## Immediate next steps
+## Final delivery package (AI4devs)
 
-- Confirm final project name and bilingual branding
-- Run first clinical co-design session
-- Curate first 10-15 clinical PDFs for RAG seed set
-- Select 3-4 priority outcome instruments for MVP
-- Generate first 20 synthetic patient profiles for schema validation
-- Draft full architecture diagram and decision record set
+Plantilla requerida:
+
+- [`README.md`](README.md) (este archivo)
+- [`prompts.md`](prompts.md) — prompts de producto y de desarrollo asistido por IA
+
+Evidencia de despliegue:
+
+- URLs públicas (tabla al inicio)
+- Capturas + arquitectura: [`docs/entrega-final-capstone.pdf`](docs/entrega-final-capstone.pdf)
+- Ops: [`docs/deploy-final-demo.md`](docs/deploy-final-demo.md)
+
+Formulario de envío del programa: https://lidr.typeform.com/proyectoai4devs (pegar la URL de la rama `finalproject-AVW`).

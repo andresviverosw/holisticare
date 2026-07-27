@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>HolistiCare — Entrega final</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; font-size: 11pt; line-height: 1.45; color: #212529; }
+    h1 { font-size: 20pt; color: #1f7d4b; page-break-after: avoid; }
+    h2 { font-size: 14pt; color: #184f32; margin-top: 1.4em; page-break-after: avoid; }
+    h3 { font-size: 12pt; color: #343a40; page-break-after: avoid; }
+    table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 9.5pt; }
+    th, td { border: 1px solid #dee2e6; padding: 4px 6px; vertical-align: top; }
+    th { background: #f0faf4; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; background: #f1f3f5; padding: 0 3px; }
+    pre { background: #f8f9fa; border: 1px solid #e9ecef; padding: 10px; overflow: hidden; font-size: 8.5pt; }
+    pre.mermaid { background: #fff; border: 1px solid #e9ecef; }
+    figure { margin: 1em 0; page-break-inside: avoid; }
+    img { max-width: 100%; height: auto; border: 1px solid #dee2e6; }
+    figcaption { font-size: 9pt; color: #868e96; margin-top: 4px; }
+    blockquote { border-left: 3px solid #52b880; margin: 0.8em 0; padding: 0.2em 0.8em; color: #495057; }
+    a { color: #1f7d4b; }
+    hr { border: none; border-top: 1px solid #dee2e6; margin: 1.5em 0; }
+  </style>
+</head>
+<body>
+<h1>HolistiCare — Documento de entrega final (capstone AI4devs)</h1>
+<table>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+<tr>
+<td>Producto</td>
+<td>HolistiCare — apoyo a decisiones clínicas con IA para rehabilitación holística</td>
+</tr>
+<tr>
+<td>Autor</td>
+<td>Andrés Viveros</td>
+</tr>
+<tr>
+<td>Programa</td>
+<td>AI4devs (máster)</td>
+</tr>
+<tr>
+<td>Versión del sistema</td>
+<td>v0.1.0 — MVP clínico</td>
+</tr>
+<tr>
+<td>Fecha del documento</td>
+<td>2026-07-26</td>
+</tr>
+<tr>
+<td>Demo pública (SPA)</td>
+<td>https://holisticare-frontend.onrender.com</td>
+</tr>
+<tr>
+<td>Demo pública (API)</td>
+<td>https://holisticare-api.onrender.com</td>
+</tr>
+<tr>
+<td>Repositorio</td>
+<td>https://github.com/andresviverosw/holisticare</td>
+</tr>
+</table>
+<hr />
+<h2>1. Resumen ejecutivo</h2>
+<p>HolistiCare es una plataforma de <strong>apoyo a la decisión clínica</strong> diseñada para clínicas de rehabilitación holística en México. Integra:</p>
+<p>1. <strong>Intake estructurado</strong> y banderas de riesgo.</p>
+<p>2. <strong>Planes de tratamiento multi-semana</strong> generados con <strong>RAG</strong> (Retrieval-Augmented Generation) a partir de un corpus clínico indexado.</p>
+<p>3. <strong>Gobernanza NOM-024</strong>: todo plan IA queda en <code>pending_review</code> y <strong>requiere aprobación explícita</strong> del practicante (sin auto-activación).</p>
+<p>4. <strong>Continuidad de cuidado</strong>: diario del paciente, sesiones clínicas, analítica de progreso, predicción de trayectoria y recomendaciones.</p>
+<p>5. <strong>Privacidad</strong>: anonimización/pseudonimización antes de llamadas a LLMs externos (<strong>US-PRIV-001</strong>).</p>
+<p>6. <strong>Operación demo</strong>: despliegue público en <strong>Render</strong>, CI/CD gated, datos 100 % sintéticos.</p>
+<p>Este documento consolida <strong>qué se construyó a lo largo de los sprints 1–16</strong>, la <strong>arquitectura por capas</strong>, el <strong>stack tecnológico</strong>, las <strong>capacidades</strong> (frontend clínico y paciente, backend, DB, RAG, CI/CD, corpus, sintéticos, seguridad y compliance) y <strong>evidencia visual</strong> del producto en producción.</p>
+<hr />
+<h2>2. Problema y propuesta de valor</h2>
+<h3>2.1 Problema</h3>
+<p>En rehabilitación multimodal (fisioterapia, acupuntura, nutrición, mindfulness, etc.) el seguimiento suele fragmentarse entre Excel, WhatsApp y notas no estructuradas. Eso debilita:</p>
+<ul>
+<li>Continuidad entre sesiones.</li>
+<li>Personalización longitudinal.</li>
+<li>Medición objetiva de outcomes.</li>
+</ul>
+<h3>2.2 Propuesta</h3>
+<p>HolistiCare ofrece un ciclo cerrado:</p>
+<p><strong>Intake → evidencia RAG → borrador de plan → revisión humana → sesiones + diario → analítica / predicción → ajuste.</strong></p>
+<p>El clínico mantiene el control terapéutico; la IA acelera documentación y sugiere, no decide sola.</p>
+<hr />
+<h2>3. Alcance de esta entrega (features implementadas)</h2>
+<h3>3.1 Capacidades de producto (vista clínica)</h3>
+<table>
+<tr>
+<th>Capacidad</th>
+<th>Historias</th>
+<th>Estado</th>
+</tr>
+<tr>
+<td>Intake estructurado <code>generic_holistic_v0</code> + guardar/cargar</td>
+<td>US-INT-001, US-INT-004</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Banderas de riesgo / contraindicaciones</td>
+<td>US-INT-002 (+ UI Sprint 11)</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>UUID de paciente, recientes, invitación diario</td>
+<td>US-INT-005, US-DIARY-AUTH-PROD</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Generación de plan RAG con citas REF-ID</td>
+<td>US-PLAN-001, US-PLAN-002</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Aprobación / rechazo de plan (NOM-024)</td>
+<td>US-PLAN-003</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Memory bank de planes aprobados (plantillas)</td>
+<td>US-PLAN-004</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Ingesta corpus PDF/HTML + browse de chunks</td>
+<td>US-RAG-001…003</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Guardas de seguridad nutricional configurables</td>
+<td>US-RAG-004</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Diario proxy (clínico) y diario paciente</td>
+<td>US-DIARY-001/002, UI, US-DIARY-UI-PATIENT</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Sesiones + sugerencia de nota IA</td>
+<td>US-SESS-001/002 + UI</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Tendencias + mesetas (gráfico + proyección)</td>
+<td>US-ANLY-001/002 + UI</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Trayectoria y recomendaciones</td>
+<td>US-PRED-001/002</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Auth clínico password + seed</td>
+<td>US-AUTH-CLINICIAN-PROD</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Compose prod + Caddy</td>
+<td>US-OPS-PROD-COMPOSE</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Anonimización LLM egress</td>
+<td>US-PRIV-001</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>SPA con <code>VITE_API_BASE_URL</code> + Render</td>
+<td>US-OPS-SPA-HOST, DEPLOY-01</td>
+<td>Done</td>
+</tr>
+</table>
+<h3>3.2 Capacidades de producto (vista paciente)</h3>
+<table>
+<tr>
+<th>Capacidad</th>
+<th>Historias</th>
+<th>Estado</th>
+</tr>
+<tr>
+<td>Login por invitación single-use → JWT paciente</td>
+<td>US-DIARY-AUTH-PROD</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Login desarrollo por UUID (demo)</td>
+<td>Sprint 12/13</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Check-in diario dolor/sueño/ánimo/función + notas</td>
+<td>US-DIARY-UI-PATIENT</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>Historial reciente de check-ins</td>
+<td>US-DIARY-UI-PATIENT</td>
+<td>Done</td>
+</tr>
+</table>
+<h3>3.3 Fuera de alcance (explícito en plan final)</h3>
+<ul>
+<li>App móvil nativa (R4 / <code>US-MOB-*</code>).</li>
+<li>IdP / MFA / reset de password / refresh tokens endurecidos.</li>
+<li>Portal ARCO completo (política documentada; UI diferida).</li>
+<li>Auto-activación de planes (prohibido por NOM-024).</li>
+</ul>
+<hr />
+<h2>4. Recorrido por sprints (1–16)</h2>
+<table>
+<tr>
+<th>Sprint</th>
+<th>Enfoque</th>
+<th>Entregables clave</th>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td>Plan IA</td>
+<td><code>POST /rag/plan/generate</code>, citas REF-ID, <code>pending_review</code></td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Intake</td>
+<td>Persistencia intake, risk flags, audit trail</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Sesiones</td>
+<td>Logging estructurado de intervenciones</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Diario</td>
+<td>Check-ins diarios <code>patient_diary_v0</code></td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Analítica</td>
+<td>Outcomes trend</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>Analítica</td>
+<td>Plateau / worsening flags</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>RAG nutrición</td>
+<td>Corpus eat/avoid + citas</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>Safety</td>
+<td>Diccionario de sinónimos nutricionales configurable</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td>UX intake</td>
+<td>Nuevo paciente UUID, recientes</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td>Memory bank</td>
+<td>Plantillas desde planes aprobados desidentificados</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td>UI continuidad</td>
+<td>Dashboard: diary, progress, sessions, risk flags</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td>Paciente</td>
+<td><code>/diario</code> con JWT paciente</td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td>Auth paciente</td>
+<td>Invitaciones single-use</td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td>Auth clínico</td>
+<td>Username/password + seed</td>
+</tr>
+<tr>
+<td><strong>15</strong></td>
+<td>Ops</td>
+<td><code>docker-compose.prod.yml</code> + Caddy</td>
+</tr>
+<tr>
+<td><strong>16</strong></td>
+<td>Cierre</td>
+<td>US-PRIV-001, SPA host, Render público, eval/docs, CD</td>
+</tr>
+</table>
+<p>Complementos post-sprint 15/16: dataset sintético v1 (SYNTH-01), ancla de ventana analítica a última fecha de diario, gráficos de progreso + proyección, CI-gated CD a Render.</p>
+<hr />
+<h2>5. Arquitectura a alto nivel</h2>
+<h3>5.1 Contexto (C4 L1)</h3>
+<pre class="mermaid">flowchart LR
+  subgraph Actores
+    CL[Clínico / Admin]
+    PT[Paciente]
+  end
+  subgraph HolistiCare
+    FE[SPA React + Vite]
+    API[API FastAPI]
+  end
+  DB[(PostgreSQL 16 + pgvector)]
+  AN[Anthropic Claude]
+  OA[OpenAI embeddings / fallback chat]
+
+  CL --&gt; FE
+  PT --&gt; FE
+  FE --&gt;|HTTPS JWT| API
+  API --&gt; DB
+  API --&gt; AN
+  API --&gt; OA</pre>
+<h3>5.2 Contenedores (C4 L2) — topología demo Render</h3>
+<pre class="mermaid">flowchart TB
+  B[Navegador]
+  SPA[Render Static Site\nholisticare-frontend]
+  API[Render Web Service Docker\nholisticare-api]
+  PG[(Render PostgreSQL\n+ extensión vector)]
+  LLM[Anthropic / OpenAI]
+
+  B --&gt; SPA
+  SPA --&gt;|VITE_API_BASE_URL| API
+  API --&gt; PG
+  API --&gt; LLM</pre>
+<h3>5.3 Capas de software (backend)</h3>
+<pre class="mermaid">flowchart TD
+  HTTP[HTTP FastAPI routers\nauth.py / rag.py]
+  DEPS[deps: JWT RBAC, get_db, get_rag_pipeline]
+  SVC[Services layer\nintake, diary, session, analytics,\nplan, memory bank, anonymizer]
+  RAG[RAGPipeline]
+  ORM[SQLAlchemy 2 async models]
+  DB[(PostgreSQL + pgvector)]
+
+  HTTP --&gt; DEPS --&gt; SVC
+  SVC --&gt; ORM --&gt; DB
+  HTTP --&gt; RAG
+  RAG --&gt; SVC
+  RAG --&gt; DB</pre>
+<h3>5.4 Pipeline RAG (5 fases)</h3>
+<pre class="mermaid">sequenceDiagram
+  participant C as Clínico
+  participant API as FastAPI
+  participant AN as Anonymizer
+  participant QB as QueryBuilder
+  participant VR as VectorRetriever
+  participant RR as Reranker
+  participant GEN as PlanGenerator
+  participant DB as Postgres
+
+  C-&gt;&gt;API: POST /rag/plan/generate
+  API-&gt;&gt;AN: proyección clínica + redaction PII
+  AN-&gt;&gt;QB: summary + multi-query
+  QB-&gt;&gt;VR: búsqueda coseno pgvector
+  VR-&gt;&gt;RR: top-K candidatos
+  RR-&gt;&gt;GEN: chunks citables REF-ID
+  GEN-&gt;&gt;API: plan JSON + requires_practitioner_review
+  API-&gt;&gt;DB: treatment_plans pending_review
+  Note over GEN,API: Si no hay evidencia: insufficient_evidence (sin LLM)
+  Note over AN: Nutrition safety guards post-generación</pre>
+<h3>5.5 Modelo de datos lógico</h3>
+<pre class="mermaid">erDiagram
+  PATIENT ||--|| INTAKE_PROFILES : tiene
+  PATIENT ||--o{ TREATMENT_PLANS : planes
+  PATIENT ||--o{ CARE_SESSIONS : sesiones
+  PATIENT ||--o{ PATIENT_DIARY_ENTRIES : diario
+  PATIENT ||--o{ INTAKE_PROFILE_AUDIT : auditoria
+  TREATMENT_PLANS ||--o| PLAN_MEMORY_BANK : plantilla_aprobada
+
+  PATIENT {
+    string patient_id PK
+  }
+  INTAKE_PROFILES {
+    string id PK
+    string patient_id FK
+    string intake_json
+  }
+  INTAKE_PROFILE_AUDIT {
+    string id PK
+    string patient_id FK
+  }
+  TREATMENT_PLANS {
+    string id PK
+    string patient_id FK
+    string status
+    string plan_json
+  }
+  PLAN_MEMORY_BANK {
+    string id PK
+    string source_plan_id FK
+  }
+  CARE_SESSIONS {
+    string id PK
+    string patient_id FK
+    string session_json
+  }
+  PATIENT_DIARY_ENTRIES {
+    string id PK
+    string patient_id FK
+    string entry_date
+    string diary_json
+  }
+  CLINICAL_CHUNKS {
+    string id PK
+    string embedding
+    string metadata
+  }</pre>
+<blockquote>No existe tabla física <code>patients</code>: el <code>patient_id</code> UUID es la clave transversal. El corpus (<code>clinical_chunks</code>) no se liga a pacientes en DB; el vínculo ocurre en tiempo de consulta vía el pipeline.</blockquote>
+<h3>5.6 Frontend — rutas</h3>
+<pre class="mermaid">flowchart LR
+  L["/login"] --&gt; D["/dashboard clínico"]
+  L --&gt; DJ["/diario paciente"]
+  D --&gt; P["/plan/:id revisión"]
+  D --&gt; S["/plan/:id/sources"]
+  D --&gt; K["/chunks base conocimiento"]</pre>
+<h3>5.7 CI/CD</h3>
+<pre class="mermaid">flowchart LR
+  DEV[Push a main] --&gt; CI[GitHub Actions CI\nbackend + frontend + security + AI smoke]
+  CI --&gt;|success| CD[cd-render.yml]
+  CD --&gt; RAPI[Deploy API Render]
+  CD --&gt; RSPA[Deploy SPA Render]
+  RAPI --&gt; SMOKE[Smoke público\n/health + SPA]</pre>
+<p>Render <code>autoDeploy</code> está <strong>apagado</strong>: solo se despliega tras CI verde (secret <code>RENDER_API_KEY</code>).</p>
+<hr />
+<h2>6. Tech stack (estado real del repo)</h2>
+<table>
+<tr>
+<th>Capa</th>
+<th>Tecnología</th>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>React 19, Vite 8, Tailwind 3, React Router 8</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Python 3, FastAPI, SQLAlchemy 2 async, asyncpg, Pydantic / pydantic-settings</td>
+</tr>
+<tr>
+<td>DB</td>
+<td>PostgreSQL 16 + <strong>pgvector</strong></td>
+</tr>
+<tr>
+<td>RAG</td>
+<td>Pipeline propio (<code>app/rag/</code>), LlamaIndex PGVectorStore en ingesta, embeddings OpenAI <code>text-embedding-3-small</code></td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>Claude (primario) + fallback OpenAI chat opcional</td>
+</tr>
+<tr>
+<td>Rerank</td>
+<td>Cross-encoder local o Cohere (configurable)</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>JWT HS256 (<code>sub</code> + <code>role</code>: clinician / admin / patient)</td>
+</tr>
+<tr>
+<td>Contenedores</td>
+<td>Docker Compose (dev + prod overlay), Dockerfile backend</td>
+</tr>
+<tr>
+<td>Hosting demo</td>
+<td>Render (API Docker + Static Site + Postgres)</td>
+</tr>
+<tr>
+<td>CI</td>
+<td>GitHub Actions: pytest, Vitest, ESLint, Playwright, pip-audit, bandit, npm audit, AI quality smoke</td>
+</tr>
+<tr>
+<td>CD</td>
+<td>Workflow <code>cd-render.yml</code> + script Python de deploy</td>
+</tr>
+</table>
+<hr />
+<h2>7. Capacidades por dominio</h2>
+<h3>7.1 Frontend clínico</h3>
+<ul>
+<li>Dashboard unificado: paciente, memory bank, diario proxy, progreso (SVG multi-KPI + proyección 4 semanas), sesiones, predicción, recomendaciones, intake, generar plan.</li>
+<li>Revisión de plan con approve/reject y fuentes.</li>
+<li>Base de conocimiento: listado filtrable de chunks (terapia, idioma, contraindicaciones).</li>
+</ul>
+<h3>7.2 Frontend paciente</h3>
+<ul>
+<li><code>/diario</code>: check-in 0–10 (dolor, sueño, ánimo, función), notas, historial.</li>
+<li>Acceso por invitación o modo desarrollo (demo).</li>
+</ul>
+<h3>7.3 Backend / API</h3>
+<ul>
+<li>Router clínico concentrado en <code>/rag/*</code> + <code>/auth/*</code>.</li>
+<li>Servicios async puros (SOLID/D: deps inyectadas).</li>
+<li>Schemas versionados (<code>*_v0</code>) separados de ORM.</li>
+</ul>
+<h3>7.4 Base de datos</h3>
+<p>Tablas clave: <code>intake_profiles</code>, <code>intake_profile_audit</code>, <code>treatment_plans</code>, <code>care_sessions</code>, <code>patient_diary_entries</code>, <code>plan_memory_bank</code>, <code>clinical_chunks</code> (pgvector), <code>app_users</code>, invitaciones de diario.</p>
+<h3>7.5 RAG y corpus</h3>
+<ul>
+<li>Ingesta admin-gated de PDF/HTML (OCR híbrido opcional).</li>
+<li><code>ref_id</code> determinista; skip si ya indexado salvo <code>force_reindex</code>.</li>
+<li>Generación con citas; plan vacío estructurado si <code>insufficient_evidence</code>.</li>
+<li>Guardas nutricionales por términos/sinónimos configurables.</li>
+</ul>
+<h3>7.6 Datos sintéticos (SYNTH-01)</h3>
+<ul>
+<li>Paquete v1: <strong>32 pacientes</strong> (8 arquetipos × 4 trayectorias), ~1194 diarios, sesiones, planes, memory bank.</li>
+<li>Cohortses: <code>improving</code>, <code>high_pain_plateau</code>, <code>worsening</code>, <code>short_series</code>.</li>
+<li>Seed en Render demo; IDs UUID v5 documentados en ops notes.</li>
+<li><strong>Ningún dato de paciente real</strong> en desarrollo ni demo.</li>
+</ul>
+<h3>7.7 Seguridad y compliance</h3>
+<table>
+<tr>
+<th>Control</th>
+<th>Implementación</th>
+</tr>
+<tr>
+<td>NOM-024 gate</td>
+<td><code>requires_practitioner_review: true</code>, status <code>pending_review</code></td>
+</tr>
+<tr>
+<td>LFPDPPP / minimización</td>
+<td>US-PRIV-001 choke point antes de LLM; proyección clínica + redaction email/tel/UUID</td>
+</tr>
+<tr>
+<td>RBAC</td>
+<td><code>require_roles</code>; paciente solo su <code>sub</code></td>
+</tr>
+<tr>
+<td>Auth prod</td>
+<td>Password clínico hasheado; invitaciones paciente single-use con <code>exp</code></td>
+</tr>
+<tr>
+<td>Dev auth</td>
+<td><code>ALLOW_DEV_AUTH</code> (demo Render = true; prod compose = false)</td>
+</tr>
+<tr>
+<td>Auditoría intake</td>
+<td><code>intake_profile_audit</code></td>
+</tr>
+<tr>
+<td>Scans CI</td>
+<td>bandit, pip-audit, npm audit</td>
+</tr>
+</table>
+<h3>7.8 Observabilidad / calidad</h3>
+<ul>
+<li>Tests unitarios/API backend (sin Docker en CI estándar).</li>
+<li>Vitest + Playwright E2E frontend.</li>
+<li>AI quality smoke con corpus CI.</li>
+<li>Informe RAG: <code>docs/rag-evaluation-report.md</code>.</li>
+<li>Waiver feedback clínico sintético: <code>docs/feedback-01-synthetic-demo-waiver.md</code>.</li>
+</ul>
+<hr />
+<h2>8. Flujos de usuario principales</h2>
+<p>1. <strong>Clínico</strong> inicia sesión → carga paciente sintético → revisa intake/riesgos → genera o reutiliza plantilla → aprueba plan.</p>
+<p>2. <strong>Clínico</strong> invita al diario / el paciente registra check-ins.</p>
+<p>3. <strong>Clínico</strong> ve gráfico de progreso + proyección, mesetas, trayectoria y recomendaciones.</p>
+<p>4. <strong>Clínico</strong> registra sesión (opcionalmente con nota sugerida por IA).</p>
+<p>5. <strong>Admin</strong> ingiere corpus; clínico consulta chunks.</p>
+<hr />
+<h2>9. Evidencia visual (capturas del demo público)</h2>
+<p>Capturas tomadas el 2026-07-26 contra https://holisticare-frontend.onrender.com con paciente sintético *improving* <code>be2ecd39-2ac6-5a8b-84af-b22f8fa7a4a8</code>.</p>
+<h3>9.1 Login (clínico y paciente)</h3>
+<figure><img src="/assets/entrega-final/01-login.png" alt="Login HolistiCare" /><figcaption>Login HolistiCare</figcaption></figure>
+<h3>9.2 Dashboard clínico — paciente, plantillas e identificación</h3>
+<figure><img src="/assets/entrega-final/02-dashboard-overview.png" alt="Dashboard overview" /><figcaption>Dashboard overview</figcaption></figure>
+<h3>9.3 Progreso — gráfico multi-KPI + proyección de dolor 4 semanas</h3>
+<figure><img src="/assets/entrega-final/03-progress-chart.png" alt="Progress chart" /><figcaption>Progress chart</figcaption></figure>
+<h3>9.4 Predicción y recomendaciones + intake / risk flags</h3>
+<figure><img src="/assets/entrega-final/04-prediction-recommendations.png" alt="Prediction and recommendations" /><figcaption>Prediction and recommendations</figcaption></figure>
+<h3>9.5 Base de conocimiento (chunks pgvector)</h3>
+<figure><img src="/assets/entrega-final/05-knowledge-base.png" alt="Knowledge base" /><figcaption>Knowledge base</figcaption></figure>
+<h3>9.6 Vista paciente — Mi diario</h3>
+<figure><img src="/assets/entrega-final/06-patient-diary.png" alt="Patient diary" /><figcaption>Patient diary</figcaption></figure>
+<hr />
+<h2>10. Cómo demostrar (smoke checklist)</h2>
+<p>1. Abrir SPA → <strong>Entrar (desarrollo — clínico)</strong> o usuario <code>clinician</code> / password demo documentada en ops.</p>
+<p>2. Pegar UUID improving → verificar intake, diario, gráfico con proyección, trayectoria <code>improving</code>.</p>
+<p>3. Abrir <strong>Base de conocimiento</strong> → ver fragmentos REF-*.</p>
+<p>4. Cerrar sesión → login paciente (UUID desarrollo) → <code>/diario</code> con historial.</p>
+<p>5. API: <code>GET https://holisticare-api.onrender.com/health</code> → 200 (cold start posible ~50s en free tier).</p>
+<hr />
+<h2>11. Empaquetado académico</h2>
+<table>
+<tr>
+<th>Artefacto</th>
+<th>Ruta</th>
+</tr>
+<tr>
+<td>Este documento</td>
+<td><code>docs/entrega-final-capstone.md</code></td>
+</tr>
+<tr>
+<td>Arquitectura detallada</td>
+<td><code>docs/02-system-architecture.md</code>, <code>docs/10-solution-diagrams.md</code></td>
+</tr>
+<tr>
+<td>Privacidad / diccionario</td>
+<td><code>docs/03-data-dictionary-and-privacy-framework.md</code></td>
+</tr>
+<tr>
+<td>Backlog / stories</td>
+<td><code>docs/04-feature-specs-and-user-stories.md</code></td>
+</tr>
+<tr>
+<td>Test plan</td>
+<td><code>docs/05-test-plan.md</code></td>
+</tr>
+<tr>
+<td>Deploy final</td>
+<td><code>docs/deploy-final-demo.md</code></td>
+</tr>
+<tr>
+<td>Eval RAG</td>
+<td><code>docs/rag-evaluation-report.md</code></td>
+</tr>
+<tr>
+<td>Dataset sintético</td>
+<td><code>docs/synthetic-dataset-v1.md</code></td>
+</tr>
+<tr>
+<td>Plan de entrega</td>
+<td><code>docs/final-delivery-plan.md</code></td>
+</tr>
+</table>
+<h3>Generar PDF</h3>
+<p>Desde la raíz del repo (requiere Node 22+):</p>
+<pre><code>node docs/scripts/build-entrega-pdf.mjs</code></pre>
+<p>Salida: <code>docs/entrega-final-capstone.pdf</code>.</p>
+<p>El script renderiza Markdown + diagramas Mermaid en Chromium (Playwright) y exporta PDF A4.</p>
+<hr />
+<h2>12. Conclusión</h2>
+<p>La entrega cubre el <strong>MVP clínico end-to-end</strong> exigido por el capstone: RAG con gobernanza humana, continuidad diario/sesiones/analítica, predicción orientativa, privacidad en egress LLM, datos sintéticos, y <strong>demo pública</strong> con CI/CD. Los sprints 1–16 construyeron de forma incremental backend → UI → auth prod → ops → cierre de privacidad y despliegue.</p>
+<p>HolistiCare queda listo como <strong>ancla de portafolio</strong> en health-tech mexicano y como entregable de máster, con evidencia de código, tests, documentación y capturas en producción.</p>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+  mermaid.run().then(function () {
+    document.documentElement.dataset.mermaidReady = "1";
+  }).catch(function () {
+    document.documentElement.dataset.mermaidReady = "1";
+  });
+</script>
+</body>
+</html>
