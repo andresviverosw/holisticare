@@ -192,6 +192,7 @@ async def save_intake(
 async def get_intake(
     patient_id: UUID,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ) -> dict[str, Any]:
     row = await get_intake_profile(db, patient_id=patient_id)
     if row is None:
@@ -230,6 +231,7 @@ async def update_intake(
 async def get_intake_risk_flags(
     patient_id: UUID,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ) -> dict[str, Any]:
     row = await get_intake_profile(db, patient_id=patient_id)
     if row is None:
@@ -514,6 +516,7 @@ async def list_chunks(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ):
     """Browse indexed clinical chunks with optional metadata filters."""
     return await list_clinical_chunks(
@@ -719,6 +722,7 @@ async def memory_bank_instantiate(
 async def get_plan(
     plan_id: UUID,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ):
     """Retrieve a treatment plan including its citations."""
     plan_row = await get_persisted_plan(db, plan_id=plan_id)
@@ -731,6 +735,7 @@ async def get_plan(
 async def get_plan_sources(
     plan_id: UUID,
     db: AsyncSession = Depends(get_db),
+    _current_user: AuthUser = Depends(require_roles("clinician", "admin")),
 ):
     """
     Retrieve the source clinical chunks that were used to generate a plan.
