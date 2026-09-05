@@ -97,6 +97,15 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Done (Sprint 16)** |
 | US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
 | US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Done (Sprint 16)** |
+| US-SEC-RBAC-001 | Security / Auth | Clinic operator | every clinical data GET to require clinician/admin JWT | intake, plans, and chunks are not anonymously readable | Must | S | Planned (Sprint 17 — AI4devs review) |
+| US-OPS-HEALTH-001 | Ops | Admin | a readiness probe that fails when Postgres is unreachable | CD and monitors detect “process up, data down” | Must | S–M | Planned (Sprint 17 — AI4devs review) |
+| US-OPS-DEMO-REPAIR-001 | Ops / Deploy | Tutor / reviewer | the public Render demo DB-backed flows to work again | live evaluation matches local behavior | Must | M | Planned (Sprint 17 — AI4devs review) |
+| US-OPS-MONITOR-001 | Ops | Admin | post-deploy and periodic smoke that exercises a DB-backed path | free-tier Postgres resets cannot leave the demo silently broken | Should | S–M | Planned (Sprint 17 — AI4devs review) |
+| US-OPS-SCHEMA-001 | Ops / Database | Admin | a single ordered repeatable schema apply path | recreating Postgres does not strand the API | Should | M–L | Planned (Sprint 17 — AI4devs review) |
+| DOC-QUICKSTART-001 | Documentation | Developer | README/setup ingest examples to point at existing data dirs | clean-clone quickstart does not 400 on missing `data/mock` | Should | S | Planned (Sprint 17 — AI4devs review) |
+| DOC-OPS-FILL-001 | Documentation | Admin | a filled deployment/ops runbook (envs + checklists) | ops docs match the maturity of the rest of `docs/` | Should | M | Planned (Sprint 17 — AI4devs review) |
+| DOC-PROMPTS-001 | Documentation | Tutor / reviewer | product SYSTEM_PROMPT excerpts in `prompts.md` | prompts are readable without opening generator source | Could | S | Planned (Sprint 17 — AI4devs review) |
+| US-SEC-JWT-COOKIE-001 | Security / Auth | Clinic operator | JWT stored in httpOnly Secure cookies (not localStorage) | XSS cannot exfiltrate clinician/patient tokens as easily | Could | L | Deferred (post Sprint 17 — tutor next iteration) |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — final delivery cut) |
 | US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Planned (deferred — final delivery cut) |
@@ -565,6 +574,15 @@ Test intent:
 | US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Done (Sprint 16).** Anonymize/pseudonymize intake before Claude/OpenAI calls. |
 | US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
 | US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Done (Sprint 16).** `VITE_API_BASE_URL` + tests; companion ops **DEPLOY-01** still required for live URLs. |
+| US-SEC-RBAC-001 | Must | R-post | JWT RBAC rest of `/rag` | **Sprint 17.** Guard intake/risk-flags/plan/sources/chunks GETs. See [`sprint-17.md`](sprint-17.md). |
+| US-OPS-HEALTH-001 | Must | R-post | US-OPS-SPA-HOST | **Sprint 17.** DB readiness probe. |
+| US-OPS-DEMO-REPAIR-001 | Must | R-post | US-OPS-HEALTH-001, DEPLOY-01 | **Sprint 17.** Restore Render schema + seed. |
+| US-OPS-MONITOR-001 | Should | R-post | US-OPS-HEALTH-001 | **Sprint 17.** Smoke + schedule with DB signal. |
+| US-OPS-SCHEMA-001 | Should | R-post | infra/init.sql | **Sprint 17.** Versioned migrations (Alembic or equivalent). |
+| DOC-QUICKSTART-001 | Should | R-post | README | **Sprint 17.** Fix `data/mock` quickstart paths. |
+| DOC-OPS-FILL-001 | Should | R-post | Phase 6 runbook | **Sprint 17.** Fill empty ops checklists. |
+| DOC-PROMPTS-001 | Could | R-post | prompts.md | **Sprint 17.** Excerpt product SYSTEM_PROMPT. |
+| US-SEC-JWT-COOKIE-001 | Could | R-post+ | US-AUTH-CLINICIAN-PROD | Deferred — httpOnly cookies (tutor next iteration). |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
 | US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |
@@ -580,6 +598,7 @@ Release definition:
 - R3 (advanced): trajectory prediction and adjustment suggestions (**US-PRED-001** and **US-PRED-002** — done), plus **US-PLAN-004** (approved plan memory bank and reuse-as-draft) — **done (Sprint 10)**.
 - R4 (mobile extension): clinician mobile experience (responsive Dashboard/Plan Review, installable PWA, fast review/decision flow) via **US-MOB-001..003**.
 - **R-final (capstone closeout):** patient LLM-egress anonymization (**US-PRIV-001**), public **Render** deploy (**US-OPS-SPA-HOST** + **DEPLOY-01**, same approach as Entrega 2), Phase 1/3 documentation completion, RAG eval report, synthetic demo corpus (**SYNTH-01**), public demo + feedback package — see [`final-delivery-plan.md`](final-delivery-plan.md) and [`deploy-final-demo.md`](deploy-final-demo.md). Mobile / JWT harden / IdP remain deferred.
+- **R-post (Sprint 17 — AI4devs review remediation):** close clinical GET RBAC gaps (**US-SEC-RBAC-001**), DB readiness + demo repair + monitoring (**US-OPS-HEALTH-001**, **US-OPS-DEMO-REPAIR-001**, **US-OPS-MONITOR-001**), schema migrations (**US-OPS-SCHEMA-001**), docs polish (**DOC-***); JWT cookie harden remains deferred (**US-SEC-JWT-COOKIE-001**) — see [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md) and [`sprint-17.md`](sprint-17.md).
 
 ### SYNTH-01 - End-to-end synthetic dataset for demo and KPIs
 
@@ -631,6 +650,59 @@ Test intent:
 Implementation notes:
 - On `main`, `frontend/src/services/api.js` hardcodes `baseURL: "/api"` — reintroduce Entrega 2 pattern: `import.meta.env.VITE_API_BASE_URL || "/api"`.
 - Companion live deploy checklist: [`deploy-final-demo.md`](deploy-final-demo.md).
+
+### US-SEC-RBAC-001 - Guard clinical GET endpoints
+
+- Given no `Authorization` header, when a client calls intake, risk-flags, plan, plan sources, or chunks, then the API returns **401**.
+- Given a valid patient JWT, when the same endpoints are called, then the API returns **403**.
+- Given a valid clinician or admin JWT, when the same endpoints are called, then behavior matches today’s authorized contract (**200** / **404**).
+- Given the rest of `rag.py`, when reviewed, then these handlers use the same `require_roles("clinician", "admin")` pattern as sibling routes.
+
+Test intent:
+- API: parametrized auth matrix (anon / patient / clinician) for the five GETs.
+- Regression: existing generate-plan and diary auth tests stay green.
+- Optional e2e: Dashboard still loads intake after clinician login.
+
+Full AC + sequencing: [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md) §4; [`sprint-17.md`](sprint-17.md).
+
+### US-OPS-HEALTH-001 - Database readiness probe
+
+- Given Postgres is reachable, when readiness is checked, then the probe reports success.
+- Given Postgres is unreachable, when readiness is checked, then the probe fails (non-200 or documented fail payload) even if process `/health` is still OK.
+- Given CD cold-start, when the API process is up but DB is not yet ready, then monitors can distinguish liveness vs readiness.
+
+Test intent: unit/integration with mocked DB failure; smoke helpers updated.
+
+### US-OPS-DEMO-REPAIR-001 - Restore public Render data plane
+
+- Given Render Postgres after recreate, when schema + seed are applied, then authenticated clinical GETs return 200 with synthetic data.
+- Given the SPA origin, when the dashboard loads against the public API, then browser CORS errors caused by underlying 500s are gone.
+- Given ops docs, when an operator follows the restore checklist, then steps are reproducible.
+
+Test intent: manual ops checklist + strengthened public smoke.
+
+### US-OPS-MONITOR-001 - Continuous smoke with DB signal
+
+- Given public demo DB is broken, when smoke runs, then it fails even if `/health` is 200.
+- Given CD and a scheduled workflow, when either runs, then the DB-aware smoke is the gate.
+
+Test intent: extend `test_public_demo_smoke.py`; document cron.
+
+### US-OPS-SCHEMA-001 - Versioned schema migrations
+
+- Given an empty Postgres, when the migration command runs, then the schema matches production expectations without manual patch ordering.
+- Given Compose and Render, when bootstrapping, then both use the same migration path.
+
+Test intent: CI or documented Compose verification against Postgres.
+
+### DOC-QUICKSTART-001 / DOC-OPS-FILL-001 / DOC-PROMPTS-001
+
+See acceptance criteria in [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md) §4 (documentation wave).
+
+### US-SEC-JWT-COOKIE-001 - httpOnly cookie sessions (deferred)
+
+- Given a future security slice, when clinicians/patients authenticate, then session tokens are not readable from JavaScript `localStorage`.
+- Out of Sprint 17 Must scope; residual risk remains documented in Phase 9 security audit.
 
 ## 8. Definition of ready / done
 

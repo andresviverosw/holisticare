@@ -168,8 +168,25 @@ These items motivated work; they are **not** the current state of pinned version
   - `npm audit --audit-level=moderate` (frontend) → 0 vulnerabilities
   - `pytest -q` (backend) green; `npm run lint|test|build` green
 
+## Sprint 17 — AI4devs review follow-ups (open)
+
+Source: tutor final review (19 Aug 2026) — *Aprobado con notas*. Plan: [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md).
+
+- [ ] TODO-SEC-012 **US-SEC-RBAC-001** — Add `require_roles("clinician", "admin")` to:
+  - `GET /rag/intake/{patient_id}`
+  - `GET /rag/intake/{patient_id}/risk-flags`
+  - `GET /rag/plan/{plan_id}`
+  - `GET /rag/plan/{plan_id}/sources`
+  - `GET /rag/chunks`
+  - Add auth-matrix regression tests (anon → 401, patient → 403). This was the P0 finding: clinical data readable without Authorization.
+
+- [ ] TODO-SEC-013 **US-OPS-HEALTH-001** / **US-OPS-MONITOR-001** — Readiness probe that fails when Postgres is down; extend public smoke beyond process `/health` so demo outages are visible.
+
+- [ ] TODO-SEC-014 **US-SEC-JWT-COOKIE-001** (deferred) — Migrate JWT out of `localStorage` to httpOnly Secure cookies (+ CSRF). Residual XSS risk for a health-domain SPA; tutor marked as next iteration.
+
 ## Notes and assumptions
 
 - Findings are based on automated scanners; some are environment-specific or low-confidence.
 - Dependency upgrades should be handled in small, test-backed slices because this codebase has LLM SDK integration points that can break on minor/major updates.
+- Authorization gaps (TODO-SEC-012) are **manual review / tutor findings**, not scanner output — treat as blocking before relying on the public demo for clinical trust.
 

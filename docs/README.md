@@ -11,6 +11,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
 | End-to-end synthetic dataset v1 (SYNTH-01) | `synthetic-dataset-v1.md` |
 | Final delivery plan (capstone closeout) | `final-delivery-plan.md` |
+| **AI4devs tutor review remediation (Sprint 17)** | `ai4devs-review-remediation-plan.md` + `sprint-17.md` |
 | **Entrega final consolidada (MD + PDF)** | `entrega-final-capstone.md` → `node docs/scripts/build-entrega-pdf.mjs` |
 | Pilot go/no-go decision gate | `pilot-go-no-go.md` |
 | Pilot rehearsal run history template | `pilot-rehearsal-log.md` |
@@ -27,7 +28,7 @@ This directory contains the six core documentation phases for the AI4devs master
 | Product requirements and stories | `01-` … `04-` phase docs |
 | Test strategy | `05-test-plan.md` |
 | Deployment and ops templates | `06-deployment-and-ops-runbook.md` (plus HolistiCare-specific notes inside) |
-| Sprint notes | `sprint-01.md` … `sprint-15.md` |
+| Sprint notes | `sprint-01.md` … `sprint-17.md` |
 | Sprint 11 QA report | `qa-sprint-11-report.md` |
 | Sprint 12 QA report | `qa-sprint-12-report.md` |
 | Sprint 13 QA report | `qa-sprint-13-report.md` |

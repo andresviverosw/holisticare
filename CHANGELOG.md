@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Added
 
+- **Sprint 17 planning (AI4devs review remediation):** `docs/ai4devs-review-remediation-plan.md` + `docs/sprint-17.md` — backlog for RBAC hotfix on unguarded clinical GETs, DB readiness, public demo repair, monitoring, schema migrations, and docs polish (tutor *Aprobado con notas*, 19 Aug 2026).
 - **CD Render (CI-gated):** `.github/workflows/cd-render.yml` deploys API+SPA after CI succeeds on `main`, then runs `scripts/smoke_public_demo.py`. Render `autoDeploy` disabled.
 - **Sprint 16 / US-PRIV-001:** LLM egress anonymization (`patient_anonymizer.py`) — clinical projection + email/phone/UUID redaction; `PATIENT_TOKEN` in generator prompts; fail-closed API 422; unit + pipeline tests.
 - **Sprint 16 / US-OPS-SPA-HOST:** `resolveApiBaseUrl` + `VITE_API_BASE_URL` for Render Static Site (fallback `/api`).
