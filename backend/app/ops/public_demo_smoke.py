@@ -60,10 +60,19 @@ def check_dev_login(status_code: int, body: Any) -> list[str]:
 
 
 def check_ready(status_code: int, body: Any) -> list[str]:
-    """Delegate to readiness helper (US-OPS-MONITOR-001)."""
-    from app.ops.readiness import check_ready as _check_ready
-
-    return _check_ready(status_code, body)
+    """Pure smoke helper for GET /ready (no DB/SQLAlchemy imports — CD installs httpx only)."""
+    errors: list[str] = []
+    if status_code != 200:
+        errors.append(f"ready status_code={status_code} expected 200")
+        return errors
+    if not isinstance(body, dict):
+        errors.append("ready body must be JSON object")
+        return errors
+    if body.get("status") != "ready":
+        errors.append(f"ready status={body.get('status')!r} expected 'ready'")
+    if body.get("db") != "ok":
+        errors.append(f"ready db={body.get('db')!r} expected 'ok'")
+    return errors
 
 
 def parse_json_body(raw: str | bytes | None) -> Any:
