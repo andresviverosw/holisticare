@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ### Security
 - **US-SEC-RBAC-001:** clinician/admin required on clinical GETs (intake, risk-flags, plan, sources, chunks) + auth-matrix tests.
+- **CI security-audit:** bump `pypdf` `6.14.2` → `6.17.0`, `transformers` `5.5.0` → `5.16.1`; temporary ignore for transitive `nltk` **PYSEC-2026-3740** (no newer release; TODO-SEC-015).
 
 ### Added
 - **US-OPS-HEALTH-001 / MONITOR-001:** `GET /ready` DB probe; public smoke + 6h GitHub monitor check readiness.

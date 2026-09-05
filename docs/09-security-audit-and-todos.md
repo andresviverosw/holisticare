@@ -184,6 +184,15 @@ Source: tutor final review (19 Aug 2026) — *Aprobado con notas*. Plan: [`ai4de
 
 - [ ] TODO-SEC-014 **US-SEC-JWT-COOKIE-001** (deferred) — Migrate JWT out of `localStorage` to httpOnly Secure cookies (+ CSRF). Residual XSS risk for a health-domain SPA; tutor marked as next iteration.
 
+- [x] TODO-SEC-015 Patch Sep 2026 `pip-audit` findings (CI `security-audit` blocker on Sprint 17 PR)
+- Context: CI reported `pypdf==6.14.2` (multiple PYSEC/CVE; fix ≥6.16.1), `transformers==5.5.0` (CVE-2026-9856; fix ≥5.10.0), and transitive `nltk==3.10.3` (**PYSEC-2026-3740**, no newer release / empty fix column in pip-audit).
+- Implemented:
+  - Bumped `pypdf==6.17.0`, `transformers==5.16.1` in `backend/requirements.txt`
+  - Temporary CI ignore for **PYSEC-2026-3740** only (`pip-audit --ignore-vuln`) until an nltk release after 3.10.3 lands; nltk is transitive via `sentence-transformers` and HolistiCare does not call NLTK model-artifact APIs on untrusted paths
+- Verify:
+  - `pip-audit -r backend/requirements.txt --ignore-vuln PYSEC-2026-3740` clean
+  - backend pytest green
+
 ## Notes and assumptions
 
 - Findings are based on automated scanners; some are environment-specific or low-confidence.
