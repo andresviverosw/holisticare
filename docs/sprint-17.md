@@ -11,7 +11,7 @@
 | Priority | Must (security + demo integrity) |
 | Scope | Close authorization gaps, restore/observe public demo health, document ops truthfully |
 | Owner | Planning → Development (TDD) → Ops → QA |
-| Status | **Ready for prioritization** — planning only; code not started |
+| Status | **In progress / largely implemented** — Waves 1–4 code+docs on branch; demo repair awaits Render credentials |
 | Source | AI4devs LIDR final review (19 Aug 2026) — *Aprobado con notas* |
 | Plan of record | [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md) |
 
@@ -94,9 +94,9 @@ Tutor verdict: the highest-value next step is **not** a new feature — close th
 - [x] Feedback mapped to story IDs with AC and test intent
 - [x] Priority waves and dependencies documented
 - [x] Unguarded endpoints confirmed in current `rag.py` (incl. `get_plan_sources`)
-- [ ] User confirms D1–D5 (or overrides) before Development starts Wave 1
-- [ ] Development starts **Red** tests for RBAC before editing handlers
-- [ ] Ops access to Render Postgres confirmed for Wave 2
+- [x] User confirms D1–D5 (accepted 2026-09-05)
+- [x] Development: RBAC Red→Green + `/ready` + smoke/monitor + migrate.sh + docs
+- [ ] Ops access to Render Postgres confirmed for live DEMO-REPAIR
 
 ## Handoff
 

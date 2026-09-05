@@ -172,7 +172,7 @@ These items motivated work; they are **not** the current state of pinned version
 
 Source: tutor final review (19 Aug 2026) — *Aprobado con notas*. Plan: [`ai4devs-review-remediation-plan.md`](ai4devs-review-remediation-plan.md).
 
-- [ ] TODO-SEC-012 **US-SEC-RBAC-001** — Add `require_roles("clinician", "admin")` to:
+- [x] TODO-SEC-012 **US-SEC-RBAC-001** — Add `require_roles("clinician", "admin")` to:
   - `GET /rag/intake/{patient_id}`
   - `GET /rag/intake/{patient_id}/risk-flags`
   - `GET /rag/plan/{plan_id}`
@@ -180,7 +180,7 @@ Source: tutor final review (19 Aug 2026) — *Aprobado con notas*. Plan: [`ai4de
   - `GET /rag/chunks`
   - Add auth-matrix regression tests (anon → 401, patient → 403). This was the P0 finding: clinical data readable without Authorization.
 
-- [ ] TODO-SEC-013 **US-OPS-HEALTH-001** / **US-OPS-MONITOR-001** — Readiness probe that fails when Postgres is down; extend public smoke beyond process `/health` so demo outages are visible.
+- [x] TODO-SEC-013 **US-OPS-HEALTH-001** / **US-OPS-MONITOR-001** — Readiness probe that fails when Postgres is down; extend public smoke beyond process `/health` so demo outages are visible.
 
 - [ ] TODO-SEC-014 **US-SEC-JWT-COOKIE-001** (deferred) — Migrate JWT out of `localStorage` to httpOnly Secure cookies (+ CSRF). Residual XSS risk for a health-domain SPA; tutor marked as next iteration.
 

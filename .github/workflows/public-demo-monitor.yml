@@ -1,0 +1,43 @@
+# US-OPS-MONITOR-001 — periodic public demo smoke (DB-aware via /ready).
+# Complements CD post-deploy smoke so free-tier Postgres resets are visible.
+
+name: Public demo monitor
+
+on:
+  schedule:
+    # Every 6 hours UTC
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: public-demo-monitor
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API_BASE: https://holisticare-api.onrender.com
+      SPA_BASE: https://holisticare-frontend.onrender.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install smoke dependencies
+        working-directory: backend
+        run: pip install --upgrade pip && pip install httpx
+
+      - name: Public demo smoke (health + ready + spa + cors + login)
+        working-directory: backend
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/smoke_public_demo.py \
+            --api-base "$API_BASE" \
+            --spa-base "$SPA_BASE" \
+            --origin "$SPA_BASE"

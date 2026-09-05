@@ -59,6 +59,13 @@ def check_dev_login(status_code: int, body: Any) -> list[str]:
     return errors
 
 
+def check_ready(status_code: int, body: Any) -> list[str]:
+    """Delegate to readiness helper (US-OPS-MONITOR-001)."""
+    from app.ops.readiness import check_ready as _check_ready
+
+    return _check_ready(status_code, body)
+
+
 def parse_json_body(raw: str | bytes | None) -> Any:
     if raw is None or raw == "":
         return None
