@@ -4,8 +4,19 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Security
+- **US-SEC-RBAC-001:** clinician/admin required on clinical GETs (intake, risk-flags, plan, sources, chunks) + auth-matrix tests.
+- **CI security-audit:** bump `pypdf` `6.14.2` → `6.17.0`, `transformers` `5.5.0` → `5.16.1`; temporary ignore for transitive `nltk` **PYSEC-2026-3740** (no newer release; TODO-SEC-015).
+- **CI npm audit:** overrides `brace-expansion@5.0.9`, `js-yaml@4.3.2`, `nanoid@3.3.18` (high advisories).
+
+### Added
+- **US-OPS-HEALTH-001 / MONITOR-001:** `GET /ready` DB probe; public smoke + 6h GitHub monitor check readiness.
+- **US-OPS-SCHEMA-001:** `scripts/migrate.sh` applies `infra/init.sql` + patches in order.
+- **DOC-QUICKSTART / OPS / PROMPTS:** README ingest path, filled ops runbook, prompt excerpts, demo repair checklist.
+
 ### Added
 
+- **Sprint 17 planning (AI4devs review remediation):** `docs/ai4devs-review-remediation-plan.md` + `docs/sprint-17.md` — backlog for RBAC hotfix on unguarded clinical GETs, DB readiness, public demo repair, monitoring, schema migrations, and docs polish (tutor *Aprobado con notas*, 19 Aug 2026).
 - **CD Render (CI-gated):** `.github/workflows/cd-render.yml` deploys API+SPA after CI succeeds on `main`, then runs `scripts/smoke_public_demo.py`. Render `autoDeploy` disabled.
 - **Sprint 16 / US-PRIV-001:** LLM egress anonymization (`patient_anonymizer.py`) — clinical projection + email/phone/UUID redaction; `PATIENT_TOKEN` in generator prompts; fail-closed API 422; unit + pipeline tests.
 - **Sprint 16 / US-OPS-SPA-HOST:** `resolveApiBaseUrl` + `VITE_API_BASE_URL` for Render Static Site (fallback `/api`).

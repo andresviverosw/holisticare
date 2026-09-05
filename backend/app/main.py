@@ -1,11 +1,14 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401 — register ORM metadata
 from app.api import auth, rag
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import get_settings
+from app.core.database import get_db
 
 
 @asynccontextmanager
@@ -43,6 +46,18 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health():
         return {"status": "ok", "version": "0.1.0"}
+
+    @app.get("/ready")
+    async def ready(db: AsyncSession = Depends(get_db)):
+        """US-OPS-HEALTH-001 — fails when Postgres cannot serve SELECT 1."""
+        from fastapi import HTTPException
+        from app.ops.readiness import ping_database
+
+        try:
+            await ping_database(db)
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail="database_unavailable") from exc
+        return {"status": "ready", "db": "ok"}
 
     return app
 

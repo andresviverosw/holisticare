@@ -176,8 +176,10 @@ cp .env.example .env
 # 2) Start services
 docker compose up -d
 
-# 3) Run ingestion on mock documents
-docker compose exec backend python -m scripts.ingest --source data/mock
+# 3) Run ingestion (committed smoke corpus)
+# Prefer committed smoke corpus (data/mock is not in the repo)
+docker compose exec backend python -m scripts.ingest --source data/ci_smoke
+# Larger optional sets: data/pilot or follow docs/synthetic-dataset-v1.md
 
 # 4) Open services
 # Frontend: http://localhost:5173

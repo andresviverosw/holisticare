@@ -153,13 +153,13 @@ Both should return `200`.
 Basic ingestion (idempotent: skips already indexed chunks):
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/mock","force_reindex":false}'
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/ci_smoke","force_reindex":false}'
 ```
 
 Force reindex for the same files (removes previous chunks by `source_file` and reindexes):
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/mock","force_reindex":true}'
+Invoke-RestMethod -Method Post -Uri "http://localhost:8000/rag/ingest" -ContentType "application/json" -Body '{"source_dir":"data/ci_smoke","force_reindex":true}'
 ```
 
 ### 4.2) Scanned PDFs (OCR)
@@ -177,7 +177,7 @@ RAG plan generation expands intake **allergies** and **contraindications** again
 
 ### 4.3) HTML pages (`.html` / `.htm`)
 
-The same ingestion endpoint indexes **static HTML** as well as PDFs. Drop `.html` or `.htm` files under your `source_dir` (for example `data/mock`). The backend strips `script`, `style`, and `noscript`, extracts visible text (preferring `<body>`), and indexes one document per file. **OCR and the “thin PDF” hybrid path apply only to `.pdf` files**, not HTML.
+The same ingestion endpoint indexes **static HTML** as well as PDFs. Drop `.html` or `.htm` files under your `source_dir` (for example `data/ci_smoke`). The backend strips `script`, `style`, and `noscript`, extracts visible text (preferring `<body>`), and indexes one document per file. **OCR and the “thin PDF” hybrid path apply only to `.pdf` files**, not HTML.
 
 Implementation: `backend/app/rag/ingestion/html_reader.py`, wired in `backend/app/rag/ingestion/loader.py`.
 
@@ -193,7 +193,7 @@ docker compose exec backend env PYTHONPATH=/app python scripts/run_corpus_ingest
   --source-dir data/corpus --force-reindex
 ```
 
-Optional: point `--source-dir` at any folder under `backend/data/` (for example a small `data/mock` folder if you keep one) and omit `--force-reindex` for an idempotent pass.
+Optional: point `--source-dir` at any folder under `backend/data/` (for example a small `data/ci_smoke` folder if you keep one) and omit `--force-reindex` for an idempotent pass.
 
 **Alternative (HTTP):** admin JWT required — `POST /rag/ingest` with a JSON body, for example:
 

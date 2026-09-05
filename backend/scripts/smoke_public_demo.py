@@ -19,6 +19,7 @@ from app.ops.public_demo_smoke import (
     check_cors,
     check_dev_login,
     check_health,
+    check_ready,
     check_spa,
     parse_json_body,
 )
@@ -38,6 +39,9 @@ def _run(api_base: str, spa_base: str, origin: str, timeout: float) -> int:
                 break
             time.sleep(min(15 * attempt, 60))
         errors.extend(check_health(health_code, health_body))
+
+        ready = client.get(f"{api_base.rstrip('/')}/ready")
+        errors.extend(check_ready(ready.status_code, parse_json_body(ready.text)))
 
         spa = client.get(spa_base)
         errors.extend(check_spa(spa.status_code, spa.text))
@@ -63,7 +67,7 @@ def _run(api_base: str, spa_base: str, origin: str, timeout: float) -> int:
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("SMOKE PASS: health + spa + cors + dev-login")
+    print("SMOKE PASS: health + ready + spa + cors + dev-login")
     return 0
 
 
