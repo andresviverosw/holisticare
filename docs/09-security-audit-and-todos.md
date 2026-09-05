@@ -193,6 +193,11 @@ Source: tutor final review (19 Aug 2026) — *Aprobado con notas*. Plan: [`ai4de
   - `pip-audit -r backend/requirements.txt --ignore-vuln PYSEC-2026-3740` clean
   - backend pytest green
 
+- [x] TODO-SEC-016 Patch Sep 2026 frontend `npm audit` highs (CI `security-audit` blocker)
+- Context: `brace-expansion@5.0.8` (GHSA-rgw5-rvv9-x895), `js-yaml@4.3.0` (GHSA-5p4m-2wfm-xmqj), `nanoid@3.3.16` (GHSA-2v37-7h3g-55p8).
+- Implemented: npm `overrides` → `brace-expansion@5.0.9`, `js-yaml@4.3.2`, `nanoid@3.3.18` (+ keep `minimatch@^10.2.5`); lockfile refreshed.
+- Verify: `npm audit --audit-level=moderate` → 0; `npm test` + `npm run build` green.
+
 ## Notes and assumptions
 
 - Findings are based on automated scanners; some are environment-specific or low-confidence.
