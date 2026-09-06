@@ -1,17 +1,17 @@
 """
 Reranker — Phase 3.2 of the RAG architecture.
 
-Provides a unified Reranker interface with two backends:
+Provides a unified Reranker interface with backends:
 - CrossEncoderReranker (default, free): sentence-transformers ms-marco-MiniLM-L-6-v2
 - CohereReranker (optional, paid): Cohere Rerank v3
+- PassthroughReranker: no local model — keeps retrieval scores (Render free-tier safe)
 
 Backend is selected via RERANKER_BACKEND env var.
 """
 
 from abc import ABC, abstractmethod
-from app.core.config import get_settings
 
-settings = get_settings()
+from app.core.config import get_settings
 
 
 class BaseReranker(ABC):
@@ -29,18 +29,45 @@ class BaseReranker(ABC):
         """
 
 
+class PassthroughReranker(BaseReranker):
+    """
+    Rank by existing retrieval `score` only — never imports torch / CrossEncoder.
+
+    Used on Render free tier (`RERANKER_BACKEND=passthrough`) to avoid OOM when
+    loading sentence-transformers into a ~512MB instance.
+    """
+
+    def rerank(self, query: str, candidates: list[dict], top_k: int) -> list[dict]:
+        del query  # interface parity; passthrough ignores query text
+        if not candidates:
+            return []
+        ranked = sorted(
+            candidates,
+            key=lambda c: float(c.get("score") or 0.0),
+            reverse=True,
+        )
+        out: list[dict] = []
+        for candidate in ranked[:top_k]:
+            item = dict(candidate)
+            item["rerank_score"] = float(item.get("score") or 0.0)
+            out.append(item)
+        return out
+
+
 class CrossEncoderReranker(BaseReranker):
     """
     Free reranker using sentence-transformers cross-encoder.
     Model: cross-encoder/ms-marco-MiniLM-L-6-v2
-    Loaded once at startup (singleton pattern).
+    Loaded once at first use (singleton pattern).
     """
 
     _model = None  # class-level cache
 
     def __init__(self):
+        settings = get_settings()
         if CrossEncoderReranker._model is None:
             from sentence_transformers import CrossEncoder
+
             CrossEncoderReranker._model = CrossEncoder(settings.crossencoder_model)
         self.model = CrossEncoderReranker._model
 
@@ -66,6 +93,8 @@ class CohereReranker(BaseReranker):
 
     def __init__(self):
         import cohere
+
+        settings = get_settings()
         if not settings.cohere_api_key:
             raise ValueError("COHERE_API_KEY must be set to use CohereReranker")
         self.client = cohere.Client(settings.cohere_api_key)
@@ -92,8 +121,10 @@ class CohereReranker(BaseReranker):
 
 
 def get_reranker() -> BaseReranker:
-    """Factory — returns the correct reranker based on config."""
-    backend = settings.reranker_backend.lower()
+    """Factory — returns the correct reranker based on config (re-reads settings)."""
+    backend = get_settings().reranker_backend.lower().strip()
+    if backend == "passthrough":
+        return PassthroughReranker()
     if backend == "cohere":
         return CohereReranker()
     return CrossEncoderReranker()
