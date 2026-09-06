@@ -7,12 +7,13 @@
 
 ## Pending Milestones
 
-- **Final delivery (R-final):** US-PRIV-001, US-OPS-SPA-HOST + DEPLOY-01 (**Render** public deploy), Phase 1/3 doc closeout, RAG eval report, public demo + feedback package (`docs/final-delivery-plan.md`, `docs/deploy-final-demo.md`).
-- Pilot final GO/NO-GO + clinician clinical alignment of US-PRED outputs (optional if feedback waiver used).
-- Deferred: R4 mobile (`US-MOB-001..003`), JWT harden / IdP.
+- **Track D:** tag `capstone-final` (or align with `v1.0-final-AVW`) + packaging closeout.
+- Pilot final GO/NO-GO + clinician clinical alignment of US-PRED outputs (optional; FEEDBACK-01 waiver already filed).
+- Deferred polish: US-MOB-003, US-PRIV-002; optional paid Render for live LLM generate.
 
 ## Update History
 
+- [2026-09-06] DEMO-01 PASS on public Render (memory-bank → approve); DEPLOY-01 / US-OPS-DEMO-REPAIR-001 Done earlier same day. Remaining Must track: Track D packaging.
 - [2026-07-26 2:13:36 PM] [Unknown User] - Sprint 16 code + docs progress: US-PRIV-001 (patient_anonymizer + pipeline choke point + tests) and US-OPS-SPA-HOST (resolveApiBaseUrl + Vitest) Done. DOC-CLOSE-01/02/03 partial: Phase 1 FR/NFR filled, Phase 3 privacy complete, ADR-003/004, EVAL-01 report, FEEDBACK-01 synthetic waiver. Remaining: DEPLOY-01 Render public URLs, DEMO-01 walkthrough against live host, Track D tag/README URLs.
 - [2026-07-25] Development/QA: **SYNTH-01** end-to-end synthetic dataset v1 (32 patients default, optional 80) + generate/seed CLIs + appendix docs; unit tests PASS.
 - [2026-07-25] Planning Agent: Corrected D2 topology — Entrega 2 was **Render** (`deploy-entrega2-demo.md` / `render.yaml`), not Hetzner/Pages; added `deploy-final-demo.md` and restored blueprint on planning branch.
