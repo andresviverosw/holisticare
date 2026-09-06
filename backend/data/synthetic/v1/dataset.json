@@ -25331,7 +25331,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "f6c673f7-0754-5d30-b8e9-79c1d4cacb7a",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:00:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -25502,7 +25502,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "0f82d133-7a46-5876-8b8a-aad135b95dd1",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:10:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -25689,7 +25689,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "766885bd-309a-5ffc-9636-c8d0b5ff7088",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:20:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -25868,7 +25868,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "f8be2d61-3aea-56cd-9d05-96571a9b312a",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:30:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -26039,7 +26039,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "93d6ef8f-5a3f-549e-a3e0-c95eb7fecdf5",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:40:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -26218,7 +26218,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "753b5ae5-3c8e-5ca3-99f8-078866ee77e9",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T12:50:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -26389,7 +26389,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "571c3425-0601-5e96-b2b3-610d5246d53e",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T13:00:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
@@ -26560,7 +26560,7 @@
       ],
       "language": "es",
       "snapshot_json": {
-        "plan_id": "3ef2abc1-9b8f-598f-ac6f-a357f3e4abad",
+        "plan_id": "[ID]",
         "generated_at": "2026-04-15T13:10:00+00:00",
         "requires_practitioner_review": true,
         "status": "approved",
