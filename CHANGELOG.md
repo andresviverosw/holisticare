@@ -5,7 +5,7 @@ All notable changes to this project are documented here. The format is based on 
 ## [Unreleased]
 
 ### Added
-- **Track D:** thesis appendix index + packaging contract tests (`docs/thesis-appendix-index.md`, `backend/tests/test_track_d_packaging.py`); README demo path documents public URLs, DEMO-01 memory-bank gate, and `capstone-final` freeze tag (applied on `main` after merge).
+- **Track D:** thesis appendix index + packaging contract tests; freeze tag/release [`capstone-final`](https://github.com/andresviverosw/holisticare/releases/tag/capstone-final) + packaging contract tests (`docs/thesis-appendix-index.md`, `backend/tests/test_track_d_packaging.py`); README demo path documents public URLs and DEMO-01 memory-bank gate.
 
 ### Fixed
 - **US-OPS-OOM-001:** honor `RERANKER_BACKEND=passthrough` (already set on Render free tier) so plan generate does not load CrossEncoder/torch and OOM the ~512MB instance. Adds `PassthroughReranker` + factory tests.
