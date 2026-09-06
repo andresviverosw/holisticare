@@ -79,6 +79,11 @@ def _scrub_value(value: Any) -> Any:
     return value
 
 
+def scrub_nested_free_text(value: Any) -> Any:
+    """Public recursive scrub for nested dict/list trees (US-PRIV-001 / US-PRIV-002)."""
+    return _scrub_value(value)
+
+
 def anonymize_intake_for_llm(intake_json: dict[str, Any]) -> dict[str, Any]:
     """
     Project intake to clinical-only fields and redact contact-like free text.

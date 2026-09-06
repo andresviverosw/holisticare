@@ -95,7 +95,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-AUTH-CLINICIAN-PROD | Auth | Clinician / Admin | to sign in with username and password when dev auth is off | I can use the SPA in staging/production without minting JWTs by hand | Should | M | **Done (Sprint 14)** |
 | US-OPS-PROD-COMPOSE | Ops | Admin | to run the API with a production Compose overlay (Caddy TLS, no dev auth) | I can deploy without the unsafe bind-mount/reload stack | Should | M | **Done (Sprint 15)** |
 | US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Done (Sprint 16)** |
-| US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
+| US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Done (2026-09-06) |
 | US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Done (Sprint 16)** |
 | US-SEC-RBAC-001 | Security / Auth | Clinic operator | every clinical data GET to require clinician/admin JWT | intake, plans, and chunks are not anonymously readable | Must | S | Done (Sprint 17) |
 | US-OPS-HEALTH-001 | Ops | Admin | a readiness probe that fails when Postgres is unreachable | CD and monitors detect “process up, data down” | Must | S–M | Done (Sprint 17) |
@@ -573,7 +573,7 @@ Test intent:
 | US-OPS-PROD-COMPOSE | Should | R2+ | US-AUTH-CLINICIAN-PROD | **Sprint 15 — Done.** `docker-compose.prod.yml` + Caddyfile + env contract. See `sprint-15.md`. |
 | SYNTH-01 | Should | R-final | US-INT-001…US-PRED-001, US-PLAN-004 | **Done.** Deterministic synthetic corpus + DB seed. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md). |
 | US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Done (Sprint 16).** Anonymize/pseudonymize intake before Claude/OpenAI calls. |
-| US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
+| US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | **Done (2026-09-06).** Memory-bank sanitize reuses PRIV-001 free-text scrub. |
 | US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Done (Sprint 16).** `VITE_API_BASE_URL` + tests; companion ops **DEPLOY-01** live URLs verified 2026-09-06. |
 | US-SEC-RBAC-001 | Must | R-post | JWT RBAC rest of `/rag` | **Done (Sprint 17).** Guard intake/risk-flags/plan/sources/chunks GETs. |
 | US-OPS-HEALTH-001 | Must | R-post | US-OPS-SPA-HOST | **Done (Sprint 17).** DB readiness probe `GET /ready`. |

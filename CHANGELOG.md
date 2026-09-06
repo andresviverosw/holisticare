@@ -5,6 +5,9 @@ All notable changes to this project are documented here. The format is based on 
 ## [Unreleased]
 
 ### Added
+- **US-PRIV-002:** memory-bank snapshots scrub email/phone/UUID free text via shared `scrub_nested_free_text` (reuses US-PRIV-001 patterns) inside `sanitize_plan_for_memory_bank`.
+
+### Added
 - **Track D:** thesis appendix index + packaging contract tests; freeze tag/release [`capstone-final`](https://github.com/andresviverosw/holisticare/releases/tag/capstone-final) + packaging contract tests (`docs/thesis-appendix-index.md`, `backend/tests/test_track_d_packaging.py`); README demo path documents public URLs and DEMO-01 memory-bank gate.
 
 ### Fixed
