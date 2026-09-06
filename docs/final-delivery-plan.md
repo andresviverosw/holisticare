@@ -65,7 +65,7 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 | **DOC-CLOSE-03** | Mark phases 1–6 / guides consistent; fill owners/dates/status | **Must** | Planning | Checklists honest; cross-links valid |
 | **EVAL-01** | Short RAG evaluation / AI quality report for thesis | **Must** | QA | Document smoke metrics + known limits; link `ai_quality_smoke` + pilot cases |
 | **DEMO-01** | Submission demo package **on public URLs** | **Must** | Dev/QA | **Done (2026-09-06)** — public API walkthrough PASS (memory-bank → approve); see [`demo-01-public-walkthrough.md`](demo-01-public-walkthrough.md). LLM generate limited by Render free-tier timeout. |
-| **FEEDBACK-01** | Clinician feedback artifact | **Must** | Planning | Completed [`pilot-clinician-feedback-form.md`](pilot-clinician-feedback-form.md) **or** explicit “pending clinical alignment” appendix |
+| **FEEDBACK-01** | Clinician feedback artifact | **Must** | Planning | **Done** — synthetic-demo waiver [`feedback-01-synthetic-demo-waiver.md`](feedback-01-synthetic-demo-waiver.md) (D4); form remains for post-submission clinical alignment |
 
 ### Track B — Strongly recommended if capacity remains
 

@@ -36,6 +36,8 @@ PYTHONPATH=. python scripts/demo_public_walkthrough.py                   # try g
 
 ## Run log (2026-09-06, memory-bank path)
 
+Re-verified same day (warm API); example approved plan id: `7654eeed-4377-431b-8648-ff9ffe6c9114`.
+
 ```
 health: HTTP 200
 ready: HTTP 200
@@ -48,8 +50,6 @@ get-sources: HTTP 200
 approve: HTTP 200 (status=approved)
 DEMO-01 PASS
 ```
-
-Example approved plan id from this run is recorded in the operator console output / CI artifact when re-run.
 
 ## Known limits
 
