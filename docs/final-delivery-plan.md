@@ -71,7 +71,7 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 
 | ID | Work | Priority | Notes |
 |----|------|----------|-------|
-| **US-PRIV-002** | Harden memory-bank de-identification (free-text scrub in snapshots) | Should | Extends Sprint 10 sanitize beyond stripping `patient_id` |
+| **US-PRIV-002** | Harden memory-bank de-identification (free-text scrub in snapshots) | Should | **Done (2026-09-06)** — `sanitize_plan_for_memory_bank` applies PRIV-001 `scrub_nested_free_text` |
 | **PILOT-GO** | Close pilot GO/NO-GO with evidence pointers | Should | Prefer closing after public deploy smoke |
 | **SYNTH-01** | End-to-end synthetic dataset v1 (intakes, plans, sessions, diaries, KPI/plateau/recovery cohorts, memory bank) + seed CLI | Should → **Must for demo richness** | Default 32 patients (8×4); optional `--variants 10` → 80. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md) |
 
@@ -149,10 +149,10 @@ Intake schema is already fairly minimized (no name/email fields), but free-text 
 - Vendor DPA signatures (document checklist only).
 - Changing embedding corpus (documents are not patient PHI).
 
-### Follow-on (US-PRIV-002, if time)
+### Follow-on (US-PRIV-002) — Done 2026-09-06
 
-- Apply the same free-text scrub when saving memory-bank snapshots.
-- Document retention/deletion runbook steps for admin.
+- [x] Apply the same free-text scrub when saving memory-bank snapshots (`sanitize_plan_for_memory_bank` → `scrub_nested_free_text`).
+- [ ] Document retention/deletion runbook steps for admin (still optional ops polish).
 
 ## 5. Story: US-OPS-SPA-HOST — SPA API base URL for Render Static Site
 
@@ -220,7 +220,7 @@ Work is ordered by dependency and submission risk, not by day counts.
 6) DEPLOY-01 — Render Blueprint public deploy + internet smoke
 7) EVAL-01 report from smoke/pilot artifacts
 8) DEMO-01 on public URLs + FEEDBACK-01 artifact
-9) Optional US-PRIV-002 / PILOT-GO if still green
+9) PILOT-GO if still green (US-PRIV-002 Done)
 10) Tag + packaging (Track D)
 ```
 
