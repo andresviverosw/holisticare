@@ -61,11 +61,13 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 - [x] Frontend público responde (SPA carga).
 - [x] API `/health` pública 200.
 - [x] CORS permite origen del Static Site.
-- [ ] Flujo demo: login → intake → generar plan → review → approve/reject.
+- [x] Flujo demo smoke: health + ready + SPA + CORS + dev-login + authenticated chunks.
+- [ ] Flujo demo completo LLM: intake → generar plan → review → approve/reject (needs live model keys + manual walkthrough / DEMO-01).
 - [x] URLs documentadas en README / paquete de entrega.
 - [x] Nota de cold start free tier si aplica.
 
-**Live (2026-07-26):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main`.
+**Live (re-verified 2026-09-06):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main`.
+Smoke: `SMOKE PASS: health + ready + spa + cors + dev-login + chunks`.
 
 ---
 

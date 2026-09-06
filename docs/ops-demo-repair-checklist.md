@@ -5,11 +5,27 @@
 | Story | US-OPS-DEMO-REPAIR-001 |
 | Depends on | US-OPS-HEALTH-001, US-OPS-SCHEMA-001 (`scripts/migrate.sh`) |
 | Owner | Ops / solo developer with Render dashboard access |
-| Last verified | _pending — run after next successful restore_ |
+| Last verified | **2026-09-06** — health 200, ready `{db:ok}`, SPA 200, CORS OK, dev-login OK, authenticated `GET /rag/chunks` 200 (1+ items), memory-bank 200 |
 
 ## Why
 
 Tutor review (19 Aug 2026): public API `/health` stayed 200 while every DB-backed route returned 500 (often shown as a CORS error in the browser). Root cause class: Postgres volume recreate / missing schema+seed without an active monitor.
+
+## Current status (2026-09-06)
+
+Public demo is **up** for the repair ACs:
+
+| Check | Result |
+|-------|--------|
+| `GET https://holisticare-api.onrender.com/health` | 200 `status=ok` (cold start ~60s on free tier) |
+| `GET …/ready` | 200 `status=ready`, `db=ok` |
+| SPA `https://holisticare-frontend.onrender.com` | 200 |
+| CORS allow-origin | Static Site origin |
+| `POST …/auth/dev-login` | 200 clinician JWT |
+| `GET …/rag/chunks?limit=3` (Bearer) | 200 with `items` |
+| `GET …/rag/plan/memory-bank?limit=3` (Bearer) | 200 |
+
+Re-run restore below only if `/ready` is 503 or authenticated clinical GETs return 500.
 
 ## Prerequisites
 
@@ -25,7 +41,7 @@ Tutor review (19 Aug 2026): public API `/health` stayed 200 while every DB-backe
    curl -sS -o /tmp/ready.json -w "%{http_code}\n" https://holisticare-api.onrender.com/ready
    cat /tmp/ready.json
    ```
-   Expect: health 200, ready **503** (or ready 200 with later clinical 500 if schema half-applied).
+   Expect when broken: health 200, ready **503** (or ready 200 with later clinical 500 if schema half-applied).
 
 2. **Apply schema (single path)**
    ```bash
@@ -35,36 +51,32 @@ Tutor review (19 Aug 2026): public API `/health` stayed 200 while every DB-backe
 
 3. **Seed clinician**
    ```bash
-   # From an environment that can reach the same DATABASE_URL, e.g. one-off Render shell
-   # or local with PYTHONPATH=backend and env pointing at Render DB:
    cd backend
-   python -m scripts.seed_clinician
+   PYTHONPATH=. python -m scripts.seed_clinician
    ```
-   (Use the project’s documented seed CLI if the module path differs in your checkout.)
 
 4. **Seed synthetic patients (demo richness)**
    ```bash
    cd backend
-   python -m scripts.seed_synthetic_dataset   # or documented SYNTH-01 seed command
+   PYTHONPATH=. python -m scripts.seed_synthetic_dataset
    ```
 
 5. **Optional: ingest corpus**
    ```bash
-   # Prefer existing dirs: data/ci_smoke (tiny), data/pilot, or data/synthetic guidance.
+   # Prefer existing dirs: data/ci_smoke (tiny), data/pilot, or data/synthetic.
    # data/mock is NOT in the repo — do not use it on a clean clone.
    docker compose exec backend python -m scripts.ingest --source data/ci_smoke
    ```
-   On Render, use admin JWT + `POST /rag/ingest` with a path that exists in the image/volume.
 
 6. **Verify**
    ```bash
    curl -sS https://holisticare-api.onrender.com/ready
-   python backend/scripts/smoke_public_demo.py \
+   cd backend && PYTHONPATH=. python scripts/smoke_public_demo.py \
      --api-base https://holisticare-api.onrender.com \
      --spa-base https://holisticare-frontend.onrender.com \
      --origin https://holisticare-frontend.onrender.com
    ```
-   Then, with a clinician token, `GET /rag/intake/{known-synthetic-id}` → 200.
+   Smoke must print `SMOKE PASS: health + ready + spa + cors + dev-login + chunks`.
 
 7. **Record**
    - Date, operator, migrate.sh output, smoke PASS line.
@@ -72,6 +84,6 @@ Tutor review (19 Aug 2026): public API `/health` stayed 200 while every DB-backe
 
 ## Prevention
 
-- CD smoke now checks **`/ready`** (US-OPS-MONITOR-001).
+- CD / monitor smoke checks **`/ready`** and authenticated **`/rag/chunks`** (US-OPS-MONITOR-001 / DEMO-REPAIR).
 - GitHub Actions workflow `public-demo-monitor.yml` runs every 6 hours.
 - Do not rely on process `/health` alone for demo uptime.

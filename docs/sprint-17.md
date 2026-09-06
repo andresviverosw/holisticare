@@ -96,7 +96,8 @@ Tutor verdict: the highest-value next step is **not** a new feature — close th
 - [x] Unguarded endpoints confirmed in current `rag.py` (incl. `get_plan_sources`)
 - [x] User confirms D1–D5 (accepted 2026-09-05)
 - [x] Development: RBAC Red→Green + `/ready` + smoke/monitor + migrate.sh + docs
-- [ ] Ops access to Render Postgres confirmed for live DEMO-REPAIR
+- [x] Ops access to Render Postgres confirmed for live DEMO-REPAIR
+- [x] Live verification 2026-09-06: `/ready` db=ok + authenticated chunks; see `ops-demo-repair-checklist.md`
 
 ## Handoff
 
