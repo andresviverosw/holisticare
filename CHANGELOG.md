@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format is based on 
 ### Fixed
 - **US-OPS-OOM-001:** honor `RERANKER_BACKEND=passthrough` (already set on Render free tier) so plan generate does not load CrossEncoder/torch and OOM the ~512MB instance. Adds `PassthroughReranker` + factory tests.
 
+### Added
+- **DEMO-01:** public Render walkthrough script + evidence (`scripts/demo_public_walkthrough.py`, `docs/demo-01-public-walkthrough.md`) — login → intake → memory-bank instantiate → approve (NOM-024 gate). LLM generate on free tier may 502 near ~100s.
+
 ### Security
 - **US-SEC-RBAC-001:** clinician/admin required on clinical GETs (intake, risk-flags, plan, sources, chunks) + auth-matrix tests.
 - **CI security-audit:** bump `pypdf` `6.14.2` → `6.17.0`, `transformers` `5.5.0` → `5.16.1`; temporary ignore for transitive `nltk` **PYSEC-2026-3740** (no newer release; TODO-SEC-015).

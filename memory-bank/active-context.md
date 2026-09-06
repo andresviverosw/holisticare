@@ -2,17 +2,18 @@
 
 ## Ongoing Tasks
 
-- Merge DEMO-01 PR if still open; merge US-OPS-OOM-001 passthrough fix and redeploy Render
-- Track D: tag capstone-final + README confirmation
+- Track D: tag `capstone-final` + README/demo URL confirmation
+- Confirm CD deployed US-OPS-OOM-001 passthrough fix on Render
 ## Known Issues
 
 - Free-tier cold start still ~50–60s on first `/health`; 5s health-check alerts during restart are expected noise
-- LLM generate on free Render may still 502 near ~100s (proxy timeout) even after OOM fix
+- Public LLM generate on Render free tier often 502 at ~100s; DEMO-01 uses memory-bank instantiate → approve
 ## Next Steps
 
-- Deploy passthrough reranker fix to public API; re-smoke DEMO-01 memory-bank path
-- Track D packaging after DEMO-01 merge
+- Track D packaging (tag + CHANGELOG/README closeout)
+- Optional US-MOB-003 / US-PRIV-002 product polish; optional paid Render for live generate
 ## Current Session Notes
 
-- [2026-09-06] Render OOM after DEMO-01: root cause was CrossEncoder load despite `RERANKER_BACKEND=passthrough`. Fix: `PassthroughReranker` + factory wiring (US-OPS-OOM-001).
-- [2026-09-06] DEPLOY-01 / US-OPS-DEMO-REPAIR-001 closeout: public `/health`+`/ready` 200, SPA 200, CORS OK, authenticated `/rag/chunks` 200.
+- [2026-09-06] DEMO-01 merged (PR #24). Re-verified PASS (plan `7654eeed-4377-431b-8648-ff9ffe6c9114`). Script: `backend/scripts/demo_public_walkthrough.py --skip-generate`. Evidence: `docs/demo-01-public-walkthrough.md`. FEEDBACK-01 waiver Done.
+- [2026-09-06] US-OPS-OOM-001 merged (PR #25): PassthroughReranker so free-tier does not OOM on CrossEncoder load.
+- [2026-09-06] DEPLOY-01 / US-OPS-DEMO-REPAIR-001 closed earlier same day.
