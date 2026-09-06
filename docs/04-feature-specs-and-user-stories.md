@@ -97,10 +97,10 @@ Translate requirements into implementable product specifications, user stories, 
 | US-PRIV-001 | Privacy / compliance | Clinic operator | patient-identifying data removed or tokenized before any external LLM call | HolistiCare minimizes PHI egress to third-party model APIs (LFPDPPP-aligned control; R-02) | Must | M | **Done (Sprint 16)** |
 | US-PRIV-002 | Privacy / compliance | Clinician | free-text scrubbing when saving approved plans to the memory bank | reusable templates do not retain accidental identifiers in narrative fields | Should | S | Planned (after US-PRIV-001) |
 | US-OPS-SPA-HOST | Ops | Admin | the SPA to call a configurable absolute API base URL in production builds | Render Static Site can call the Render API (Entrega 2 / final demo topology) | Must | S–M | **Done (Sprint 16)** |
-| US-SEC-RBAC-001 | Security / Auth | Clinic operator | every clinical data GET to require clinician/admin JWT | intake, plans, and chunks are not anonymously readable | Must | S | Planned (Sprint 17 — AI4devs review) |
-| US-OPS-HEALTH-001 | Ops | Admin | a readiness probe that fails when Postgres is unreachable | CD and monitors detect “process up, data down” | Must | S–M | Planned (Sprint 17 — AI4devs review) |
-| US-OPS-DEMO-REPAIR-001 | Ops / Deploy | Tutor / reviewer | the public Render demo DB-backed flows to work again | live evaluation matches local behavior | Must | M | Planned (Sprint 17 — AI4devs review) |
-| US-OPS-MONITOR-001 | Ops | Admin | post-deploy and periodic smoke that exercises a DB-backed path | free-tier Postgres resets cannot leave the demo silently broken | Should | S–M | Planned (Sprint 17 — AI4devs review) |
+| US-SEC-RBAC-001 | Security / Auth | Clinic operator | every clinical data GET to require clinician/admin JWT | intake, plans, and chunks are not anonymously readable | Must | S | Done (Sprint 17) |
+| US-OPS-HEALTH-001 | Ops | Admin | a readiness probe that fails when Postgres is unreachable | CD and monitors detect “process up, data down” | Must | S–M | Done (Sprint 17) |
+| US-OPS-DEMO-REPAIR-001 | Ops / Deploy | Tutor / reviewer | the public Render demo DB-backed flows to work again | live evaluation matches local behavior | Must | M | Done (verified 2026-09-06) |
+| US-OPS-MONITOR-001 | Ops | Admin | post-deploy and periodic smoke that exercises a DB-backed path | free-tier Postgres resets cannot leave the demo silently broken | Should | S–M | Done (Sprint 17) |
 | US-OPS-SCHEMA-001 | Ops / Database | Admin | a single ordered repeatable schema apply path | recreating Postgres does not strand the API | Should | M–L | Planned (Sprint 17 — AI4devs review) |
 | DOC-QUICKSTART-001 | Documentation | Developer | README/setup ingest examples to point at existing data dirs | clean-clone quickstart does not 400 on missing `data/mock` | Should | S | Planned (Sprint 17 — AI4devs review) |
 | DOC-OPS-FILL-001 | Documentation | Admin | a filled deployment/ops runbook (envs + checklists) | ops docs match the maturity of the rest of `docs/` | Should | M | Planned (Sprint 17 — AI4devs review) |
@@ -574,11 +574,11 @@ Test intent:
 | SYNTH-01 | Should | R-final | US-INT-001…US-PRED-001, US-PLAN-004 | **Done.** Deterministic synthetic corpus + DB seed. See [`synthetic-dataset-v1.md`](synthetic-dataset-v1.md). |
 | US-PRIV-001 | Must | R-final | US-PLAN-001, Phase 3 privacy | **Done (Sprint 16).** Anonymize/pseudonymize intake before Claude/OpenAI calls. |
 | US-PRIV-002 | Should | R-final | US-PRIV-001, US-PLAN-004 | Harden memory-bank free-text de-identification (optional if capacity). |
-| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Done (Sprint 16).** `VITE_API_BASE_URL` + tests; companion ops **DEPLOY-01** still required for live URLs. |
-| US-SEC-RBAC-001 | Must | R-post | JWT RBAC rest of `/rag` | **Sprint 17.** Guard intake/risk-flags/plan/sources/chunks GETs. See [`sprint-17.md`](sprint-17.md). |
-| US-OPS-HEALTH-001 | Must | R-post | US-OPS-SPA-HOST | **Sprint 17.** DB readiness probe. |
-| US-OPS-DEMO-REPAIR-001 | Must | R-post | US-OPS-HEALTH-001, DEPLOY-01 | **Sprint 17.** Restore Render schema + seed. |
-| US-OPS-MONITOR-001 | Should | R-post | US-OPS-HEALTH-001 | **Sprint 17.** Smoke + schedule with DB signal. |
+| US-OPS-SPA-HOST | Must | R-final | Frontend API client | **Done (Sprint 16).** `VITE_API_BASE_URL` + tests; companion ops **DEPLOY-01** live URLs verified 2026-09-06. |
+| US-SEC-RBAC-001 | Must | R-post | JWT RBAC rest of `/rag` | **Done (Sprint 17).** Guard intake/risk-flags/plan/sources/chunks GETs. |
+| US-OPS-HEALTH-001 | Must | R-post | US-OPS-SPA-HOST | **Done (Sprint 17).** DB readiness probe `GET /ready`. |
+| US-OPS-DEMO-REPAIR-001 | Must | R-post | US-OPS-HEALTH-001, DEPLOY-01 | **Done (verified 2026-09-06).** Public ready+chunks smoke green; see `ops-demo-repair-checklist.md`. |
+| US-OPS-MONITOR-001 | Should | R-post | US-OPS-HEALTH-001 | **Done (Sprint 17).** Smoke + 6h schedule with DB signal. |
 | US-OPS-SCHEMA-001 | Should | R-post | infra/init.sql | **Sprint 17.** Versioned migrations (Alembic or equivalent). |
 | DOC-QUICKSTART-001 | Should | R-post | README | **Sprint 17.** Fix `data/mock` quickstart paths. |
 | DOC-OPS-FILL-001 | Should | R-post | Phase 6 runbook | **Sprint 17.** Fill empty ops checklists. |

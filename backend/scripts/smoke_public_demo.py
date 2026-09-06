@@ -16,6 +16,7 @@ import time
 import httpx
 
 from app.ops.public_demo_smoke import (
+    check_authenticated_chunks,
     check_cors,
     check_dev_login,
     check_health,
@@ -60,14 +61,32 @@ def _run(api_base: str, spa_base: str, origin: str, timeout: float) -> int:
             json={"role": "clinician", "sub": "cd-smoke"},
             headers={"Origin": origin},
         )
-        errors.extend(check_dev_login(login.status_code, parse_json_body(login.text)))
+        login_body = parse_json_body(login.text)
+        errors.extend(check_dev_login(login.status_code, login_body))
+
+        # US-OPS-DEMO-REPAIR-001 — prove DB-backed clinical read works (not only /ready).
+        token = login_body.get("access_token") if isinstance(login_body, dict) else None
+        if isinstance(token, str) and token.strip():
+            chunks = client.get(
+                f"{api_base.rstrip('/')}/rag/chunks",
+                params={"limit": 3},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Origin": origin,
+                },
+            )
+            errors.extend(
+                check_authenticated_chunks(chunks.status_code, parse_json_body(chunks.text))
+            )
+        else:
+            errors.append("skip chunks check: no access_token from dev-login")
 
     if errors:
         print("SMOKE FAIL:")
         for e in errors:
             print(f"  - {e}")
         return 1
-    print("SMOKE PASS: health + ready + spa + cors + dev-login")
+    print("SMOKE PASS: health + ready + spa + cors + dev-login + chunks")
     return 0
 
 

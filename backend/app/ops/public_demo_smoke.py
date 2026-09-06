@@ -75,6 +75,21 @@ def check_ready(status_code: int, body: Any) -> list[str]:
     return errors
 
 
+def check_authenticated_chunks(status_code: int, body: Any) -> list[str]:
+    """US-OPS-DEMO-REPAIR-001 — authenticated DB-backed GET must succeed (not 500)."""
+    errors: list[str] = []
+    if status_code != 200:
+        errors.append(f"chunks status_code={status_code} expected 200")
+        return errors
+    if not isinstance(body, dict):
+        errors.append("chunks body must be JSON object")
+        return errors
+    items = body.get("items")
+    if not isinstance(items, list):
+        errors.append("chunks body missing list field 'items'")
+    return errors
+
+
 def parse_json_body(raw: str | bytes | None) -> Any:
     if raw is None or raw == "":
         return None
