@@ -7,13 +7,12 @@
 
 ## Pending Milestones
 
-- Optional polish only (US-MOB-003, US-PRIV-002; paid Render for live LLM generate).
+- Optional polish: US-MOB-003, PILOT-GO; paid Render for live LLM generate.
 - Pilot GO/NO-GO / clinician alignment remains optional (FEEDBACK-01 waiver filed).
-- Pilot final GO/NO-GO + clinician clinical alignment of US-PRED outputs (optional; FEEDBACK-01 waiver already filed).
-- Deferred polish: US-MOB-003, US-PRIV-002; optional paid Render for live LLM generate.
 
 ## Update History
 
+- [2026-09-06] US-PRIV-002 **Done** — memory-bank free-text scrub via shared PRIV-001 helper.
 - [2026-09-06] Track D **Done**: PR #26 merged; tag/release `capstone-final` on `main` (`a1229ca`). Historical `v1.0-final-AVW` kept.
 - [2026-09-06] DEMO-01 PASS on public Render (memory-bank → approve); DEPLOY-01 / US-OPS-DEMO-REPAIR-001 Done earlier same day; US-OPS-OOM-001 passthrough fix merged.
 - [2026-07-26 2:13:36 PM] [Unknown User] - Sprint 16 code + docs progress: US-PRIV-001 (patient_anonymizer + pipeline choke point + tests) and US-OPS-SPA-HOST (resolveApiBaseUrl + Vitest) Done. DOC-CLOSE-01/02/03 partial: Phase 1 FR/NFR filled, Phase 3 privacy complete, ADR-003/004, EVAL-01 report, FEEDBACK-01 synthetic waiver. Remaining: DEPLOY-01 Render public URLs, DEMO-01 walkthrough against live host, Track D tag/README URLs.
