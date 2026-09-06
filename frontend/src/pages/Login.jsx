@@ -5,6 +5,8 @@ import { formatApiError } from "../utils/apiErrors";
 import { homePathForRole } from "../utils/authRoles";
 import { inviteTokenFromSearch } from "../utils/inviteUrl";
 import { isValidUuid } from "../utils/uuidV4";
+import { useColdStartHint } from "../utils/useColdStartHint";
+import { healthCheck } from "../services/api";
 
 export default function Login() {
   const {
@@ -35,6 +37,15 @@ export default function Login() {
     if (fromQuery) setInviteToken(fromQuery);
   }, [searchParams]);
 
+  // US-UX-COLDSTART-001 — warm the API while the clinician reads the login form.
+  useEffect(() => {
+    if (isAuthenticated) return undefined;
+    healthCheck().catch(() => {
+      /* cold start or offline — login path will surface errors */
+    });
+    return undefined;
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (isAuthenticated || inviteAutoTried) return;
     const fromQuery = inviteTokenFromSearch(searchParams.toString());
@@ -52,6 +63,9 @@ export default function Login() {
       })
       .finally(() => setInviteLoading(false));
   }, [isAuthenticated, inviteAutoTried, redeemInvite, searchParams]);
+
+  const busy = passwordLoading || loading || patientLoading || inviteLoading;
+  const { showColdStartHint, coldStartHintText } = useColdStartHint(busy);
 
   if (isAuthenticated) {
     return <Navigate to={homePathForRole(role)} replace />;
@@ -145,16 +159,23 @@ export default function Login() {
     loginWithToken(t);
   }
 
-  const busy = passwordLoading || loading || patientLoading || inviteLoading;
-
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md card space-y-6">
+    <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md card space-y-6 p-4 sm:p-6">
         <div className="text-center">
           <p className="text-2xl mb-1">🌿</p>
           <h1 className="text-xl font-bold text-neutral-900">HolistiCare</h1>
           <p className="text-sm text-neutral-500 mt-1">Acceso clínico o diario del paciente</p>
         </div>
+
+        {showColdStartHint && (
+          <p
+            className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+            role="status"
+          >
+            {coldStartHintText}
+          </p>
+        )}
 
         <form onSubmit={handlePasswordLogin} className="space-y-3">
           <p className="text-sm font-semibold text-neutral-800">Personal clínico</p>

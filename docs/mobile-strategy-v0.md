@@ -92,9 +92,10 @@ Use **Option A (responsive + PWA)** as phase 1 and define objective adoption/qua
 
 | Story ID | Epic | As a | I want | So that | Priority | Estimate | Status |
 |----------|------|------|--------|---------|----------|----------|--------|
-| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review/generate plans during consultation without laptop dependency | Should | M | Planned |
-| US-MOB-002 | Mobile clinician access | Clinician | to install the app as a PWA with stable startup and session continuity | I can access HolistiCare quickly from my home screen | Should | M | Planned |
-| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast "review + approve/reject + note" flow on mobile | I can finalize decisions in under 2 minutes | Should | M | Planned |
+| US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review/generate plans during consultation without laptop dependency | Should | M | Done (Sprint 18) |
+| US-MOB-002 | Mobile clinician access | Clinician | to install the app as a PWA with stable startup and session continuity | I can access HolistiCare quickly from my home screen | Should | M | Planned (after responsive shell) |
+| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast "review + approve/reject + note" flow on mobile | I can finalize decisions in under 2 minutes | Should | M | Partial (Sprint 18) |
+| US-UX-COLDSTART-001 | Ops / UX | Clinician | feedback while Render free-tier API wakes on login | Long waits are explained, not silent | Should | S | Done (Sprint 18) |
 
 ## Acceptance criteria (initial draft)
 
