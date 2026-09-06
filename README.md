@@ -2,17 +2,19 @@
 
 AI-powered holistic rehabilitation platform for continuity of care, data-driven treatment personalization, and measurable patient outcomes.
 
-Master's **final project** for AI4devs — branch `finalproject-AVW` · tag `v1.0-final-AVW`.
+Master's **final project** for AI4devs — branch `finalproject-AVW` · tags `v1.0-final-AVW` (historical) · `capstone-final` (Track D freeze, applied on `main` after packaging merge).
 
 **Source repository:** [github.com/andresviverosw/holisticare](https://github.com/andresviverosw/holisticare)
 
 | Entrega | Enlace |
 |---------|--------|
 | Rama final | https://github.com/andresviverosw/holisticare/tree/finalproject-AVW |
-| Tag release | https://github.com/andresviverosw/holisticare/releases/tag/v1.0-final-AVW |
+| Tag (histórico) | https://github.com/andresviverosw/holisticare/releases/tag/v1.0-final-AVW |
+| Tag Track D | `capstone-final` on `main` (see [`docs/thesis-appendix-index.md`](docs/thesis-appendix-index.md)) |
 | SPA (demo público) | https://holisticare-frontend.onrender.com |
 | API (demo público) | https://holisticare-api.onrender.com (`/health`) |
 | Documento de entrega (MD/PDF) | [`docs/entrega-final-capstone.md`](docs/entrega-final-capstone.md) · [`docs/entrega-final-capstone.pdf`](docs/entrega-final-capstone.pdf) |
+| Apéndice tesis (índice) | [`docs/thesis-appendix-index.md`](docs/thesis-appendix-index.md) |
 | Prompts (plantilla AI4devs) | [`prompts.md`](prompts.md) |
 
 ### Demo rápida (clínico)
@@ -21,8 +23,13 @@ Master's **final project** for AI4devs — branch `finalproject-AVW` · tag `v1.
 2. Pegar paciente sintético *improving*: `be2ecd39-2ac6-5a8b-84af-b22f8fa7a4a8`.
 3. Revisar intake, diario, gráfico de progreso (con proyección), trayectoria y recomendaciones.
 4. Vista paciente: cerrar sesión → login desarrollo paciente con el mismo UUID → `/diario`.
+5. **Gate NOM-024 (DEMO-01, fiable en free tier):** memory-bank instantiate → `pending_review` → approve. Evidencia/script: [`docs/demo-01-public-walkthrough.md`](docs/demo-01-public-walkthrough.md).
 
-> Free tier Render: cold start de API puede tardar ~50s+.
+```bash
+cd backend && PYTHONPATH=. python scripts/demo_public_walkthrough.py --skip-generate
+```
+
+> Free tier Render: cold start de API puede tardar ~50s+. LLM `generate` puede 502 cerca de ~100s; usar memory-bank para la demo al tutor.
 
 ---
 
@@ -199,7 +206,9 @@ Final master’s demo hosts on **Render** (same approach as Entrega 2). Blueprin
 
 Local fallback: Quick start above + smoke script `backend/scripts/smoke_public_demo.py`.
 
-Privacy / eval / feedback package: [`docs/03-data-dictionary-and-privacy-framework.md`](docs/03-data-dictionary-and-privacy-framework.md), [`docs/rag-evaluation-report.md`](docs/rag-evaluation-report.md), [`docs/feedback-01-synthetic-demo-waiver.md`](docs/feedback-01-synthetic-demo-waiver.md).
+Thesis appendix index (phases, privacy, eval, deploy, feedback): [`docs/thesis-appendix-index.md`](docs/thesis-appendix-index.md).
+
+Privacy / eval / feedback package: [`docs/03-data-dictionary-and-privacy-framework.md`](docs/03-data-dictionary-and-privacy-framework.md), [`docs/rag-evaluation-report.md`](docs/rag-evaluation-report.md), [`docs/feedback-01-synthetic-demo-waiver.md`](docs/feedback-01-synthetic-demo-waiver.md), DEMO-01 evidence [`docs/demo-01-public-walkthrough.md`](docs/demo-01-public-walkthrough.md).
 
 ## Test command
 
@@ -227,5 +236,7 @@ Evidencia de despliegue:
 - URLs públicas (tabla al inicio)
 - Capturas + arquitectura: [`docs/entrega-final-capstone.pdf`](docs/entrega-final-capstone.pdf)
 - Ops: [`docs/deploy-final-demo.md`](docs/deploy-final-demo.md)
+- Track D índice de apéndices: [`docs/thesis-appendix-index.md`](docs/thesis-appendix-index.md)
+- DEMO-01 walkthrough: [`docs/demo-01-public-walkthrough.md`](docs/demo-01-public-walkthrough.md)
 
-Formulario de envío del programa: https://lidr.typeform.com/proyectoai4devs (pegar la URL de la rama `finalproject-AVW`).
+Formulario de envío del programa: https://lidr.typeform.com/proyectoai4devs (pegar la URL de la rama `finalproject-AVW` o del tag `capstone-final` tras el freeze).

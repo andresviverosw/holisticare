@@ -86,10 +86,12 @@ Execute **only** tracks A → D in order. Everything else stays backlog.
 
 ### Track D — Submission packaging (last day)
 
-1. Freeze branch / tag `capstone-final` (or equivalent).
-2. Update `CHANGELOG.md` + `memory-bank/progress.md` + `active-context.md`.
-3. README “how to demo” path includes **public URLs** + fallback local quickstart.
-4. Thesis appendix index: phases 01–06, privacy, eval report, **deploy evidence**, feedback form.
+| Step | Status |
+|------|--------|
+| 1. Freeze branch / tag `capstone-final` | **Ready** — create annotated tag on `main` after packaging PR merges (keep `v1.0-final-AVW` historical). Procedure in [`thesis-appendix-index.md`](thesis-appendix-index.md). |
+| 2. Update `CHANGELOG.md` + memory-bank progress / active-context | **Done (2026-09-06)** |
+| 3. README “how to demo” = public URLs + local quickstart | **Done** — README + DEMO-01 memory-bank path |
+| 4. Thesis appendix index (phases 01–06, privacy, eval, deploy, feedback) | **Done** — [`thesis-appendix-index.md`](thesis-appendix-index.md) + `test_track_d_packaging.py` |
 
 ## 4. Story: US-PRIV-001 — Patient anonymization before LLM egress
 

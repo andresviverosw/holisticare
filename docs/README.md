@@ -11,6 +11,8 @@ This directory contains the six core documentation phases for the AI4devs master
 | Pilot rehearsal checklist and synthetic cases | `pilot-rehearsal-checklist.md` |
 | End-to-end synthetic dataset v1 (SYNTH-01) | `synthetic-dataset-v1.md` |
 | Final delivery plan (capstone closeout) | `final-delivery-plan.md` |
+| **Track D thesis appendix index** | `thesis-appendix-index.md` |
+| **DEMO-01 public walkthrough evidence** | `demo-01-public-walkthrough.md` |
 | **AI4devs tutor review remediation (Sprint 17)** | `ai4devs-review-remediation-plan.md` + `sprint-17.md` |
 | **Entrega final consolidada (MD + PDF)** | `entrega-final-capstone.md` → `node docs/scripts/build-entrega-pdf.mjs` |
 | Pilot go/no-go decision gate | `pilot-go-no-go.md` |
