@@ -2,11 +2,17 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
 import { ragApi } from "../services/api";
 import { formatApiError } from "../utils/apiErrors";
+import {
+  decisionActionButtonClassName,
+  decisionActionsRowClassName,
+  decisionGateShellClassName,
+  planReviewPagePaddingClassName,
+} from "../utils/planReviewMobile";
 
 function TherapyCard({ therapy }) {
   return (
     <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold text-sm capitalize text-neutral-800">{therapy.type}</span>
         <span className="badge-gray badge">{therapy.frequency}</span>
         {therapy.duration_minutes && (
@@ -194,19 +200,20 @@ export default function PlanReview() {
     active: "badge-green",
   };
   const blockedNutritionCount = plan?.nutrition_safety_flags?.length || 0;
+  const showDecisionGate = plan?.status === "pending_review" && !actionDone;
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div className={planReviewPagePaddingClassName(showDecisionGate)}>
+      {/* Header — US-MOB-003: stack on narrow viewports */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link to="/dashboard" className="text-sm text-brand-600 hover:underline">
             ← Volver
           </Link>
           <h1 className="text-2xl font-bold text-neutral-900 mt-2">Revisión del plan</h1>
-          <p className="text-xs text-neutral-400 font-mono mt-1">{planId}</p>
+          <p className="text-xs text-neutral-400 font-mono mt-1 break-all">{planId}</p>
         </div>
-        <span className={`badge text-sm ${statusColors[plan?.status] || "badge-gray"}`}>
+        <span className={`badge text-sm self-start ${statusColors[plan?.status] || "badge-gray"}`}>
           {plan?.status?.replace("_", " ")}
         </span>
       </div>
@@ -225,15 +232,19 @@ export default function PlanReview() {
         </div>
       )}
 
-      {/* Retrieval metadata */}
+      {/* Retrieval metadata — collapsed by default to keep decision path short */}
       {plan?.retrieval_metadata && (
-        <div className="card text-xs text-neutral-500 space-y-1">
-          <p className="font-semibold text-neutral-700 text-sm mb-2">Metadatos de recuperación</p>
-          <p>Consultas generadas: {plan.retrieval_metadata.queries_used?.length}</p>
-          <p>Candidatos recuperados: {plan.retrieval_metadata.candidates_retrieved}</p>
-          <p>Chunks enviados al LLM: {plan.retrieval_metadata.chunks_passed_to_llm}</p>
-          <p>Reranker: {plan.retrieval_metadata.reranker_backend}</p>
-        </div>
+        <details className="card text-xs text-neutral-500">
+          <summary className="font-semibold text-neutral-700 text-sm cursor-pointer">
+            Metadatos de recuperación
+          </summary>
+          <div className="mt-2 space-y-1">
+            <p>Consultas generadas: {plan.retrieval_metadata.queries_used?.length}</p>
+            <p>Candidatos recuperados: {plan.retrieval_metadata.candidates_retrieved}</p>
+            <p>Chunks enviados al LLM: {plan.retrieval_metadata.chunks_passed_to_llm}</p>
+            <p>Reranker: {plan.retrieval_metadata.reranker_backend}</p>
+          </div>
+        </details>
       )}
 
       {/* Weekly plan */}
@@ -307,16 +318,24 @@ export default function PlanReview() {
         </div>
       )}
 
-      {/* Approval gate — only shown when pending */}
-      {plan?.status === "pending_review" && !actionDone && (
-        <div className="card border-yellow-200 bg-yellow-50 space-y-4">
+      {/* Approval gate — sticky on mobile (US-MOB-003) */}
+      {showDecisionGate && (
+        <div
+          className={decisionGateShellClassName()}
+          data-testid="plan-decision-gate"
+          role="region"
+          aria-label="Decisión del plan"
+        >
           <p className="text-sm font-semibold text-yellow-800">
             ⚠️ Este plan requiere revisión y aprobación antes de activarse (NOM-024-SSA3-2012)
           </p>
           <div>
-            <label className="label">Notas del practicante (opcional)</label>
+            <label className="label" htmlFor="practitioner-notes">
+              Notas del practicante (opcional)
+            </label>
             <textarea
-              rows={3}
+              id="practitioner-notes"
+              rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="input"
@@ -324,20 +343,22 @@ export default function PlanReview() {
             />
           </div>
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600" role="alert">{error}</p>
           )}
-          <div className="flex gap-3">
+          <div className={decisionActionsRowClassName()}>
             <button
+              type="button"
               onClick={() => handleDecision("approve")}
               disabled={approving}
-              className="btn-primary"
+              className={decisionActionButtonClassName("btn-primary")}
             >
               {approving ? "Procesando…" : "✓ Aprobar plan"}
             </button>
             <button
+              type="button"
               onClick={() => handleDecision("reject")}
               disabled={approving}
-              className="btn-danger"
+              className={decisionActionButtonClassName("btn-danger")}
             >
               ✕ Rechazar
             </button>
@@ -347,11 +368,14 @@ export default function PlanReview() {
 
       {/* Action confirmation */}
       {actionDone && (
-        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
+        <div
+          className={`rounded-lg px-4 py-3 text-sm font-medium ${
           actionDone === "approve"
             ? "bg-brand-50 border border-brand-200 text-brand-700"
             : "bg-red-50 border border-red-200 text-red-700"
-        }`}>
+        }`}
+          role="status"
+        >
           {actionDone === "approve"
             ? "✓ Plan aprobado y vinculado al expediente del paciente."
             : "✕ Plan rechazado. No será activado."}
