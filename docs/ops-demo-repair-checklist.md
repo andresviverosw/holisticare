@@ -27,6 +27,12 @@ Public demo is **up** for the repair ACs:
 
 Re-run restore below only if `/ready` is 503 or authenticated clinical GETs return 500.
 
+## Free-tier OOM / health-check alerts (2026-09-06)
+
+Render may email **“exceeded its memory limit”** and **“HTTP health check failed (timed out after 5 seconds)”** after a plan-generate attempt on free tier. Cause: `get_reranker()` ignored `RERANKER_BACKEND=passthrough` and still constructed `CrossEncoderReranker` (loads torch). Process OOMs → restart → 5s health probes fail during boot (~50–60s cold start).
+
+Mitigation (code): `PassthroughReranker` when backend is `passthrough` (see `render.yaml`). After deploy, light API + memory-bank demo paths stay within free RAM; full CrossEncoder still needs a larger instance.
+
 ## Prerequisites
 
 - Render dashboard access (Postgres External Database URL + API service).
@@ -87,3 +93,11 @@ Re-run restore below only if `/ready` is 503 or authenticated clinical GETs retu
 - CD / monitor smoke checks **`/ready`** and authenticated **`/rag/chunks`** (US-OPS-MONITOR-001 / DEMO-REPAIR).
 - GitHub Actions workflow `public-demo-monitor.yml` runs every 6 hours.
 - Do not rely on process `/health` alone for demo uptime.
+
+## Free-tier OOM / health-check alerts (2026-09-06)
+
+Render may email **“exceeded its memory limit”** and **“HTTP health check failed (timed out after 5 seconds)”** after a plan-generate attempt on free tier.
+
+**Cause:** `get_reranker()` ignored `RERANKER_BACKEND=passthrough` (already set in `render.yaml`) and still constructed `CrossEncoderReranker`, which loads torch into the ~512MB instance → OOM → restart → 5s health probes fail during the ~50–60s cold start.
+
+**Mitigation (US-OPS-OOM-001):** `PassthroughReranker` when backend is `passthrough`. After deploy, memory-bank and light API paths stay within free RAM. Full CrossEncoder still needs a larger instance; LLM generate may still 502 near ~100s on free proxy timeout.

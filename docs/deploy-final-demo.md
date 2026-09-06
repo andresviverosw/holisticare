@@ -69,6 +69,8 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 **Live (re-verified 2026-09-06):** SPA `https://holisticare-frontend.onrender.com` · API `https://holisticare-api.onrender.com` · branch `main`.
 Smoke: `SMOKE PASS: health + ready + spa + cors + dev-login + chunks`.
 
+**Free-tier note:** plan generate previously OOM’d because CrossEncoder ignored `RERANKER_BACKEND=passthrough` (US-OPS-OOM-001). Prefer memory-bank instantiate for tutor demo; expect cold-start health alerts for ~1 min after any restart.
+
 ---
 
 ## 6. CI-gated CD (GitHub Actions)
