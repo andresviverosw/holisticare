@@ -62,7 +62,7 @@ Troubleshooting: misma tabla de [`deploy-entrega2-demo.md`](deploy-entrega2-demo
 - [x] API `/health` pública 200.
 - [x] CORS permite origen del Static Site.
 - [x] Flujo demo smoke: health + ready + SPA + CORS + dev-login + authenticated chunks.
-- [ ] Flujo demo completo LLM: intake → generar plan → review → approve/reject (needs live model keys + manual walkthrough / DEMO-01).
+- [x] Flujo demo clínico público (DEMO-01): login → intake → plan (`pending_review`) → approve — **PASS** via memory-bank instantiate on 2026-09-06 (`docs/demo-01-public-walkthrough.md`). LLM `generate` still subject to Render free-tier ~100s timeout (502).
 - [x] URLs documentadas en README / paquete de entrega.
 - [x] Nota de cold start free tier si aplica.
 

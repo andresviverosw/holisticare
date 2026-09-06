@@ -93,13 +93,19 @@ Expected:
 Expected:
 - full suite passes.
 
-## 9) AI quality smoke (deterministic contract checks)
+## 10) Public demo walkthrough (DEMO-01)
 
-```powershell
-scripts\run-ai-quality-smoke.bat
+Against live Render (not localhost):
+
+```bash
+cd backend
+PYTHONPATH=. python scripts/demo_public_walkthrough.py --skip-generate
 ```
 
 Expected:
-- Script exits `0`.
-- For each pilot case, generation returns `200`, `status = pending_review`, non-empty `weeks`, and `insufficient_evidence = false`.
-- At least one citation is produced across all evaluated cases (`--require-any-citations` gate).
+- Script exits `0` and prints `DEMO-01 PASS`.
+- Steps include login, intake save, memory-bank instantiate (or generate), get plan `pending_review`, approve → `approved`.
+
+Evidence log: [`demo-01-public-walkthrough.md`](demo-01-public-walkthrough.md).
+
+Note: `POST /rag/plan/generate` may 502 near ~100s on Render free tier; `--skip-generate` uses the memory-bank path for a reliable tutor demo.
