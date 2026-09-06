@@ -20,7 +20,7 @@ export default function PlanSources() {
   }, [planId]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
       <div>
         <Link to={`/plan/${planId}`} className="text-sm text-brand-600 hover:underline">
           ← Volver al plan

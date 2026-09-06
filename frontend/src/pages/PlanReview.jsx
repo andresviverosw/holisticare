@@ -184,8 +184,8 @@ export default function PlanReview() {
     }
   }
 
-  if (loading) return <div className="p-8 text-neutral-500">Cargando plan…</div>;
-  if (error && !plan) return <div className="p-8 text-red-600">{error}</div>;
+  if (loading) return <div className="p-4 sm:p-8 text-neutral-500">Cargando plan…</div>;
+  if (error && !plan) return <div className="p-4 sm:p-8 text-red-600">{error}</div>;
 
   const statusColors = {
     pending_review: "badge-yellow",
@@ -196,7 +196,7 @@ export default function PlanReview() {
   const blockedNutritionCount = plan?.nutrition_safety_flags?.length || 0;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
