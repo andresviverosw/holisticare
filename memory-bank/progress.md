@@ -7,11 +7,13 @@
 
 ## Pending Milestones
 
-- Optional polish: US-MOB-003, PILOT-GO; paid Render for live LLM generate.
+- Optional polish: US-MOB-002 (PWA), PILOT-GO; paid Render for live LLM generate.
 - Pilot GO/NO-GO / clinician alignment remains optional (FEEDBACK-01 waiver filed).
 
 ## Update History
 
+- [2026-09-06] US-MOB-003 Done — sticky mobile Plan Review decision gate + Playwright.
+- [2026-09-06] US-PRIV-002 merged (PR #27).
 - [2026-09-06] US-PRIV-002 **Done** — memory-bank free-text scrub via shared PRIV-001 helper.
 - [2026-09-06] Track D **Done**: PR #26 merged; tag/release `capstone-final` on `main` (`a1229ca`). Historical `v1.0-final-AVW` kept.
 - [2026-09-06] DEMO-01 PASS on public Render (memory-bank → approve); DEPLOY-01 / US-OPS-DEMO-REPAIR-001 Done earlier same day; US-OPS-OOM-001 passthrough fix merged.

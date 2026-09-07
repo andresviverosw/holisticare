@@ -5,6 +5,9 @@ All notable changes to this project are documented here. The format is based on 
 ## [Unreleased]
 
 ### Added
+- **US-MOB-003:** Plan Review sticky mobile decision gate (stacked thumb-friendly approve/reject + notes), collapsed retrieval metadata, Vitest helpers + Playwright iPhone viewport e2e.
+
+### Added
 - **US-PRIV-002:** memory-bank snapshots scrub email/phone/UUID free text via shared `scrub_nested_free_text` (reuses US-PRIV-001 patterns) inside `sanitize_plan_for_memory_bank`.
 
 ### Added

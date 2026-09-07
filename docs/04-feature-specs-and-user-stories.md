@@ -108,7 +108,7 @@ Translate requirements into implementable product specifications, user stories, 
 | US-SEC-JWT-COOKIE-001 | Security / Auth | Clinic operator | JWT stored in httpOnly Secure cookies (not localStorage) | XSS cannot exfiltrate clinician/patient tokens as easily | Could | L | Deferred (post Sprint 17 — tutor next iteration) |
 | US-MOB-001 | Mobile clinician access | Clinician | to use Dashboard and Plan Review comfortably on a phone | I can review and generate plans during consultation without laptop dependency | Should | M | Done (Sprint 18) |
 | US-MOB-002 | Mobile clinician access | Clinician | to install HolistiCare as a PWA with stable startup and session continuity | I can launch the app quickly from my home screen during patient care | Should | M | Planned (deferred — PWA after responsive shell) |
-| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Partial (Sprint 18 — layout/padding; full flow polish later) |
+| US-MOB-003 | Mobile clinician access | Clinician | to complete a fast review and approve/reject flow on mobile | I can finalize plan decisions in under 2 minutes | Should | M | Done (2026-09-06 — sticky decision gate + mobile e2e) |
 | US-UX-COLDSTART-001 | Ops / UX | Clinician | a clear wait state when the public API is cold-starting | I understand a long “Entrar desarrollo” wait is the free-tier wake, not a hung UI | Should | S | Done (Sprint 18) |
 
 ## 5. Story-level acceptance criteria
@@ -586,7 +586,7 @@ Test intent:
 | US-SEC-JWT-COOKIE-001 | Could | R-post+ | US-AUTH-CLINICIAN-PROD | Deferred — httpOnly cookies (tutor next iteration). |
 | US-MOB-001 | Should | R4 | US-INT-005, US-PLAN-004 | Mobile-responsive Dashboard and Plan Review (phase 1) — **cut from final window** |
 | US-MOB-002 | Should | R4 | US-MOB-001 | Installable PWA shell and startup behavior — **cut from final window** |
-| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | Fast mobile review + approve/reject + note flow — **cut from final window** |
+| US-MOB-003 | Should | R4 | US-MOB-001, US-PLAN-003 | **Done (2026-09-06).** Sticky decision gate + notes + mobile Playwright. |
 
 Release definition:
 - R1 (MVP core): intake, plan generation/citations/approval, session log, diary, baseline analytics.
