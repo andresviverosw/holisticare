@@ -4,6 +4,7 @@ import RequireClinician from "./components/RequireClinician";
 import RequirePatient from "./components/RequirePatient";
 import Layout from "./components/Layout";
 import PatientLayout from "./components/PatientLayout";
+import OfflineBanner from "./components/OfflineBanner";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import PatientDiary from "./pages/PatientDiary";
@@ -15,6 +16,7 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <AuthProvider>
+      <OfflineBanner />
       <BrowserRouter>
         <Routes>
           {/* Public routes first — do not nest under Layout (avoids splat catching /login). */}

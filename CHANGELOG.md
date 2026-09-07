@@ -5,6 +5,9 @@ All notable changes to this project are documented here. The format is based on 
 ## [Unreleased]
 
 ### Added
+- **US-MOB-002:** Installable clinician PWA shell (`vite-plugin-pwa`) — HolistiCare web manifest + icons, service worker registration, offline banner/`offline.html`, JWT session key continuity helpers + Playwright e2e.
+
+### Added
 - **US-MOB-003:** Plan Review sticky mobile decision gate (stacked thumb-friendly approve/reject + notes), collapsed retrieval metadata, Vitest helpers + Playwright iPhone viewport e2e.
 
 ### Added
