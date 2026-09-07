@@ -1,7 +1,8 @@
 import axios from "axios";
 import { resolveApiBaseUrl } from "../utils/apiBaseUrl";
 
-const TOKEN_KEY = "holisticare_token";
+/** Canonical JWT storage key — shared with PWA session continuity (US-MOB-002). */
+export const AUTH_TOKEN_STORAGE_KEY = "holisticare_token";
 
 const api = axios.create({
   baseURL: resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
@@ -9,13 +10,15 @@ const api = axios.create({
 });
 
 export function getStoredToken() {
-  return typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+  return typeof localStorage !== "undefined"
+    ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    : null;
 }
 
 export function setStoredToken(token) {
   if (typeof localStorage === "undefined") return;
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
+  if (token) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+  else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
 }
 
 api.interceptors.request.use((config) => {

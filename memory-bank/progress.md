@@ -7,11 +7,13 @@
 
 ## Pending Milestones
 
-- Optional polish: US-MOB-002 (PWA), PILOT-GO; paid Render for live LLM generate.
+- Optional polish: PILOT-GO; paid Render for live LLM generate.
 - Pilot GO/NO-GO / clinician alignment remains optional (FEEDBACK-01 waiver filed).
 
 ## Update History
 
+- [2026-09-07] US-MOB-002 Done — Vite PWA manifest + service worker + offline shell + session continuity.
+- [2026-09-07] US-MOB-003 merged (PR #28).
 - [2026-09-06] US-MOB-003 Done — sticky mobile Plan Review decision gate + Playwright.
 - [2026-09-06] US-PRIV-002 merged (PR #27).
 - [2026-09-06] US-PRIV-002 **Done** — memory-bank free-text scrub via shared PRIV-001 helper.
